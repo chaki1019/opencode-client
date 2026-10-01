@@ -805,4 +805,80 @@ void main() {
       ]);
     });
   });
+
+  group('terminals', () {
+    test('creates, resizes, lists and deletes terminals', () async {
+      const pty = {
+        'id': 'pty_1',
+        'title': 'Terminal 1',
+        'command': '/bin/zsh',
+        'cwd': '/repo',
+        'status': 'running',
+        'pid': 42,
+      };
+      final adapter = FakeAdapter({
+        '/api/pty': (RequestOptions request) => request.method == 'POST'
+            ? FakeRoute.json({
+                'location': {'directory': '/repo'},
+                'data': pty,
+              })
+            : FakeRoute.json({
+                'data': [
+                  pty,
+                  {...pty, 'id': 'pty_2', 'status': 'exited', 'exitCode': 130},
+                ],
+              }),
+        '/api/pty/pty_1': (RequestOptions request) => request.method == 'PUT'
+            ? FakeRoute.json({'data': pty})
+            : const FakeRoute(204, ''),
+      });
+      final client = clientFor(adapter);
+
+      final created = await client.createPty(directory: '/repo', title: 'New');
+      expect(created.id, 'pty_1');
+      expect(jsonDecode(adapter.requests.last.data as String), {
+        'title': 'New',
+      });
+      expect(
+        adapter.requests.last.queryParameters['location[directory]'],
+        '/repo',
+      );
+
+      await client.resizePty('pty_1', directory: '/repo', rows: 24, cols: 80);
+      expect(adapter.requests.last.method, 'PUT');
+      expect(jsonDecode(adapter.requests.last.data as String), {
+        'size': {'rows': 24, 'cols': 80},
+      });
+
+      final list = await client.listPtys(directory: '/repo');
+      expect(list.last.isRunning, isFalse);
+      expect(list.last.exitCode, 130);
+
+      await client.deletePty('pty_1', directory: '/repo');
+      expect(adapter.requests.last.method, 'DELETE');
+    });
+
+    test('builds the WebSocket address under the server base path', () {
+      final client = OpenCodeClient(
+        baseUrl: 'https://example.com/relay/',
+        username: 'user',
+        password: 'password',
+        dio: fakeDio(FakeAdapter({})),
+      );
+      final uri = client.ptySocketUri(
+        'pty_1',
+        directory: '/tmp/a b',
+        cursor: 5,
+      );
+      expect(uri.scheme, 'wss');
+      expect(uri.path, '/relay/api/pty/pty_1/connect');
+      expect(uri.queryParameters, {
+        'location[directory]': '/tmp/a b',
+        'cursor': '5',
+      });
+      expect(client.socketHeaders, {
+        'Authorization': 'Basic dXNlcjpwYXNzd29yZA==',
+      });
+    });
+  });
 }

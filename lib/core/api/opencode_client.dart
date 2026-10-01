@@ -495,6 +495,67 @@ class OpenCodeClient {
     }
   }
 
+  Future<List<Pty>> listPtys({required String directory}) async {
+    final body = _map(await _getJson('/api/pty', query: _location(directory)));
+    return [
+      for (final item in body['data'] as List? ?? const []) ?Pty.tryParse(item),
+    ];
+  }
+
+  /// Starts the user's default shell in [directory].
+  Future<Pty> createPty({required String directory, String? title}) async {
+    final body = _map(
+      await _sendJson(
+        '/api/pty',
+        body: {'title': ?title},
+        query: _location(directory),
+      ),
+    );
+    return Pty.tryParse(body['data'])!;
+  }
+
+  /// Tells the process its window size changed.
+  Future<void> resizePty(
+    String id, {
+    required String directory,
+    required int rows,
+    required int cols,
+  }) => _sendJson(
+    '/api/pty/${Uri.encodeComponent(id)}',
+    method: 'PUT',
+    body: {
+      'size': {'rows': rows, 'cols': cols},
+    },
+    query: _location(directory),
+  );
+
+  Future<void> deletePty(String id, {required String directory}) => _sendJson(
+    '/api/pty/${Uri.encodeComponent(id)}',
+    method: 'DELETE',
+    body: null,
+    query: _location(directory),
+  );
+
+  /// The WebSocket address of a terminal's input and output. [cursor] is
+  /// how much output the caller already has (0 replays everything).
+  Uri ptySocketUri(String id, {required String directory, int cursor = 0}) {
+    final base = Uri.parse(_dio.options.baseUrl);
+    final basePath = base.path.endsWith('/')
+        ? base.path.substring(0, base.path.length - 1)
+        : base.path;
+    return base.replace(
+      scheme: base.scheme == 'https' ? 'wss' : 'ws',
+      path: '$basePath/api/pty/${Uri.encodeComponent(id)}/connect',
+      queryParameters: {..._location(directory), 'cursor': '$cursor'},
+    );
+  }
+
+  /// Headers the terminal WebSocket needs: the same Basic auth as HTTP.
+  Map<String, String> get socketHeaders => {
+    if (_dio.options.headers['Authorization'] case final String auth)
+      'Authorization': auth,
+  };
+
   /// Permission requests waiting on the user in [sessionId].
   Future<List<PermissionRequest>> listPermissions(String sessionId) async {
     final body = _map(
