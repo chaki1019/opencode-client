@@ -7,6 +7,7 @@ import '../live/live_widgets.dart';
 import 'chat_providers.dart';
 import 'composer.dart';
 import 'composer_providers.dart';
+import 'prompt_widgets.dart';
 import 'timeline_widgets.dart';
 
 /// A session's transcript, updated live, with the input at the bottom.
@@ -46,6 +47,7 @@ class ChatScreen extends ConsumerWidget {
       ),
       body: Column(
         children: [
+          TodoStrip(sessionId: session.id),
           Expanded(
             child: timeline.when(
               data: (paged) {
@@ -115,6 +117,7 @@ class ChatScreen extends ConsumerWidget {
               ),
             ),
           ),
+          SessionPromptsPanel(session: session),
           Composer(session: session),
         ],
       ),
