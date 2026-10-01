@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/core/api/api_errors.dart';
 import 'package:opencode_mobile/core/api/opencode_client.dart';
+import 'package:opencode_mobile/core/models/session.dart';
 
 import '../../support/fake_adapter.dart';
 
@@ -271,6 +272,150 @@ void main() {
         clientFor(adapter).listMessages(sessionId: 's1'),
         throwsA(isA<OpenCodeApiException>()),
       );
+    });
+  });
+
+  group('sendPrompt', () {
+    FakeAdapter promptServer(
+      FakeRoute Function(Map<String, dynamic> body) reply,
+    ) => FakeAdapter({
+      '/api/session/s1/prompt': (RequestOptions request) =>
+          reply(jsonDecode(request.data as String) as Map<String, dynamic>),
+    });
+
+    test('accepts when the receipt echoes our ID', () async {
+      late Map<String, dynamic> sent;
+      final adapter = promptServer((body) {
+        sent = body;
+        return FakeRoute.json({
+          'data': {
+            'id': body['id'],
+            'sessionID': 's1',
+            'delivery': 'immediate',
+          },
+        });
+      });
+      final result = await clientFor(adapter)
+          .sendPrompt(sessionId: 's1', messageId: 'msg_1', text: 'hi');
+      expect(result, PromptAdmission.accepted);
+      expect(sent, {'id': 'msg_1', 'text': 'hi', 'resume': true});
+      expect(adapter.requests.single.method, 'POST');
+    });
+
+    test('a 4xx is a rejection, but 409 and 5xx are uncertain', () async {
+      Future<PromptAdmission> withStatus(int status) =>
+          clientFor(promptServer((_) => FakeRoute(status, '{}')))
+              .sendPrompt(sessionId: 's1', messageId: 'm', text: 't');
+      expect(await withStatus(400), PromptAdmission.rejected);
+      expect(await withStatus(409), PromptAdmission.uncertain);
+      expect(await withStatus(503), PromptAdmission.uncertain);
+    });
+
+    test('a receipt for another ID is uncertain', () async {
+      final adapter = promptServer(
+        (_) => FakeRoute.json({
+          'data': {'id': 'other', 'sessionID': 's1'},
+        }),
+      );
+      expect(
+        await clientFor(adapter)
+            .sendPrompt(sessionId: 's1', messageId: 'm', text: 't'),
+        PromptAdmission.uncertain,
+      );
+    });
+  });
+
+  group('session operations', () {
+    test('createSession sends the location and returns the session', () async {
+      late Map<String, dynamic> sent;
+      final adapter = FakeAdapter({
+        '/api/session': (RequestOptions request) {
+          sent = jsonDecode(request.data as String) as Map<String, dynamic>;
+          return FakeRoute.json({
+            'data': {
+              'id': 'new',
+              'projectID': 'p',
+              'location': {'directory': '/srv/app'},
+              'time': {'created': 1, 'updated': 1},
+            },
+          });
+        },
+      });
+      final session = await clientFor(adapter)
+          .createSession(directory: '/srv/app');
+      expect(session.id, 'new');
+      expect(sent, {
+        'location': {'directory': '/srv/app'},
+      });
+    });
+
+    test('selectModel and interrupt post to the session', () async {
+      final adapter = FakeAdapter({
+        '/api/session/s1/model': const FakeRoute(204, ''),
+        '/api/session/s1/interrupt': const FakeRoute(204, ''),
+      });
+      final client = clientFor(adapter);
+      await client.selectModel(
+        's1',
+        const ModelRef(providerID: 'anthropic', id: 'claude', variant: 'high'),
+      );
+      await client.interrupt('s1');
+      expect(jsonDecode(adapter.requests.first.data as String), {
+        'model': {'providerID': 'anthropic', 'id': 'claude', 'variant': 'high'},
+      });
+      expect(adapter.requests.map((r) => r.path), [
+        '/api/session/s1/model',
+        '/api/session/s1/interrupt',
+      ]);
+    });
+  });
+
+  group('catalog', () {
+    test('listModels keeps enabled models of available providers', () async {
+      final adapter = FakeAdapter({
+        '/api/provider': FakeRoute.json({
+          'data': [
+            {'id': 'a', 'name': 'Provider A'},
+            {'id': 'b', 'name': 'Provider B', 'activation': 'disabled'},
+          ],
+        }),
+        '/api/model': FakeRoute.json({
+          'data': [
+            {
+              'id': 'm1',
+              'providerID': 'a',
+              'name': 'Model 1',
+              'enabled': true,
+              'variants': [
+                {'id': 'low'},
+                {'id': 'high'},
+              ],
+            },
+            {'id': 'm2', 'providerID': 'a', 'name': 'Off', 'enabled': false},
+            {'id': 'm3', 'providerID': 'b', 'name': 'B', 'enabled': true},
+          ],
+        }),
+      });
+      final models = await clientFor(adapter).listModels(directory: '/d');
+      expect(models.map((m) => m.id), ['m1']);
+      expect(models.single.providerName, 'Provider A');
+      expect(models.single.variants, ['low', 'high']);
+      expect(adapter.requests.first.queryParameters, {
+        'location[directory]': '/d',
+      });
+    });
+
+    test('listAgents parses agents and marks subagents unselectable', () async {
+      final adapter = FakeAdapter({
+        '/api/agent': FakeRoute.json({
+          'data': [
+            {'id': 'build', 'mode': 'primary', 'hidden': false},
+            {'id': 'explore', 'mode': 'subagent', 'hidden': false},
+          ],
+        }),
+      });
+      final agents = await clientFor(adapter).listAgents(directory: '/d');
+      expect(agents.map((a) => a.isSelectable), [true, false]);
     });
   });
 }

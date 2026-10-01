@@ -6,6 +6,8 @@ import '../../core/format.dart';
 import '../../core/models/project.dart';
 import '../../core/models/session.dart';
 import '../../core/paging.dart';
+import '../../core/api/api_errors.dart';
+import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
 import 'session_providers.dart';
@@ -24,6 +26,12 @@ class SessionsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(project.displayName),
         bottom: const LiveStatusBanner(),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        key: const Key('new-session'),
+        onPressed: () => _createSession(context, ref),
+        icon: const Icon(Icons.add),
+        label: const Text('新しいセッション'),
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(provider.future),
@@ -59,6 +67,22 @@ class SessionsScreen extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _createSession(BuildContext context, WidgetRef ref) async {
+    final client = ref.read(connectionProvider)?.client;
+    if (client == null) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final router = GoRouter.of(context);
+    try {
+      final session = await client.createSession(directory: project.directory);
+      router.push(
+        '/sessions/${Uri.encodeComponent(session.id)}',
+        extra: session,
+      );
+    } on OpenCodeApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text('セッションを作成できませんでした: $e')));
+    }
   }
 }
 

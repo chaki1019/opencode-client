@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -20,6 +21,7 @@ void main() {
   testWidgets('connecting shows the project list and saves the server', (
     tester,
   ) async {
+    final promptIds = <String>[];
     final adapter = FakeAdapter({
       '/api/health': FakeRoute.json({
         'healthy': true,
@@ -45,6 +47,13 @@ void main() {
         ],
       }),
       '/api/session/active': FakeRoute.json({'data': {}}),
+      '/api/session/s1/prompt': (RequestOptions request) {
+        final body = jsonDecode(request.data as String) as Map<String, dynamic>;
+        promptIds.add(body['id'] as String);
+        return FakeRoute.json({
+          'data': {'id': body['id'], 'sessionID': 's1', 'delivery': 'queued'},
+        });
+      },
       '/api/session/s1/message': FakeRoute.json({
         'data': [
           {
@@ -136,6 +145,28 @@ void main() {
     );
     send('session.execution.succeeded', {});
     await tester.pumpAndSettle();
+
+    // Sending shows a pending bubble until the server promotes the input.
+    await tester.enterText(find.byKey(const Key('composer')), 'Add a test');
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('send')));
+    await tester.pump();
+    expect(find.text('Add a test'), findsOneWidget);
+    expect(find.text('送信中…'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(promptIds, hasLength(1));
+
+    send('session.input.admitted', {
+      'inputID': promptIds.single,
+      'input': {
+        'type': 'user',
+        'data': {'text': 'Add a test'},
+      },
+    });
+    send('session.input.promoted', {'inputID': promptIds.single});
+    await tester.pumpAndSettle();
+    expect(find.text('Add a test'), findsOneWidget);
+    expect(find.text('送信中…'), findsNothing);
 
     final saved = await store.loadServers();
     expect(saved.single.baseUrl, 'http://example.test:4096');

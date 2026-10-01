@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 
+import '../models/catalog.dart';
 import '../models/project.dart';
 import '../models/session.dart';
 import '../models/timeline.dart';
@@ -23,6 +24,20 @@ class Page<T> {
   final String? nextCursor;
 
   bool get hasMore => nextCursor != null;
+}
+
+/// What the server said about a submitted prompt.
+enum PromptAdmission {
+  /// The server accepted the prompt with our ID.
+  accepted,
+
+  /// The server refused it (a 4xx other than 408/409); it was not queued.
+  rejected,
+
+  /// The outcome is unknown (network error, timeout, 5xx...). The prompt
+  /// may or may not have been queued, so it must never be resent
+  /// automatically; the transcript and events reveal what happened.
+  uncertain,
 }
 
 /// HTTP transport to one OpenCode server's v2 HttpAPI (`/api/...`),
@@ -173,6 +188,136 @@ class OpenCodeClient {
       }
     }
     return Page(entries, page.nextCursor);
+  }
+
+  Future<Session> createSession({
+    required String directory,
+    String? title,
+  }) async {
+    final body = _map(
+      await _sendJson(
+        '/api/session',
+        body: {
+          if (title != null && title.trim().isNotEmpty) 'title': title.trim(),
+          'location': {'directory': directory},
+        },
+      ),
+    );
+    return Session.fromJson(_map(body['data']));
+  }
+
+  /// Submits a prompt with a client-generated [messageId] so the transcript
+  /// entry and events can be matched to it. Never retried here.
+  Future<PromptAdmission> sendPrompt({
+    required String sessionId,
+    required String messageId,
+    required String text,
+  }) async {
+    final Response<String> response;
+    try {
+      response = await _request(
+        '/api/session/${Uri.encodeComponent(sessionId)}/prompt',
+        method: 'POST',
+        body: {'id': messageId, 'text': text, 'resume': true},
+      );
+    } on OpenCodeApiException {
+      return PromptAdmission.uncertain;
+    }
+    final code = response.statusCode ?? 0;
+    if (code >= 400 && code < 500 && code != 408 && code != 409) {
+      return PromptAdmission.rejected;
+    }
+    if (code < 200 || code >= 300) return PromptAdmission.uncertain;
+    try {
+      final data = _obj(_obj(_decode(response))?['data']);
+      return data?['id'] == messageId && data?['sessionID'] == sessionId
+          ? PromptAdmission.accepted
+          : PromptAdmission.uncertain;
+    } on OpenCodeApiException {
+      return PromptAdmission.uncertain;
+    }
+  }
+
+  /// Stops the session's current run.
+  Future<void> interrupt(String sessionId) =>
+      _sendJson('/api/session/${Uri.encodeComponent(sessionId)}/interrupt');
+
+  Future<void> selectAgent(String sessionId, String agentId) => _sendJson(
+    '/api/session/${Uri.encodeComponent(sessionId)}/agent',
+    body: {'agent': agentId},
+  );
+
+  Future<void> selectModel(String sessionId, ModelRef model) => _sendJson(
+    '/api/session/${Uri.encodeComponent(sessionId)}/model',
+    body: {
+      'model': {
+        'providerID': model.providerID,
+        'id': model.id,
+        'variant': ?model.variant,
+      },
+    },
+  );
+
+  Future<List<AgentInfo>> listAgents({required String directory}) async {
+    final body = _map(
+      await _getJson('/api/agent', query: _location(directory)),
+    );
+    return [
+      for (final item in body['data'] as List? ?? const [])
+        AgentInfo.fromJson(_map(item)),
+    ];
+  }
+
+  /// Enabled models of available providers, grouped by provider order.
+  Future<List<ModelOption>> listModels({required String directory}) async {
+    final query = _location(directory);
+    final (providers, models) = await (
+      _getJson('/api/provider', query: query),
+      _getJson('/api/model', query: query),
+    ).wait;
+    final options = <ModelOption>[];
+    final modelList = _map(models)['data'] as List? ?? const [];
+    for (final raw in _map(providers)['data'] as List? ?? const []) {
+      final provider = _map(raw);
+      final activation = provider['activation'];
+      final available = activation is String
+          ? activation != 'disabled'
+          : provider['disabled'] != true;
+      if (!available) continue;
+      for (final rawModel in modelList) {
+        final model = _map(rawModel);
+        if (model['providerID'] != provider['id'] ||
+            model['enabled'] == false) {
+          continue;
+        }
+        options.add(
+          ModelOption(
+            providerID: provider['id'] as String,
+            providerName:
+                provider['name'] as String? ?? provider['id'] as String,
+            id: model['id'] as String,
+            name: model['name'] as String? ?? model['id'] as String,
+            variants: [
+              for (final v in model['variants'] as List? ?? const [])
+                if (v is Map && v['id'] is String) v['id'] as String,
+            ],
+          ),
+        );
+      }
+    }
+    return options;
+  }
+
+  /// v2 scopes configuration reads with `location[directory]`.
+  static Map<String, Object> _location(String directory) => {
+    'location[directory]': directory,
+  };
+
+  Future<Object?> _sendJson(String path, {Object? body}) async {
+    final response = await _request(path, method: 'POST', body: body ?? {});
+    _ensureSuccess(response);
+    final text = response.data ?? '';
+    return text.trim().isEmpty ? null : _decode(response);
   }
 
   /// IDs of sessions that are currently running (status other than idle).

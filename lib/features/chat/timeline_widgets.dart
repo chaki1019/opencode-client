@@ -3,6 +3,7 @@ import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
 import '../../core/models/timeline.dart';
 import '../../core/paging.dart';
+import 'composer_providers.dart';
 
 class TimelineEntryView extends StatelessWidget {
   const TimelineEntryView({super.key, required this.entry});
@@ -73,6 +74,53 @@ class UserMessageBubble extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+/// A prompt the user sent that the server has not shown in the transcript
+/// yet. An uncertain send is labelled rather than resent.
+class PendingPromptBubble extends StatelessWidget {
+  const PendingPromptBubble({
+    super.key,
+    required this.prompt,
+    required this.onDismiss,
+  });
+
+  final PendingPrompt prompt;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final status = switch (prompt.status) {
+      PendingStatus.sending => '送信中…',
+      PendingStatus.uncertain => '送信できたか確認中です。再送はしていません',
+    };
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Opacity(
+          opacity: 0.6,
+          child: UserMessageBubble(
+            entry: UserEntry(id: prompt.id, text: prompt.text),
+          ),
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(status, style: theme.textTheme.labelSmall),
+            if (prompt.status != PendingStatus.sending)
+              IconButton(
+                tooltip: '表示から消す',
+                visualDensity: VisualDensity.compact,
+                iconSize: 16,
+                onPressed: onDismiss,
+                icon: const Icon(Icons.close),
+              ),
+          ],
+        ),
+      ],
     );
   }
 }
