@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/core/api/api_errors.dart';
 import 'package:opencode_mobile/core/api/opencode_client.dart';
@@ -159,6 +160,117 @@ void main() {
       expect(result.projects.first.icon?.overrideUrl, 'x');
       expect(result.projects.first.displayName, 'p1');
       expect(result.current?.id, 'new');
+    });
+  });
+
+  group('listSessions', () {
+    Map<String, Object> session(String id) => {
+      'id': id,
+      'projectID': 'p1',
+      'title': 'Session $id',
+      'location': {'directory': '/srv/p1'},
+      'time': {'created': 1, 'updated': 2},
+    };
+
+    test('sends the root-session filter on the first page', () async {
+      final adapter = FakeAdapter({
+        '/api/session': FakeRoute.json({
+          'data': [session('a')],
+          'cursor': {'next': 'c1'},
+        }),
+      });
+      final page = await clientFor(adapter).listSessions(directory: '/srv/p1');
+      expect(page.items.single.displayTitle, 'Session a');
+      // A short page ends the list even if the server sent a cursor.
+      expect(page.hasMore, isFalse);
+      expect(adapter.requests.single.queryParameters, {
+        'directory': '/srv/p1',
+        'parentID': 'null',
+        'order': 'desc',
+        'limit': 50,
+      });
+    });
+
+    test(
+      'a full page keeps its cursor only if the lookahead finds more',
+      () async {
+        final adapter = FakeAdapter({
+          '/api/session': (RequestOptions request) {
+            final cursor = request.queryParameters['cursor'];
+            if (cursor == null) {
+              return FakeRoute.json({
+                'data': [session('a'), session('b')],
+                'cursor': {'next': 'c1'},
+              });
+            }
+            return FakeRoute.json({
+              'data': cursor == 'c1' ? [session('c')] : [],
+            });
+          },
+        });
+        final client = clientFor(adapter);
+        final first = await client.listSessions(directory: '/d', limit: 2);
+        expect(first.nextCursor, 'c1');
+        expect(adapter.requests.last.queryParameters, {
+          'cursor': 'c1',
+          'limit': 1,
+        });
+      },
+    );
+
+    test('a full page with an empty lookahead ends the list', () async {
+      final adapter = FakeAdapter({
+        '/api/session': (RequestOptions request) =>
+            request.queryParameters['cursor'] == null
+            ? FakeRoute.json({
+                'data': [session('a')],
+                'cursor': {'next': 'c1'},
+              })
+            : FakeRoute.json({'data': []}),
+      });
+      final page = await clientFor(adapter)
+          .listSessions(directory: '/d', limit: 1);
+      expect(page.hasMore, isFalse);
+    });
+  });
+
+  group('listMessages', () {
+    test('returns entries oldest first and skips unknown types', () async {
+      final adapter = FakeAdapter({
+        '/api/session/s1/message': FakeRoute.json({
+          'data': [
+            {
+              'id': 'a1',
+              'type': 'assistant',
+              'content': [
+                {'type': 'text', 'text': 'hi'},
+              ],
+            },
+            {'id': 'x', 'type': 'step-marker'},
+            {'id': 'u1', 'type': 'user', 'text': 'hello'},
+          ],
+        }),
+      });
+      final page = await clientFor(adapter).listMessages(sessionId: 's1');
+      expect(page.items.map((e) => e.id), ['u1', 'a1']);
+      expect(adapter.requests.single.queryParameters, {
+        'order': 'desc',
+        'limit': 100,
+      });
+    });
+
+    test('rejects a record without a type', () async {
+      final adapter = FakeAdapter({
+        '/api/session/s1/message': FakeRoute.json({
+          'data': [
+            {'id': 'u1'},
+          ],
+        }),
+      });
+      await expectLater(
+        clientFor(adapter).listMessages(sessionId: 's1'),
+        throwsA(isA<OpenCodeApiException>()),
+      );
     });
   });
 }

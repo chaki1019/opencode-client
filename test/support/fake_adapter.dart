@@ -18,11 +18,14 @@ class FakeRoute {
       FakeRoute(status, jsonEncode(body));
 }
 
-/// Serves canned responses keyed by path and records every request.
+typedef FakeHandler = FakeRoute Function(RequestOptions request);
+
+/// Serves canned responses keyed by path and records every request. A route
+/// is either a [FakeRoute] or a [FakeHandler] that inspects the request.
 class FakeAdapter implements HttpClientAdapter {
   FakeAdapter(this.routes);
 
-  final Map<String, FakeRoute> routes;
+  final Map<String, Object> routes;
   final List<RequestOptions> requests = [];
 
   @override
@@ -32,9 +35,11 @@ class FakeAdapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     requests.add(options);
-    final route =
-        routes[options.path] ??
-        const FakeRoute(404, 'Not Found', contentType: 'text/plain');
+    final route = switch (routes[options.path]) {
+      final FakeRoute route => route,
+      final FakeHandler handler => handler(options),
+      _ => const FakeRoute(404, 'Not Found', contentType: 'text/plain'),
+    };
     return ResponseBody.fromString(
       route.body,
       route.status,

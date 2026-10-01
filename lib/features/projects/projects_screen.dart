@@ -86,26 +86,3 @@ class _ProjectTile extends StatelessWidget {
     );
   }
 }
-
-/// Placeholder until the session list lands in phase 2.
-class ProjectDetailScreen extends StatelessWidget {
-  const ProjectDetailScreen({super.key, required this.project});
-
-  final Project project;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(project.displayName)),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(
-            '${project.directory}\n\nセッション一覧はフェーズ2で実装します。',
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ),
-    );
-  }
-}
