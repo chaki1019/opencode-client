@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models/session.dart';
+import '../live/live_providers.dart';
+import '../live/live_widgets.dart';
 import 'chat_providers.dart';
 import 'timeline_widgets.dart';
 
-/// Read-only transcript of a session. Sending and live updates arrive in
-/// later phases.
+/// A session's transcript, updated live. Sending arrives in a later phase.
 class ChatScreen extends ConsumerWidget {
   const ChatScreen({super.key, required this.session});
 
@@ -16,6 +17,9 @@ class ChatScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = timelineProvider(session.id);
     final timeline = ref.watch(provider);
+    final busy = ref.watch(
+      activeSessionsProvider.select((ids) => ids.contains(session.id)),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -24,7 +28,13 @@ class ChatScreen extends ConsumerWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
+        bottom: const LiveStatusBanner(),
         actions: [
+          if (busy)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Center(child: SessionBusyIndicator(size: 18)),
+            ),
           IconButton(
             tooltip: '再読み込み',
             icon: const Icon(Icons.refresh),

@@ -104,6 +104,8 @@ class AssistantMessageView extends StatelessWidget {
             final ReasoningContent c => ReasoningView(text: c.text),
             final ToolContent c => ToolCallView(tool: c),
           },
+        if (entry.isStreaming && !_hasVisibleText(entry))
+          const _ThinkingIndicator(),
         if (entry.errorMessage != null)
           Padding(
             padding: const EdgeInsets.only(top: 6),
@@ -118,6 +120,33 @@ class AssistantMessageView extends StatelessWidget {
             child: Text(caption, style: theme.textTheme.labelSmall),
           ),
       ],
+    );
+  }
+}
+
+bool _hasVisibleText(AssistantEntry entry) => entry.content.any(
+  (c) => c is ToolContent || (c is TextContent && c.text.trim().isNotEmpty),
+);
+
+class _ThinkingIndicator extends StatelessWidget {
+  const _ThinkingIndicator();
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.bodySmall
+        ?.copyWith(color: Theme.of(context).colorScheme.outline);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          const SizedBox.square(
+            dimension: 12,
+            child: CircularProgressIndicator(strokeWidth: 1.5),
+          ),
+          const SizedBox(width: 8),
+          Text('考え中…', style: style),
+        ],
+      ),
     );
   }
 }
