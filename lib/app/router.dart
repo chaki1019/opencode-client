@@ -3,9 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/models/project.dart';
+import '../core/models/session.dart';
+import '../features/chat/chat_screen.dart';
 import '../features/connection/connection_providers.dart';
 import '../features/connection/connection_screen.dart';
 import '../features/projects/projects_screen.dart';
+import '../features/sessions/sessions_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   // Re-run redirects whenever the connection changes.
@@ -32,14 +35,23 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/projects',
         builder: (context, state) => const ProjectsScreen(),
         routes: [
+          // Screens receive their model through `extra`; deep links without
+          // it fall back to the project list.
           GoRoute(
             path: ':projectId',
             redirect: (context, state) =>
                 state.extra is Project ? null : '/projects',
             builder: (context, state) =>
-                ProjectDetailScreen(project: state.extra! as Project),
+                SessionsScreen(project: state.extra! as Project),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/sessions/:sessionId',
+        redirect: (context, state) =>
+            state.extra is Session ? null : '/projects',
+        builder: (context, state) =>
+            ChatScreen(session: state.extra! as Session),
       ),
     ],
   );

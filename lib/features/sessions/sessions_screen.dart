@@ -1,0 +1,107 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+import '../../core/format.dart';
+import '../../core/models/project.dart';
+import '../../core/models/session.dart';
+import '../../core/paging.dart';
+import 'session_providers.dart';
+
+class SessionsScreen extends ConsumerWidget {
+  const SessionsScreen({super.key, required this.project});
+
+  final Project project;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final provider = sessionListProvider(project);
+    final sessions = ref.watch(provider);
+
+    return Scaffold(
+      appBar: AppBar(title: Text(project.displayName)),
+      body: RefreshIndicator(
+        onRefresh: () => ref.refresh(provider.future),
+        child: sessions.when(
+          data: (paged) => paged.items.isEmpty
+              ? ListView(
+                  padding: const EdgeInsets.all(24),
+                  children: const [Center(child: Text('セッションはまだありません'))],
+                )
+              : NotificationListener<ScrollNotification>(
+                  onNotification: (n) {
+                    if (n.metrics.extentAfter < 400) {
+                      ref.read(provider.notifier).loadMore();
+                    }
+                    return false;
+                  },
+                  child: ListView.builder(
+                    itemCount: paged.items.length + 1,
+                    itemBuilder: (context, index) => index < paged.items.length
+                        ? _SessionTile(session: paged.items[index])
+                        : _PagingFooter(
+                            paged: paged,
+                            onRetry: () =>
+                                ref.read(provider.notifier).loadMore(),
+                          ),
+                  ),
+                ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => ListView(
+            padding: const EdgeInsets.all(24),
+            children: [Text('セッションを読み込めませんでした: $e')],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SessionTile extends StatelessWidget {
+  const _SessionTile({required this.session});
+
+  final Session session;
+
+  @override
+  Widget build(BuildContext context) {
+    final details = [
+      relativeTime(session.updatedAt),
+      if (session.model != null) session.model!.label,
+    ].join(' · ');
+    return ListTile(
+      leading: const Icon(Icons.chat_bubble_outline),
+      title: Text(
+        session.displayTitle,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(details),
+      onTap: () => context.push(
+        '/sessions/${Uri.encodeComponent(session.id)}',
+        extra: session,
+      ),
+    );
+  }
+}
+
+/// Spinner while loading the next page, or a retry button if it failed.
+class _PagingFooter extends StatelessWidget {
+  const _PagingFooter({required this.paged, required this.onRetry});
+
+  final PagedItems<Object?> paged;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    if (paged.loadMoreError != null) {
+      return Center(
+        child: TextButton(onPressed: onRetry, child: const Text('再読み込み')),
+      );
+    }
+    if (!paged.hasMore) return const SizedBox(height: 24);
+    return const Padding(
+      padding: EdgeInsets.all(16),
+      child: Center(child: CircularProgressIndicator()),
+    );
+  }
+}

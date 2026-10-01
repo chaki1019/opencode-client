@@ -28,6 +28,29 @@ void main() {
       '/api/project': FakeRoute.json([
         {'id': 'abc', 'canonical': '/home/me/my-app', 'sandboxes': []},
       ]),
+      '/api/session': FakeRoute.json({
+        'data': [
+          {
+            'id': 's1',
+            'projectID': 'abc',
+            'title': 'Fix the login bug',
+            'location': {'directory': '/home/me/my-app'},
+            'time': {'created': 1, 'updated': 2},
+          },
+        ],
+      }),
+      '/api/session/s1/message': FakeRoute.json({
+        'data': [
+          {
+            'id': 'a1',
+            'type': 'assistant',
+            'content': [
+              {'type': 'text', 'text': 'The bug is **fixed**.'},
+            ],
+          },
+          {'id': 'u1', 'type': 'user', 'text': 'Please fix login'},
+        ],
+      }),
     });
     final store = ServerStore();
 
@@ -56,6 +79,18 @@ void main() {
 
     expect(find.text('my-app'), findsOneWidget);
     expect(find.text('OpenCode 2.0.0'), findsOneWidget);
+
+    await tester.tap(find.text('my-app'));
+    await tester.pumpAndSettle();
+    expect(find.text('Fix the login bug'), findsOneWidget);
+
+    await tester.tap(find.text('Fix the login bug'));
+    await tester.pumpAndSettle();
+    expect(find.text('Please fix login'), findsOneWidget);
+    expect(
+      find.textContaining('The bug is', findRichText: true),
+      findsOneWidget,
+    );
 
     final saved = await store.loadServers();
     expect(saved.single.baseUrl, 'http://example.test:4096');

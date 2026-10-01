@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 
 import '../models/project.dart';
+import '../models/session.dart';
+import '../models/timeline.dart';
 import 'api_errors.dart';
 
 class ProjectBootstrap {
@@ -10,6 +12,17 @@ class ProjectBootstrap {
 
   final List<Project> projects;
   final Project? current;
+}
+
+/// One page of a cursor-paginated list. [nextCursor] is null on the last
+/// page.
+class Page<T> {
+  const Page(this.items, this.nextCursor);
+
+  final List<T> items;
+  final String? nextCursor;
+
+  bool get hasMore => nextCursor != null;
 }
 
 /// HTTP transport to one OpenCode server's v2 HttpAPI (`/api/...`),
@@ -109,8 +122,94 @@ class OpenCodeClient {
     );
   }
 
-  Future<Object?> _getJson(String path, {String? directory}) async {
-    final response = await _request(path, directory: directory);
+  /// Root sessions of a project directory, newest first.
+  Future<Page<Session>> listSessions({
+    required String directory,
+    String? cursor,
+    int limit = 50,
+  }) async {
+    final page = await _getPage(
+      '/api/session',
+      cursor == null
+          ? {
+              'directory': directory,
+              'parentID': 'null',
+              'order': 'desc',
+              'limit': limit,
+            }
+          : {'cursor': cursor, 'limit': limit},
+      cursor: cursor,
+      limit: limit,
+    );
+    return Page([
+      for (final item in page.items) Session.fromJson(_map(item)),
+    ], page.nextCursor);
+  }
+
+  /// A page of a session's timeline. The first page holds the newest
+  /// [limit] records; [Page.nextCursor] continues to older ones. Entries are
+  /// returned oldest first.
+  Future<Page<TimelineEntry>> listMessages({
+    required String sessionId,
+    String? cursor,
+    int limit = 100,
+  }) async {
+    assert(limit > 0 && limit <= 200);
+    final page = await _getPage(
+      '/api/session/${Uri.encodeComponent(sessionId)}/message',
+      cursor == null
+          ? {'order': 'desc', 'limit': limit}
+          : {'cursor': cursor, 'limit': limit},
+      cursor: cursor,
+      limit: limit,
+    );
+    final entries = <TimelineEntry>[];
+    for (final item in page.items.reversed) {
+      try {
+        final entry = TimelineEntry.tryParse(_map(item));
+        if (entry != null) entries.add(entry);
+      } on FormatException catch (e) {
+        throw OpenCodeApiException('Invalid timeline record: ${e.message}');
+      }
+    }
+    return Page(entries, page.nextCursor);
+  }
+
+  /// Fetches `{data: [...], cursor: {next}}` pages.
+  ///
+  /// The server can return a `next` cursor even on the last page, so a short
+  /// page ends the list and a full page is confirmed with a one-item
+  /// lookahead that is not consumed. If the lookahead fails, the cursor is
+  /// kept so the user can still try to load more.
+  Future<Page<Object?>> _getPage(
+    String path,
+    Map<String, Object> query, {
+    required String? cursor,
+    required int limit,
+  }) async {
+    final body = _map(await _getJson(path, query: query));
+    final items = body['data'] as List? ?? const [];
+    var next = _obj(body['cursor'])?['next'] as String?;
+    if (items.length < limit || next == cursor) next = null;
+    if (next != null) {
+      try {
+        final probe = _map(
+          await _getJson(path, query: {'cursor': next, 'limit': 1}),
+        );
+        if ((probe['data'] as List? ?? const []).isEmpty) next = null;
+      } on OpenCodeApiException {
+        // Keep the continuation.
+      }
+    }
+    return Page(items, next);
+  }
+
+  Future<Object?> _getJson(
+    String path, {
+    String? directory,
+    Map<String, Object>? query,
+  }) async {
+    final response = await _request(path, directory: directory, query: query);
     _ensureSuccess(response);
     return _decode(response);
   }
@@ -119,13 +218,14 @@ class OpenCodeClient {
     String path, {
     String method = 'GET',
     String? directory,
+    Map<String, Object>? query,
     Object? body,
   }) async {
     try {
       return await _dio.request<String>(
         path,
         data: body == null ? null : jsonEncode(body),
-        queryParameters: directory == null ? null : {'directory': directory},
+        queryParameters: {'directory': ?directory, ...?query},
         options: Options(
           method: method,
           headers: {
@@ -164,4 +264,7 @@ class OpenCodeClient {
 
   static Map<String, dynamic> _map(Object? value) =>
       (value as Map).cast<String, dynamic>();
+
+  static Map<String, dynamic>? _obj(Object? value) =>
+      value is Map ? value.cast<String, dynamic>() : null;
 }
