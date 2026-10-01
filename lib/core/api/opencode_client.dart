@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import '../models/catalog.dart';
 import '../models/form.dart';
 import '../models/project.dart';
+import '../models/project_tools.dart';
 import '../models/prompts.dart';
 import '../models/session.dart';
 import '../models/timeline.dart';
@@ -258,6 +259,102 @@ class OpenCodeClient {
         'variant': ?model.variant,
       },
     },
+  );
+
+  Future<Session> getSession(String sessionId) async {
+    final body = _map(
+      await _getJson('/api/session/${Uri.encodeComponent(sessionId)}'),
+    );
+    return Session.fromJson(_map(body['data']));
+  }
+
+  /// Renames the session and returns it as the server now has it.
+  Future<Session> renameSession(String sessionId, String title) async {
+    await _sendJson(
+      '/api/session/${Uri.encodeComponent(sessionId)}',
+      method: 'PATCH',
+      body: {'title': title},
+    );
+    return getSession(sessionId);
+  }
+
+  Future<void> deleteSession(String sessionId) => _sendJson(
+    '/api/session/${Uri.encodeComponent(sessionId)}',
+    method: 'DELETE',
+    body: null,
+  );
+
+  /// Copies the session into a new one. With [beforeMessageId], the copy
+  /// stops just before that message; otherwise it includes everything.
+  Future<Session> forkSession(
+    String sessionId, {
+    String? beforeMessageId,
+  }) async {
+    final body = _map(
+      await _sendJson(
+        '/api/session/${Uri.encodeComponent(sessionId)}/fork',
+        body: {'before': beforeMessageId},
+      ),
+    );
+    return Session.fromJson(_map(body['data']));
+  }
+
+  /// Asks the server to summarize the conversation so far. [messageId] is a
+  /// client-generated ID for the compaction request.
+  Future<void> compactSession(String sessionId, {required String messageId}) =>
+      _sendJson(
+        '/api/session/${Uri.encodeComponent(sessionId)}/compact',
+        body: {'id': messageId, 'delivery': 'steer'},
+      );
+
+  Future<VcsBranch> vcsBranch({required String directory}) async {
+    final body = _map(await _getJson('/api/vcs', query: _location(directory)));
+    final branch = _obj(_obj(body['data'])?['branch']);
+    return VcsBranch(
+      current: branch?['current'] as String?,
+      defaultBranch: branch?['default'] as String?,
+    );
+  }
+
+  Future<List<FileChange>> vcsStatus({required String directory}) =>
+      _fileChanges('/api/vcs/status', _location(directory));
+
+  Future<List<FileChange>> vcsDiff({
+    required String directory,
+    DiffMode mode = DiffMode.working,
+  }) => _fileChanges('/api/vcs/diff', {
+    ..._location(directory),
+    'mode': mode.name,
+  });
+
+  Future<List<FileChange>> _fileChanges(
+    String path,
+    Map<String, Object> query,
+  ) async {
+    final body = _map(await _getJson(path, query: query));
+    return [
+      for (final item in body['data'] as List? ?? const [])
+        ?FileChange.tryParse(item),
+    ];
+  }
+
+  Future<List<McpServer>> listMcpServers({required String directory}) async {
+    final body = _map(await _getJson('/api/mcp', query: _location(directory)));
+    return [
+      for (final item in body['data'] as List? ?? const [])
+        ?McpServer.tryParse(item),
+    ];
+  }
+
+  /// Connects or disconnects the MCP server [name].
+  Future<void> setMcpConnected(
+    String name, {
+    required bool connected,
+    required String directory,
+  }) => _sendJson(
+    '/api/mcp/${Uri.encodeComponent(name)}/'
+    '${connected ? 'connect' : 'disconnect'}',
+    query: _location(directory),
   );
 
   /// Permission requests waiting on the user in [sessionId].

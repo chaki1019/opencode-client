@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models/session.dart';
+import '../../core/models/timeline.dart';
 import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
 import 'chat_providers.dart';
 import 'composer.dart';
 import 'composer_providers.dart';
 import 'prompt_widgets.dart';
+import 'session_actions.dart';
 import 'timeline_widgets.dart';
 
 /// A session's transcript, updated live, with the input at the bottom.
@@ -43,6 +45,7 @@ class ChatScreen extends ConsumerWidget {
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(provider),
           ),
+          SessionActionsMenu(session: session),
         ],
       ),
       body: Column(
@@ -93,9 +96,14 @@ class ChatScreen extends ConsumerWidget {
                         );
                       } else {
                         final i = index - pending.length;
-                        child = TimelineEntryView(
-                          entry: entries[entries.length - 1 - i],
-                        );
+                        final entry = entries[entries.length - 1 - i];
+                        child = entry is UserEntry
+                            ? GestureDetector(
+                                onLongPress: () =>
+                                    _userMessageMenu(context, ref, entry),
+                                child: TimelineEntryView(entry: entry),
+                              )
+                            : TimelineEntryView(entry: entry);
                       }
                       return Padding(
                         padding: const EdgeInsets.symmetric(
@@ -122,5 +130,28 @@ class ChatScreen extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _userMessageMenu(
+    BuildContext context,
+    WidgetRef ref,
+    UserEntry entry,
+  ) async {
+    final fork = await showModalBottomSheet<bool>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: ListTile(
+          key: const Key('fork-here'),
+          leading: const Icon(Icons.fork_right),
+          title: const Text('このメッセージの前からフォーク'),
+          subtitle: const Text('これより前の会話を新しいセッションにコピーします'),
+          onTap: () => Navigator.pop(context, true),
+        ),
+      ),
+    );
+    if (fork == true && context.mounted) {
+      await forkSession(context, ref, session, beforeMessageId: entry.id);
+    }
   }
 }

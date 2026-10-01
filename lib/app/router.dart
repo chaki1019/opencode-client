@@ -7,8 +7,8 @@ import '../core/models/session.dart';
 import '../features/chat/chat_screen.dart';
 import '../features/connection/connection_providers.dart';
 import '../features/connection/connection_screen.dart';
+import '../features/projects/project_screen.dart';
 import '../features/projects/projects_screen.dart';
-import '../features/sessions/sessions_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   // Re-run redirects whenever the connection changes.
@@ -42,7 +42,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             redirect: (context, state) =>
                 state.extra is Project ? null : '/projects',
             builder: (context, state) =>
-                SessionsScreen(project: state.extra! as Project),
+                ProjectScreen(project: state.extra! as Project),
           ),
         ],
       ),
