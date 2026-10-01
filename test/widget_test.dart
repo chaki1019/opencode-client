@@ -68,6 +68,49 @@ void main() {
         replies.add(request);
         return const FakeRoute(204, '');
       },
+      '/api/vcs': FakeRoute.json({
+        'data': {
+          'branch': {'current': 'fix-login', 'default': 'main'},
+        },
+      }),
+      '/api/vcs/diff': FakeRoute.json({
+        'data': [
+          {
+            'file': 'lib/login.dart',
+            'patch': '@@ -1 +1 @@\n-old\n+new',
+            'additions': 1,
+            'deletions': 1,
+            'status': 'modified',
+          },
+        ],
+      }),
+      '/api/vcs/status': FakeRoute.json({'data': []}),
+      '/api/mcp': FakeRoute.json({
+        'data': [
+          {
+            'name': 'github',
+            'status': {'status': 'connected'},
+          },
+        ],
+      }),
+      '/api/mcp/github/disconnect': (RequestOptions request) {
+        replies.add(request);
+        return const FakeRoute(204, '');
+      },
+      '/api/session/s1': (RequestOptions request) {
+        replies.add(request);
+        return request.method == 'GET'
+            ? FakeRoute.json({
+                'data': {
+                  'id': 's1',
+                  'projectID': 'abc',
+                  'title': 'Login fixed',
+                  'location': {'directory': '/home/me/my-app'},
+                  'time': {'created': 1, 'updated': 3},
+                },
+              })
+            : const FakeRoute(204, '');
+      },
       '/api/session/s1/prompt': (RequestOptions request) {
         final body = jsonDecode(request.data as String) as Map<String, dynamic>;
         promptIds.add(body['id'] as String);
@@ -151,6 +194,28 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Fix the login bug'), findsOneWidget);
 
+    // The Git tab lists changed files and opens their diff.
+    await tester.tap(find.text('Git'));
+    await tester.pumpAndSettle();
+    expect(find.text('fix-login'), findsOneWidget);
+    expect(find.text('login.dart'), findsOneWidget);
+    await tester.tap(find.text('login.dart'));
+    await tester.pumpAndSettle();
+    expect(find.text('+new'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    // The MCP tab toggles a server's connection.
+    await tester.tap(find.text('MCP'));
+    await tester.pumpAndSettle();
+    expect(find.text('github'), findsOneWidget);
+    expect(find.text('接続中'), findsOneWidget);
+    await tester.tap(find.byType(Switch));
+    await tester.pumpAndSettle();
+    expect(replies.last.path, '/api/mcp/github/disconnect');
+
+    await tester.tap(find.text('セッション'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Fix the login bug'));
     await tester.pumpAndSettle();
     expect(find.text('Please fix login'), findsOneWidget);
@@ -166,7 +231,7 @@ void main() {
     expect(find.text('git push'), findsOneWidget);
     await tester.tap(find.byKey(const Key('permission-once')));
     await tester.pumpAndSettle();
-    expect(jsonDecode(replies.single.data as String), {'decision': 'once'});
+    expect(jsonDecode(replies.last.data as String), {'decision': 'once'});
     expect(find.text('「bash」の許可が必要です'), findsNothing);
 
     // A question arrives live and is answered with the option's value.
@@ -246,6 +311,20 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Add a test'), findsOneWidget);
     expect(find.text('送信中…'), findsNothing);
+
+    // Renaming from the menu updates the title.
+    await tester.tap(find.byKey(const Key('session-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('名前を変更'));
+    await tester.pumpAndSettle();
+    await tester.enterText(
+      find.byKey(const Key('rename-field')),
+      'Login fixed',
+    );
+    await tester.tap(find.byKey(const Key('confirm-rename')));
+    await tester.pumpAndSettle();
+    expect(replies.reversed.skip(1).first.method, 'PATCH');
+    expect(find.text('Login fixed'), findsOneWidget);
 
     final saved = await store.loadServers();
     expect(saved.single.baseUrl, 'http://example.test:4096');

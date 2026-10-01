@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/core/api/api_errors.dart';
 import 'package:opencode_mobile/core/api/opencode_client.dart';
 import 'package:opencode_mobile/core/models/form.dart';
+import 'package:opencode_mobile/core/models/project_tools.dart';
 import 'package:opencode_mobile/core/models/prompts.dart';
 import 'package:opencode_mobile/core/models/session.dart';
 
@@ -524,6 +525,136 @@ void main() {
               .having((e) => e.detail, 'detail', 'proceed is required'),
         ),
       );
+    });
+  });
+
+  group('project tools', () {
+    const session = {
+      'id': 'ses_1',
+      'projectID': 'p',
+      'title': 'Renamed',
+      'location': {'directory': '/repo'},
+      'time': {'created': 1, 'updated': 2},
+    };
+
+    test('renames, forks, compacts and deletes a session', () async {
+      final requests = <RequestOptions>[];
+      final adapter = FakeAdapter({
+        '/api/session/ses_1': (RequestOptions request) {
+          requests.add(request);
+          return request.method == 'GET'
+              ? FakeRoute.json({'data': session})
+              : const FakeRoute(204, '');
+        },
+        '/api/session/ses_1/fork': (RequestOptions request) {
+          requests.add(request);
+          return FakeRoute.json({
+            'data': {...session, 'id': 'ses_fork'},
+          });
+        },
+        '/api/session/ses_1/compact': (RequestOptions request) {
+          requests.add(request);
+          final body = jsonDecode(request.data as String) as Map;
+          return FakeRoute.json({
+            'data': {'id': body['id'], 'sessionID': 'ses_1'},
+          });
+        },
+      });
+      final client = clientFor(adapter);
+
+      final renamed = await client.renameSession('ses_1', 'Renamed');
+      expect(renamed.title, 'Renamed');
+      expect(requests[0].method, 'PATCH');
+      expect(jsonDecode(requests[0].data as String), {'title': 'Renamed'});
+      expect(requests[1].method, 'GET');
+
+      final fork = await client.forkSession('ses_1', beforeMessageId: 'msg_1');
+      expect(fork.id, 'ses_fork');
+      expect(jsonDecode(requests[2].data as String), {'before': 'msg_1'});
+
+      await client.compactSession('ses_1', messageId: 'msg_c');
+      expect(jsonDecode(requests[3].data as String), {
+        'id': 'msg_c',
+        'delivery': 'steer',
+      });
+
+      await client.deleteSession('ses_1');
+      expect(requests[4].method, 'DELETE');
+    });
+
+    test('reads branch, status and diff within the location', () async {
+      final adapter = FakeAdapter({
+        '/api/vcs': FakeRoute.json({
+          'data': {
+            'branch': {'current': 'feature', 'default': 'main'},
+          },
+        }),
+        '/api/vcs/status': FakeRoute.json({
+          'data': [
+            {
+              'file': 'Sources/main.swift',
+              'additions': 2,
+              'deletions': 1,
+              'status': 'modified',
+            },
+          ],
+        }),
+        '/api/vcs/diff': FakeRoute.json({
+          'data': [
+            {
+              'file': 'Sources/main.swift',
+              'patch': '@@ -1 +1 @@\n-a\n+b',
+              'additions': 1,
+              'deletions': 1,
+              'status': 'modified',
+            },
+          ],
+        }),
+      });
+      final client = clientFor(adapter);
+      final branch = await client.vcsBranch(directory: '/repo');
+      expect(branch.current, 'feature');
+      expect(branch.defaultBranch, 'main');
+      expect((await client.vcsStatus(directory: '/repo')).single.additions, 2);
+      final diff = await client.vcsDiff(
+        directory: '/repo',
+        mode: DiffMode.branch,
+      );
+      expect(diff.single.patch, startsWith('@@'));
+      final query = adapter.requests.last.queryParameters;
+      expect(query['mode'], 'branch');
+      expect(query['location[directory]'], '/repo');
+    });
+
+    test('lists MCP servers and toggles their connection', () async {
+      final adapter = FakeAdapter({
+        '/api/mcp': FakeRoute.json({
+          'data': [
+            {
+              'name': 'tools',
+              'status': {'status': 'connected'},
+            },
+            {
+              'name': 'broken',
+              'status': {'status': 'failed', 'error': 'spawn ENOENT'},
+            },
+          ],
+        }),
+        '/api/mcp/tools/disconnect': const FakeRoute(204, ''),
+      });
+      final client = clientFor(adapter);
+      final servers = await client.listMcpServers(directory: '/repo');
+      expect(servers.first.isConnected, isTrue);
+      expect(servers.last.statusLabel, '失敗');
+      expect(servers.last.error, 'spawn ENOENT');
+
+      await client.setMcpConnected(
+        'tools',
+        connected: false,
+        directory: '/repo',
+      );
+      expect(adapter.requests.last.method, 'POST');
+      expect(adapter.requests.last.path, '/api/mcp/tools/disconnect');
     });
   });
 }
