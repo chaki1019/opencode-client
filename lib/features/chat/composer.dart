@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_errors.dart';
+import '../../core/models/attachment.dart';
 import '../../core/models/catalog.dart';
 import '../../core/models/session.dart';
 import '../connection/connection_providers.dart';
@@ -21,6 +22,7 @@ class Composer extends ConsumerStatefulWidget {
 
 class _ComposerState extends ConsumerState<Composer> {
   final _controller = TextEditingController();
+  List<PromptFile> _files = const [];
   bool _stopping = false;
 
   @override
@@ -37,16 +39,59 @@ class _ComposerState extends ConsumerState<Composer> {
 
   Future<void> _send() async {
     final text = _controller.text.trim();
-    if (text.isEmpty) return;
+    final files = _files;
+    if (text.isEmpty && files.isEmpty) return;
     _controller.clear();
+    setState(() => _files = const []);
     final ok = await ref
         .read(pendingPromptsProvider(widget.session.id).notifier)
-        .send(text);
+        .send(text, files: files);
     if (!ok && mounted) {
-      // Rejected: put the text back so nothing is lost.
+      // Rejected: put the text and attachments back so nothing is lost.
       if (_controller.text.isEmpty) _controller.text = text;
+      if (_files.isEmpty) setState(() => _files = files);
       _showError('送信できませんでした。内容を確認してもう一度送ってください');
     }
+  }
+
+  Future<void> _attach() async {
+    final camera = await showModalBottomSheet<bool>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              key: const Key('attach-library'),
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('写真を選ぶ'),
+              onTap: () => Navigator.pop(context, false),
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: const Text('写真を撮る'),
+              onTap: () => Navigator.pop(context, true),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (camera == null) return;
+    final List<PromptFile> picked;
+    try {
+      picked = await ref.read(pickImagesProvider)(camera: camera);
+    } catch (e) {
+      _showError('画像を読み込めませんでした: $e');
+      return;
+    }
+    if (picked.isEmpty || !mounted) return;
+    final problem = PromptFile.checkLimits(_files, picked);
+    if (problem != null) {
+      _showError(problem);
+      return;
+    }
+    setState(() => _files = [..._files, ...picked]);
   }
 
   Future<void> _stop() async {
@@ -72,7 +117,7 @@ class _ComposerState extends ConsumerState<Composer> {
     final busy = ref.watch(
       activeSessionsProvider.select((ids) => ids.contains(widget.session.id)),
     );
-    final canSend = _controller.text.trim().isNotEmpty;
+    final canSend = _controller.text.trim().isNotEmpty || _files.isNotEmpty;
     final scheme = Theme.of(context).colorScheme;
 
     return Material(
@@ -85,9 +130,21 @@ class _ComposerState extends ConsumerState<Composer> {
             mainAxisSize: MainAxisSize.min,
             children: [
               _SettingsRow(session: widget.session),
+              if (_files.isNotEmpty)
+                _AttachmentStrip(
+                  files: _files,
+                  onRemove: (i) =>
+                      setState(() => _files = [..._files]..removeAt(i)),
+                ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
+                  IconButton(
+                    key: const Key('attach'),
+                    tooltip: '画像を添付',
+                    onPressed: _attach,
+                    icon: const Icon(Icons.add_photo_alternate_outlined),
+                  ),
                   Expanded(
                     child: TextField(
                       key: const Key('composer'),
@@ -125,6 +182,61 @@ class _ComposerState extends ConsumerState<Composer> {
       ),
     );
   }
+}
+
+/// Thumbnails of the images about to be sent, each with a remove button.
+class _AttachmentStrip extends StatelessWidget {
+  const _AttachmentStrip({required this.files, required this.onRemove});
+
+  final List<PromptFile> files;
+  final ValueChanged<int> onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 72,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        itemCount: files.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) => Stack(
+          key: Key('attachment-$index'),
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: files[index].isImage
+                  ? Image.memory(
+                      files[index].bytes,
+                      width: 64,
+                      height: 64,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, _, _) => _placeholder(context),
+                    )
+                  : _placeholder(context),
+            ),
+            Positioned(
+              top: -8,
+              right: -8,
+              child: IconButton(
+                tooltip: '添付を外す',
+                iconSize: 18,
+                onPressed: () => onRemove(index),
+                icon: const Icon(Icons.cancel),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _placeholder(BuildContext context) => Container(
+    width: 64,
+    height: 64,
+    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+    child: const Icon(Icons.insert_drive_file_outlined),
+  );
 }
 
 class _SettingsRow extends ConsumerWidget {

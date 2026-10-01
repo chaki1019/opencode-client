@@ -4,6 +4,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/core/api/api_errors.dart';
 import 'package:opencode_mobile/core/api/opencode_client.dart';
+
+import 'dart:typed_data';
+
+import 'package:opencode_mobile/core/models/attachment.dart';
 import 'package:opencode_mobile/core/models/form.dart';
 import 'package:opencode_mobile/core/models/project_tools.dart';
 import 'package:opencode_mobile/core/models/prompts.dart';
@@ -655,6 +659,150 @@ void main() {
       );
       expect(adapter.requests.last.method, 'POST');
       expect(adapter.requests.last.path, '/api/mcp/tools/disconnect');
+    });
+  });
+
+  group('files, worktrees and attachments', () {
+    test('lists, finds and reads files within the location', () async {
+      final adapter = FakeAdapter({
+        '/api/fs/list': FakeRoute.json({
+          'location': {'directory': '/repo'},
+          'data': [
+            {'path': 'lib/', 'type': 'directory'},
+            {'path': 'lib/main.dart', 'type': 'file'},
+          ],
+        }),
+        '/api/fs/find': FakeRoute.json({
+          'data': [
+            {'path': 'lib/main.dart', 'type': 'file'},
+          ],
+        }),
+        '/api/fs/read/lib/my%20file.dart': const FakeRoute(
+          200,
+          'let value = 1',
+          contentType: 'text/plain',
+        ),
+        '/api/fs/read/logo.png': const FakeRoute(
+          200,
+          'PNG',
+          contentType: 'image/png',
+        ),
+      });
+      final client = clientFor(adapter);
+
+      final entries = await client.listFiles(directory: '/repo', path: 'lib');
+      expect(entries.first.isDirectory, isTrue);
+      expect(entries.first.name, 'lib');
+      expect(entries.last.name, 'main.dart');
+      expect(adapter.requests.last.queryParameters['path'], 'lib');
+
+      final found = await client.findFiles(directory: '/repo', query: 'main');
+      expect(found.single.path, 'lib/main.dart');
+      expect(adapter.requests.last.queryParameters['type'], 'file');
+
+      final text = await client.readFile(
+        directory: '/repo',
+        path: 'lib/my file.dart',
+      );
+      expect(text.text, 'let value = 1');
+      expect(
+        adapter.requests.last.queryParameters['location[directory]'],
+        '/repo',
+      );
+      final image = await client.readFile(directory: '/repo', path: 'logo.png');
+      expect(image.isImage, isTrue);
+      expect(image.text, isNull);
+    });
+
+    test('lists, creates and removes worktrees', () async {
+      final removals = <Map<String, dynamic>>[];
+      final adapter = FakeAdapter({
+        '/api/worktree': (RequestOptions request) {
+          switch (request.method) {
+            case 'GET':
+              return FakeRoute.json([
+                {'directory': '/repo'},
+                {'directory': '/copies/a', 'strategy': 'git'},
+              ]);
+            case 'POST':
+              return FakeRoute.json({'directory': '/copies/topic'});
+            default:
+              final body =
+                  jsonDecode(request.data as String) as Map<String, dynamic>;
+              removals.add(body);
+              return body['force'] == true
+                  ? const FakeRoute(204, '')
+                  : FakeRoute.json({
+                      'name': 'WorktreeError',
+                      'data': {
+                        'message': 'Dirty checkout',
+                        'forceRequired': true,
+                      },
+                    }, status: 400);
+          }
+        },
+      });
+      final client = clientFor(adapter);
+
+      final worktrees = await client.listWorktrees('proj');
+      expect(worktrees.first.isMain, isTrue);
+      expect(worktrees.last.isManaged, isTrue);
+      expect(worktrees.last.name, 'a');
+      expect(adapter.requests.last.queryParameters, {'projectID': 'proj'});
+
+      expect(
+        await client.createWorktree('proj', name: 'topic'),
+        '/copies/topic',
+      );
+      expect(jsonDecode(adapter.requests.last.data as String), {
+        'projectID': 'proj',
+        'name': 'topic',
+      });
+
+      await expectLater(
+        client.removeWorktree('proj', '/copies/a'),
+        throwsA(
+          isA<WorktreeDirtyException>().having(
+            (e) => e.message,
+            'message',
+            'Dirty checkout',
+          ),
+        ),
+      );
+      await client.removeWorktree('proj', '/copies/a', force: true);
+      expect(removals.last, {
+        'projectID': 'proj',
+        'directory': '/copies/a',
+        'force': true,
+      });
+    });
+
+    test('sends attachments inline as data URLs', () async {
+      late Map<String, dynamic> sent;
+      final adapter = FakeAdapter({
+        '/api/session/s1/prompt': (RequestOptions request) {
+          sent = jsonDecode(request.data as String) as Map<String, dynamic>;
+          return FakeRoute.json({
+            'data': {'id': sent['id'], 'sessionID': 's1'},
+          });
+        },
+      });
+      final admission = await clientFor(adapter).sendPrompt(
+        sessionId: 's1',
+        messageId: 'msg_1',
+        text: '',
+        files: [
+          PromptFile(
+            name: 'a.png',
+            mime: 'image/png',
+            bytes: Uint8List.fromList([1, 2, 3]),
+          ),
+        ],
+      );
+      expect(admission, PromptAdmission.accepted);
+      expect(sent['files'], [
+        {'uri': 'data:image/png;base64,AQID', 'name': 'a.png'},
+      ]);
     });
   });
 }

@@ -15,13 +15,16 @@ class OpenCodeApiException implements Exception {
 
   bool get isUnauthorized => statusCode == 401 || statusCode == 403;
 
-  /// The server's explanation from a `{_tag, message}` error body, or the
-  /// raw message.
+  /// The server's explanation from a `{_tag, message}` or
+  /// `{name, data: {message}}` error body, or the raw message.
   String get detail {
     try {
       final body = jsonDecode(message);
-      if (body is Map && body['message'] is String) {
-        return body['message'] as String;
+      if (body is Map) {
+        final data = body['data'];
+        final message =
+            body['message'] ?? (data is Map ? data['message'] : null);
+        if (message is String) return message;
       }
     } on FormatException {
       // Not JSON.
@@ -39,4 +42,9 @@ class OpenCodeApiException implements Exception {
 class UnsupportedServerException extends OpenCodeApiException {
   const UnsupportedServerException()
     : super('This server does not support the OpenCode v2 API');
+}
+
+/// A worktree has uncommitted changes; removing it needs `force`.
+class WorktreeDirtyException extends OpenCodeApiException {
+  const WorktreeDirtyException(super.message) : super(statusCode: 400);
 }

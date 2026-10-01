@@ -111,6 +111,8 @@ class AttachedFile {
   final String? name;
   final String? mime;
   final String? base64Data;
+
+  bool get isImage => mime?.startsWith('image/') ?? false;
 }
 
 class UserEntry extends TimelineEntry {

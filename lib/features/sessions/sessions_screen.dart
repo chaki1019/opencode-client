@@ -10,6 +10,7 @@ import '../../core/api/api_errors.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
+import '../worktrees/worktrees_screen.dart';
 import 'session_providers.dart';
 
 class SessionsScreen extends ConsumerWidget {
@@ -26,6 +27,19 @@ class SessionsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(project.displayName),
         bottom: const LiveStatusBanner(),
+        actions: [
+          if (project.id != 'global')
+            IconButton(
+              key: const Key('worktrees'),
+              tooltip: 'worktree',
+              icon: const Icon(Icons.account_tree_outlined),
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => WorktreesScreen(project: project),
+                ),
+              ),
+            ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('new-session'),

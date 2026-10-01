@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../../core/models/project.dart';
+import '../files/files_screen.dart';
 import '../git/git_screen.dart';
 import '../mcp/mcp_screen.dart';
 import '../sessions/sessions_screen.dart';
 
-/// A project's sessions, Git changes and MCP servers as tabs. A tab is
+/// A project's sessions, Git changes, files and MCP servers as tabs. A tab is
 /// built the first time it is opened and then kept alive.
 class ProjectScreen extends StatefulWidget {
   const ProjectScreen({super.key, required this.project});
@@ -25,6 +26,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
     final tabs = <Widget Function()>[
       () => SessionsScreen(project: widget.project),
       () => GitScreen(project: widget.project),
+      () => FilesScreen(project: widget.project),
       () => McpScreen(project: widget.project),
     ];
     return Scaffold(
@@ -47,6 +49,10 @@ class _ProjectScreenState extends State<ProjectScreen> {
             label: 'セッション',
           ),
           NavigationDestination(icon: Icon(Icons.call_split), label: 'Git'),
+          NavigationDestination(
+            icon: Icon(Icons.folder_outlined),
+            label: 'ファイル',
+          ),
           NavigationDestination(
             icon: Icon(Icons.extension_outlined),
             label: 'MCP',
