@@ -147,6 +147,29 @@ class AssistantEntry extends TimelineEntry {
   final String? errorMessage;
   final double? cost;
   final List<AssistantContent> content;
+
+  /// True while the model is still producing this message.
+  bool get isStreaming => completed == null;
+
+  AssistantEntry copyWith({
+    double? Function()? completed,
+    String? agent,
+    ModelRef? model,
+    String? Function()? finish,
+    String? Function()? errorMessage,
+    double? cost,
+    List<AssistantContent>? content,
+  }) => AssistantEntry(
+    id: id,
+    created: created,
+    completed: completed != null ? completed() : this.completed,
+    agent: agent ?? this.agent,
+    model: model ?? this.model,
+    finish: finish != null ? finish() : this.finish,
+    errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
+    cost: cost ?? this.cost,
+    content: content ?? this.content,
+  );
 }
 
 /// A summary that replaced older history when the session was compacted.
@@ -207,19 +230,13 @@ sealed class AssistantContent {
         final id = json['id'];
         if (id is! String) return null;
         final state = _obj(json['state']) ?? const {};
-        final output = [
-          for (final item in _list(state['content']))
-            if (item is Map && item['type'] == 'text')
-              item['text']
-            else if (item is Map && item['type'] == 'file')
-              item['name'] ?? item['uri'],
-        ].whereType<String>().join('\n');
+        final output = toolOutputText(state['content']);
         return ToolContent(
           id: id,
           name: json['name'] as String? ?? 'tool',
           status: ToolStatus.parse(state['status'] as String?),
           input: _obj(state['input']) ?? const {},
-          output: output.isEmpty ? null : output,
+          output: output,
           errorMessage: _obj(state['error'])?['message'] as String?,
         );
       default:
@@ -269,6 +286,20 @@ class ToolContent extends AssistantContent {
   final String? output;
   final String? errorMessage;
 
+  ToolContent copyWith({
+    ToolStatus? status,
+    Json? input,
+    String? output,
+    String? errorMessage,
+  }) => ToolContent(
+    id: id,
+    name: name,
+    status: status ?? this.status,
+    input: input ?? this.input,
+    output: output ?? this.output,
+    errorMessage: errorMessage ?? this.errorMessage,
+  );
+
   /// A one-line description of what the tool acted on.
   String? get subject {
     for (final key in const [
@@ -285,6 +316,19 @@ class ToolContent extends AssistantContent {
     }
     return null;
   }
+}
+
+/// Joins a tool result's `content` array into display text: text items
+/// verbatim, file items by name. Returns null when there is nothing to show.
+String? toolOutputText(Object? content) {
+  final text = [
+    for (final item in _list(content))
+      if (item is Map && item['type'] == 'text')
+        item['text']
+      else if (item is Map && item['type'] == 'file')
+        item['name'] ?? item['uri'],
+  ].whereType<String>().join('\n');
+  return text.isEmpty ? null : text;
 }
 
 Json? _obj(Object? value) =>

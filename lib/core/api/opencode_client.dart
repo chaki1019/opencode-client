@@ -175,6 +175,44 @@ class OpenCodeClient {
     return Page(entries, page.nextCursor);
   }
 
+  /// IDs of sessions that are currently running (status other than idle).
+  Future<Set<String>> activeSessionIds() async {
+    final body = _map(await _getJson('/api/session/active'));
+    final data = _obj(body['data']) ?? const {};
+    return {
+      for (final MapEntry(:key, :value) in data.entries)
+        if (_obj(value)?['type'] != 'idle') key,
+    };
+  }
+
+  /// Opens the server's v2 event stream (`GET /api/event`) and returns the
+  /// raw SSE bytes. The request has no receive timeout; callers detect a
+  /// stalled stream themselves. Cancel with [cancelToken].
+  Future<Stream<List<int>>> openEventStream({CancelToken? cancelToken}) async {
+    try {
+      final response = await _dio.get<ResponseBody>(
+        '/api/event',
+        cancelToken: cancelToken,
+        options: Options(
+          responseType: ResponseType.stream,
+          receiveTimeout: Duration.zero,
+          headers: {
+            'Accept': 'text/event-stream',
+            'Accept-Encoding': 'identity',
+            'Cache-Control': 'no-cache',
+          },
+        ),
+      );
+      final code = response.statusCode ?? 0;
+      if (code < 200 || code >= 300) {
+        throw OpenCodeApiException('Event stream refused', statusCode: code);
+      }
+      return response.data!.stream;
+    } on DioException catch (e) {
+      throw OpenCodeApiException(e.message ?? e.type.name);
+    }
+  }
+
   /// Fetches `{data: [...], cursor: {next}}` pages.
   ///
   /// The server can return a `next` cursor even on the last page, so a short

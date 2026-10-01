@@ -6,6 +6,8 @@ import '../../core/format.dart';
 import '../../core/models/project.dart';
 import '../../core/models/session.dart';
 import '../../core/paging.dart';
+import '../live/live_providers.dart';
+import '../live/live_widgets.dart';
 import 'session_providers.dart';
 
 class SessionsScreen extends ConsumerWidget {
@@ -19,7 +21,10 @@ class SessionsScreen extends ConsumerWidget {
     final sessions = ref.watch(provider);
 
     return Scaffold(
-      appBar: AppBar(title: Text(project.displayName)),
+      appBar: AppBar(
+        title: Text(project.displayName),
+        bottom: const LiveStatusBanner(),
+      ),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(provider.future),
         child: sessions.when(
@@ -57,13 +62,16 @@ class SessionsScreen extends ConsumerWidget {
   }
 }
 
-class _SessionTile extends StatelessWidget {
+class _SessionTile extends ConsumerWidget {
   const _SessionTile({required this.session});
 
   final Session session;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final busy = ref.watch(
+      activeSessionsProvider.select((ids) => ids.contains(session.id)),
+    );
     final details = [
       relativeTime(session.updatedAt),
       if (session.model != null) session.model!.label,
@@ -76,6 +84,7 @@ class _SessionTile extends StatelessWidget {
         overflow: TextOverflow.ellipsis,
       ),
       subtitle: Text(details),
+      trailing: busy ? const SessionBusyIndicator() : null,
       onTap: () => context.push(
         '/sessions/${Uri.encodeComponent(session.id)}',
         extra: session,

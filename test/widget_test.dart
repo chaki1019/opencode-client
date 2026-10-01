@@ -1,10 +1,15 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/core/api/opencode_client.dart';
+import 'package:opencode_mobile/core/events/event_stream.dart';
 import 'package:opencode_mobile/core/storage/server_store.dart';
 import 'package:opencode_mobile/features/connection/connection_providers.dart';
+import 'package:opencode_mobile/features/live/live_providers.dart';
 import 'package:opencode_mobile/main.dart';
 
 import 'support/fake_adapter.dart';
@@ -39,6 +44,7 @@ void main() {
           },
         ],
       }),
+      '/api/session/active': FakeRoute.json({'data': {}}),
       '/api/session/s1/message': FakeRoute.json({
         'data': [
           {
@@ -53,11 +59,27 @@ void main() {
       }),
     });
     final store = ServerStore();
+    final events = StreamController<List<int>>();
+    void send(String type, Map<String, Object?> data) => events.add(
+      utf8.encode(
+        'data: ${jsonEncode({
+          'type': type,
+          'data': {'sessionID': 's1', ...data},
+        })}\n\n',
+      ),
+    );
 
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
           serverStoreProvider.overrideWithValue(store),
+          eventStreamProvider.overrideWith((ref) {
+            if (ref.watch(connectionProvider) == null) return null;
+            final stream = EventStream(open: (_) async => events.stream)
+              ..start();
+            ref.onDispose(stream.dispose);
+            return stream;
+          }),
           clientFactoryProvider.overrideWithValue(
             (server, password) => OpenCodeClient(
               baseUrl: server.baseUrl,
@@ -92,8 +114,35 @@ void main() {
       findsOneWidget,
     );
 
+    // A reply streams in live.
+    send('session.execution.started', {});
+    send('session.step.started', {'assistantMessageID': 'a2'});
+    send('session.text.started', {'assistantMessageID': 'a2', 'ordinal': 0});
+    send('session.text.delta', {
+      'assistantMessageID': 'a2',
+      'ordinal': 0,
+      'delta': 'Streaming ',
+    });
+    send('session.text.delta', {
+      'assistantMessageID': 'a2',
+      'ordinal': 0,
+      'delta': 'works',
+    });
+    await tester.pump();
+    await tester.pump();
+    expect(
+      find.textContaining('Streaming works', findRichText: true),
+      findsOneWidget,
+    );
+    send('session.execution.succeeded', {});
+    await tester.pumpAndSettle();
+
     final saved = await store.loadServers();
     expect(saved.single.baseUrl, 'http://example.test:4096');
     expect(await store.readPassword(saved.single.id), 'pw');
+
+    // Tear down the app so the event stream closes its timers.
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump();
   });
 }
