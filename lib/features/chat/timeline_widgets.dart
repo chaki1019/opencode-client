@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
+import '../../core/models/prompts.dart';
 import '../../core/models/timeline.dart';
 import '../../core/paging.dart';
 import 'composer_providers.dart';
+import 'prompt_widgets.dart';
 
 class TimelineEntryView extends StatelessWidget {
   const TimelineEntryView({super.key, required this.entry});
@@ -242,6 +244,9 @@ class ToolCallView extends StatelessWidget {
       ToolStatus.pending => (Icons.timelapse, theme.colorScheme.outline),
     };
     final detail = tool.errorMessage ?? tool.output;
+    final todos = TodoItem.isTodoTool(tool.name)
+        ? TodoItem.fromToolInput(tool.input)
+        : null;
     return Card.outlined(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ExpansionTile(
@@ -260,7 +265,9 @@ class ToolCallView extends StatelessWidget {
         childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
         expandedCrossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (detail != null && detail.isNotEmpty)
+          if (todos != null)
+            TodoList(todos: todos)
+          else if (detail != null && detail.isNotEmpty)
             MonospaceBlock(text: detail)
           else
             Text('出力なし', style: theme.textTheme.bodySmall),

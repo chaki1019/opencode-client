@@ -22,6 +22,7 @@ void main() {
     tester,
   ) async {
     final promptIds = <String>[];
+    final replies = <RequestOptions>[];
     final adapter = FakeAdapter({
       '/api/health': FakeRoute.json({
         'healthy': true,
@@ -47,6 +48,26 @@ void main() {
         ],
       }),
       '/api/session/active': FakeRoute.json({'data': {}}),
+      '/api/session/s1/permission': FakeRoute.json({
+        'data': [
+          {
+            'id': 'per_1',
+            'sessionID': 's1',
+            'action': 'bash',
+            'resources': ['git push*'],
+            'metadata': {'command': 'git push'},
+          },
+        ],
+      }),
+      '/api/session/s1/permission/per_1/reply': (RequestOptions request) {
+        replies.add(request);
+        return const FakeRoute(204, '');
+      },
+      '/api/session/s1/form': FakeRoute.json({'data': []}),
+      '/api/session/s1/form/frm_1/reply': (RequestOptions request) {
+        replies.add(request);
+        return const FakeRoute(204, '');
+      },
       '/api/session/s1/prompt': (RequestOptions request) {
         final body = jsonDecode(request.data as String) as Map<String, dynamic>;
         promptIds.add(body['id'] as String);
@@ -61,6 +82,21 @@ void main() {
             'type': 'assistant',
             'content': [
               {'type': 'text', 'text': 'The bug is **fixed**.'},
+              {
+                'type': 'tool',
+                'id': 'call_todo',
+                'name': 'todowrite',
+                'state': {
+                  'status': 'completed',
+                  'input': {
+                    'todos': [
+                      {'content': 'Reproduce', 'status': 'completed'},
+                      {'content': 'Fix login', 'status': 'in_progress'},
+                    ],
+                  },
+                  'content': [],
+                },
+              },
             ],
           },
           {'id': 'u1', 'type': 'user', 'text': 'Please fix login'},
@@ -122,6 +158,49 @@ void main() {
       find.textContaining('The bug is', findRichText: true),
       findsOneWidget,
     );
+
+    // The todo list and a pending permission show around the transcript.
+    expect(find.text('Todo 1/2'), findsOneWidget);
+    expect(find.text('Fix login'), findsOneWidget);
+    expect(find.text('「bash」の許可が必要です'), findsOneWidget);
+    expect(find.text('git push'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('permission-once')));
+    await tester.pumpAndSettle();
+    expect(jsonDecode(replies.single.data as String), {'decision': 'once'});
+    expect(find.text('「bash」の許可が必要です'), findsNothing);
+
+    // A question arrives live and is answered with the option's value.
+    send('form.created', {
+      'form': {
+        'id': 'frm_1',
+        'sessionID': 's1',
+        'title': 'Deploy now?',
+        'fields': [
+          {
+            'key': 'proceed',
+            'type': 'string',
+            'required': true,
+            'options': [
+              {'value': 'yes', 'label': 'Yes'},
+              {'value': 'no', 'label': 'No'},
+            ],
+          },
+        ],
+      },
+    });
+    await tester.pumpAndSettle();
+    expect(find.text('Deploy now?'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('form-submit')));
+    await tester.pumpAndSettle();
+    expect(find.text('入力してください'), findsOneWidget);
+    await tester.tap(find.text('Yes'));
+    await tester.pump();
+    await tester.tap(find.byKey(const Key('form-submit')));
+    await tester.pumpAndSettle();
+    expect(jsonDecode(replies.last.data as String), {
+      'answer': {'proceed': 'yes'},
+    });
+    expect(find.text('Deploy now?'), findsNothing);
 
     // A reply streams in live.
     send('session.execution.started', {});

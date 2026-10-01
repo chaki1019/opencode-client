@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class ServerHealth {
   const ServerHealth({required this.version, required this.pid});
 
@@ -12,6 +14,20 @@ class OpenCodeApiException implements Exception {
   final int? statusCode;
 
   bool get isUnauthorized => statusCode == 401 || statusCode == 403;
+
+  /// The server's explanation from a `{_tag, message}` error body, or the
+  /// raw message.
+  String get detail {
+    try {
+      final body = jsonDecode(message);
+      if (body is Map && body['message'] is String) {
+        return body['message'] as String;
+      }
+    } on FormatException {
+      // Not JSON.
+    }
+    return message;
+  }
 
   @override
   String toString() =>

@@ -3,7 +3,9 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 
 import '../models/catalog.dart';
+import '../models/form.dart';
 import '../models/project.dart';
+import '../models/prompts.dart';
 import '../models/session.dart';
 import '../models/timeline.dart';
 import 'api_errors.dart';
@@ -258,6 +260,72 @@ class OpenCodeClient {
     },
   );
 
+  /// Permission requests waiting on the user in [sessionId].
+  Future<List<PermissionRequest>> listPermissions(String sessionId) async {
+    final body = _map(
+      await _getJson(
+        '/api/session/${Uri.encodeComponent(sessionId)}/permission',
+      ),
+    );
+    return [
+      for (final item in body['data'] as List? ?? const [])
+        ?PermissionRequest.tryParse(item),
+    ];
+  }
+
+  Future<void> replyPermission(
+    PermissionRequest request,
+    PermissionDecision decision, {
+    String? message,
+  }) => _sendJson(
+    '/api/session/${Uri.encodeComponent(request.sessionId)}'
+    '/permission/${Uri.encodeComponent(request.id)}/reply',
+    body: {
+      'decision': decision.wireValue,
+      if (message != null && message.trim().isNotEmpty) 'message': message,
+    },
+  );
+
+  /// Forms (questions) waiting on the user in [sessionId].
+  Future<List<FormRequest>> listForms(
+    String sessionId, {
+    required String directory,
+  }) async {
+    final body = _map(
+      await _getJson(
+        '/api/session/${Uri.encodeComponent(sessionId)}/form',
+        query: _location(directory),
+      ),
+    );
+    return [
+      for (final item in body['data'] as List? ?? const [])
+        ?FormRequest.tryParse(item),
+    ];
+  }
+
+  Future<void> replyForm(
+    FormRequest form, {
+    required String directory,
+    required Map<String, Object> answer,
+  }) => _sendJson(
+    _formPath(form),
+    body: {'answer': answer},
+    query: _location(directory),
+  );
+
+  /// Declines to answer [form].
+  Future<void> cancelForm(FormRequest form, {required String directory}) =>
+      _sendJson(
+        _formPath(form, reply: false),
+        method: 'DELETE',
+        body: null,
+        query: _location(directory),
+      );
+
+  static String _formPath(FormRequest form, {bool reply = true}) =>
+      '/api/session/${Uri.encodeComponent(form.sessionId)}'
+      '/form/${Uri.encodeComponent(form.id)}${reply ? '/reply' : ''}';
+
   Future<List<AgentInfo>> listAgents({required String directory}) async {
     final body = _map(
       await _getJson('/api/agent', query: _location(directory)),
@@ -313,8 +381,18 @@ class OpenCodeClient {
     'location[directory]': directory,
   };
 
-  Future<Object?> _sendJson(String path, {Object? body}) async {
-    final response = await _request(path, method: 'POST', body: body ?? {});
+  Future<Object?> _sendJson(
+    String path, {
+    Object? body = const <String, Object>{},
+    String method = 'POST',
+    Map<String, Object>? query,
+  }) async {
+    final response = await _request(
+      path,
+      method: method,
+      query: query,
+      body: body,
+    );
     _ensureSuccess(response);
     final text = response.data ?? '';
     return text.trim().isEmpty ? null : _decode(response);

@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/core/api/api_errors.dart';
 import 'package:opencode_mobile/core/api/opencode_client.dart';
+import 'package:opencode_mobile/core/models/form.dart';
+import 'package:opencode_mobile/core/models/prompts.dart';
 import 'package:opencode_mobile/core/models/session.dart';
 
 import '../../support/fake_adapter.dart';
@@ -416,6 +418,112 @@ void main() {
       });
       final agents = await clientFor(adapter).listAgents(directory: '/d');
       expect(agents.map((a) => a.isSelectable), [true, false]);
+    });
+  });
+
+  group('permissions and forms', () {
+    test('lists permissions and replies with a decision', () async {
+      late RequestOptions replied;
+      final adapter = FakeAdapter({
+        '/api/session/ses_1/permission': FakeRoute.json({
+          'data': [
+            {
+              'id': 'per_1',
+              'sessionID': 'ses_1',
+              'action': 'bash',
+              'resources': ['git status*'],
+            },
+            {'broken': true},
+          ],
+        }),
+        '/api/session/ses_1/permission/per_1/reply': (RequestOptions request) {
+          replied = request;
+          return const FakeRoute(204, '');
+        },
+      });
+      final client = clientFor(adapter);
+      final requests = await client.listPermissions('ses_1');
+      expect(requests.single.id, 'per_1');
+
+      await client.replyPermission(requests.single, PermissionDecision.always);
+      expect(replied.method, 'POST');
+      expect(jsonDecode(replied.data as String), {'decision': 'always'});
+    });
+
+    test('lists, answers and cancels forms within the location', () async {
+      final requests = <RequestOptions>[];
+      FakeRoute record(RequestOptions request) {
+        requests.add(request);
+        return const FakeRoute(204, '');
+      }
+
+      final adapter = FakeAdapter({
+        '/api/session/ses_1/form': FakeRoute.json({
+          'location': {'directory': '/tmp/project'},
+          'data': [
+            {
+              'id': 'frm_1',
+              'sessionID': 'ses_1',
+              'title': 'Confirm',
+              'fields': [
+                {
+                  'key': 'proceed',
+                  'type': 'string',
+                  'required': true,
+                  'options': [
+                    {'value': 'yes', 'label': 'Yes'},
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+        '/api/session/ses_1/form/frm_1/reply': record,
+        '/api/session/ses_1/form/frm_1': record,
+      });
+      final client = clientFor(adapter);
+      final forms = await client.listForms('ses_1', directory: '/tmp/project');
+      final form = forms.single;
+      expect(form.title, 'Confirm');
+      expect(
+        adapter.requests.first.queryParameters['location[directory]'],
+        '/tmp/project',
+      );
+
+      await client.replyForm(
+        form,
+        directory: '/tmp/project',
+        answer: {'proceed': 'yes'},
+      );
+      await client.cancelForm(form, directory: '/tmp/project');
+      expect(requests.first.method, 'POST');
+      expect(jsonDecode(requests.first.data as String), {
+        'answer': {'proceed': 'yes'},
+      });
+      expect(requests.last.method, 'DELETE');
+      expect(requests.last.data, isNull);
+      expect(
+        requests.last.queryParameters['location[directory]'],
+        '/tmp/project',
+      );
+    });
+
+    test('exposes the server message of a form error', () async {
+      final adapter = FakeAdapter({
+        '/api/session/s/form/f/reply': FakeRoute.json({
+          '_tag': 'FormInvalidAnswerError',
+          'message': 'proceed is required',
+        }, status: 400),
+      });
+      const form = FormRequest(id: 'f', sessionId: 's', title: '', fields: []);
+      await expectLater(
+        clientFor(adapter).replyForm(form, directory: '/d', answer: {}),
+        throwsA(
+          isA<OpenCodeApiException>()
+              .having((e) => e.statusCode, 'status', 400)
+              .having((e) => e.detail, 'detail', 'proceed is required'),
+        ),
+      );
     });
   });
 }
