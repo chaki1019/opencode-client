@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 
+import '../models/attachment.dart';
 import '../models/catalog.dart';
 import '../models/form.dart';
 import '../models/project.dart';
@@ -215,13 +216,19 @@ class OpenCodeClient {
     required String sessionId,
     required String messageId,
     required String text,
+    List<PromptFile> files = const [],
   }) async {
     final Response<String> response;
     try {
       response = await _request(
         '/api/session/${Uri.encodeComponent(sessionId)}/prompt',
         method: 'POST',
-        body: {'id': messageId, 'text': text, 'resume': true},
+        body: {
+          'id': messageId,
+          'text': text,
+          'resume': true,
+          if (files.isNotEmpty) 'files': [for (final f in files) f.toJson()],
+        },
       );
     } on OpenCodeApiException {
       return PromptAdmission.uncertain;
@@ -356,6 +363,137 @@ class OpenCodeClient {
     '${connected ? 'connect' : 'disconnect'}',
     query: _location(directory),
   );
+
+  /// Entries of the folder [path] (relative; empty for the project root).
+  Future<List<FsEntry>> listFiles({
+    required String directory,
+    String path = '',
+  }) => _fsEntries('/api/fs/list', {
+    ..._location(directory),
+    if (path.isNotEmpty) 'path': path,
+  });
+
+  /// Files (or folders, with [directories]) whose path matches [query].
+  Future<List<FsEntry>> findFiles({
+    required String directory,
+    required String query,
+    bool directories = false,
+    int limit = 50,
+  }) => _fsEntries('/api/fs/find', {
+    ..._location(directory),
+    'query': query,
+    'type': directories ? 'directory' : 'file',
+    'limit': limit,
+  });
+
+  Future<List<FsEntry>> _fsEntries(
+    String path,
+    Map<String, Object> query,
+  ) async {
+    final body = _map(await _getJson(path, query: query));
+    return [
+      for (final item in body['data'] as List? ?? const [])
+        ?FsEntry.tryParse(item),
+    ];
+  }
+
+  /// Reads the file at [path], relative to [directory].
+  Future<FileContent> readFile({
+    required String directory,
+    required String path,
+  }) async {
+    final encoded = path.split('/').map(Uri.encodeComponent).join('/');
+    final Response<List<int>> response;
+    try {
+      response = await _dio.get<List<int>>(
+        '/api/fs/read/$encoded',
+        queryParameters: _location(directory),
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: {'Accept': '*/*'},
+        ),
+      );
+    } on DioException catch (e) {
+      throw OpenCodeApiException(e.message ?? e.type.name);
+    }
+    final code = response.statusCode ?? 0;
+    final bytes = response.data ?? const <int>[];
+    if (code < 200 || code >= 300) {
+      throw OpenCodeApiException(
+        utf8.decode(bytes, allowMalformed: true),
+        statusCode: code,
+      );
+    }
+    final mime = response.headers.value('content-type')?.split(';').first;
+    String? text;
+    if (!(mime?.startsWith('image/') ?? false)) {
+      try {
+        text = utf8.decode(bytes);
+      } on FormatException {
+        text = null;
+      }
+    }
+    return FileContent(bytes: bytes, mimeType: mime, text: text);
+  }
+
+  /// The project's checkouts. Not available for the global project.
+  Future<List<Worktree>> listWorktrees(String projectId) async {
+    final body = await _getJson(
+      '/api/worktree',
+      query: {'projectID': projectId},
+    );
+    return [
+      for (final item in body is List ? body : const [])
+        ?Worktree.tryParse(item),
+    ];
+  }
+
+  /// Creates a worktree and returns its directory. The server picks the
+  /// parent folder and, without [name], the folder name.
+  Future<String> createWorktree(String projectId, {String? name}) async {
+    final body = _map(
+      await _sendJson(
+        '/api/worktree',
+        body: {
+          'projectID': projectId,
+          if (name != null && name.trim().isNotEmpty) 'name': name.trim(),
+        },
+      ),
+    );
+    return body['directory'] as String;
+  }
+
+  /// Removes a managed worktree. Throws [WorktreeDirtyException] when it has
+  /// changes and [force] is false.
+  Future<void> removeWorktree(
+    String projectId,
+    String directory, {
+    bool force = false,
+  }) async {
+    try {
+      await _sendJson(
+        '/api/worktree',
+        method: 'DELETE',
+        body: {'projectID': projectId, 'directory': directory, 'force': force},
+      );
+    } on OpenCodeApiException catch (e) {
+      if (e.statusCode == 400 && _forceRequired(e.message)) {
+        throw WorktreeDirtyException(e.detail);
+      }
+      rethrow;
+    }
+  }
+
+  static bool _forceRequired(String body) {
+    try {
+      final json = jsonDecode(body);
+      return json is Map &&
+          json['data'] is Map &&
+          (json['data'] as Map)['forceRequired'] == true;
+    } on FormatException {
+      return false;
+    }
+  }
 
   /// Permission requests waiting on the user in [sessionId].
   Future<List<PermissionRequest>> listPermissions(String sessionId) async {

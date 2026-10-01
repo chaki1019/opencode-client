@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +9,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/core/api/opencode_client.dart';
 import 'package:opencode_mobile/core/events/event_stream.dart';
+import 'package:opencode_mobile/core/models/attachment.dart';
 import 'package:opencode_mobile/core/storage/server_store.dart';
+import 'package:opencode_mobile/features/chat/composer_providers.dart';
 import 'package:opencode_mobile/features/connection/connection_providers.dart';
 import 'package:opencode_mobile/features/live/live_providers.dart';
 import 'package:opencode_mobile/main.dart';
@@ -22,6 +25,7 @@ void main() {
     tester,
   ) async {
     final promptIds = <String>[];
+    final promptBodies = <Map<String, dynamic>>[];
     final replies = <RequestOptions>[];
     final adapter = FakeAdapter({
       '/api/health': FakeRoute.json({
@@ -85,6 +89,17 @@ void main() {
         ],
       }),
       '/api/vcs/status': FakeRoute.json({'data': []}),
+      '/api/fs/list': FakeRoute.json({
+        'data': [
+          {'path': 'lib/', 'type': 'directory'},
+          {'path': 'README.md', 'type': 'file'},
+        ],
+      }),
+      '/api/fs/read/README.md': const FakeRoute(
+        200,
+        '# My app',
+        contentType: 'text/markdown',
+      ),
       '/api/mcp': FakeRoute.json({
         'data': [
           {
@@ -114,6 +129,7 @@ void main() {
       '/api/session/s1/prompt': (RequestOptions request) {
         final body = jsonDecode(request.data as String) as Map<String, dynamic>;
         promptIds.add(body['id'] as String);
+        promptBodies.add(body);
         return FakeRoute.json({
           'data': {'id': body['id'], 'sessionID': 's1', 'delivery': 'queued'},
         });
@@ -161,6 +177,15 @@ void main() {
       ProviderScope(
         overrides: [
           serverStoreProvider.overrideWithValue(store),
+          pickImagesProvider.overrideWithValue(
+            ({bool camera = false}) async => [
+              PromptFile(
+                name: 'shot.png',
+                mime: 'image/png',
+                bytes: Uint8List.fromList([1, 2, 3]),
+              ),
+            ],
+          ),
           eventStreamProvider.overrideWith((ref) {
             if (ref.watch(connectionProvider) == null) return null;
             final stream = EventStream(open: (_) async => events.stream)
@@ -202,6 +227,16 @@ void main() {
     await tester.tap(find.text('login.dart'));
     await tester.pumpAndSettle();
     expect(find.text('+new'), findsOneWidget);
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+
+    // The Files tab browses folders and opens a file.
+    await tester.tap(find.text('ファイル'));
+    await tester.pumpAndSettle();
+    expect(find.text('lib'), findsOneWidget);
+    await tester.tap(find.text('README.md'));
+    await tester.pumpAndSettle();
+    expect(find.text('# My app'), findsOneWidget);
     await tester.pageBack();
     await tester.pumpAndSettle();
 
@@ -311,6 +346,21 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Add a test'), findsOneWidget);
     expect(find.text('送信中…'), findsNothing);
+
+    // An attached image is sent inline, even without text.
+    await tester.tap(find.byKey(const Key('attach')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('attach-library')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('attachment-0')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('send')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(promptBodies.last['text'], '');
+    expect(promptBodies.last['files'], [
+      {'uri': 'data:image/png;base64,AQID', 'name': 'shot.png'},
+    ]);
+    expect(find.byKey(const Key('attachment-0')), findsNothing);
 
     // Renaming from the menu updates the title.
     await tester.tap(find.byKey(const Key('session-menu')));

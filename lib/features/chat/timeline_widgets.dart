@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
@@ -46,34 +49,84 @@ class UserMessageBubble extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SelectableText(
-                  entry.text,
-                  style: TextStyle(color: scheme.onPrimaryContainer),
-                ),
+                if (entry.text.isNotEmpty)
+                  SelectableText(
+                    entry.text,
+                    style: TextStyle(color: scheme.onPrimaryContainer),
+                  ),
                 for (final file in entry.files)
                   Padding(
                     padding: const EdgeInsets.only(top: 6),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.attach_file,
-                          size: 16,
-                          color: scheme.onPrimaryContainer,
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            file.name ?? file.mime ?? 'file',
-                            style: TextStyle(color: scheme.onPrimaryContainer),
+                    child: file.isImage && file.base64Data != null
+                        ? _InlineImage(base64Data: file.base64Data!)
+                        : Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.attach_file,
+                                size: 16,
+                                color: scheme.onPrimaryContainer,
+                              ),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  file.name ?? file.mime ?? 'file',
+                                  style: TextStyle(
+                                    color: scheme.onPrimaryContainer,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
-                    ),
                   ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// An attached image, decoded once.
+class _InlineImage extends StatefulWidget {
+  const _InlineImage({required this.base64Data});
+
+  final String base64Data;
+
+  @override
+  State<_InlineImage> createState() => _InlineImageState();
+}
+
+class _InlineImageState extends State<_InlineImage> {
+  late Uint8List? _bytes = _decode();
+
+  Uint8List? _decode() {
+    try {
+      return base64Decode(widget.base64Data);
+    } on FormatException {
+      return null;
+    }
+  }
+
+  @override
+  void didUpdateWidget(_InlineImage old) {
+    super.didUpdateWidget(old);
+    if (old.base64Data != widget.base64Data) _bytes = _decode();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bytes = _bytes;
+    if (bytes == null) return const Icon(Icons.broken_image_outlined);
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 240),
+        child: Image.memory(
+          bytes,
+          fit: BoxFit.contain,
+          errorBuilder: (_, _, _) => const Icon(Icons.broken_image_outlined),
         ),
       ),
     );
@@ -105,7 +158,18 @@ class PendingPromptBubble extends StatelessWidget {
         Opacity(
           opacity: 0.6,
           child: UserMessageBubble(
-            entry: UserEntry(id: prompt.id, text: prompt.text),
+            entry: UserEntry(
+              id: prompt.id,
+              text: prompt.text,
+              files: [
+                for (final f in prompt.files)
+                  AttachedFile(
+                    name: f.name,
+                    mime: f.mime,
+                    base64Data: base64Encode(f.bytes),
+                  ),
+              ],
+            ),
           ),
         ),
         Row(

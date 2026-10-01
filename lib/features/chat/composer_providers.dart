@@ -1,15 +1,50 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../core/api/opencode_client.dart';
 import '../../core/ids.dart';
+import '../../core/models/attachment.dart';
 import '../../core/models/catalog.dart';
 import '../../core/models/session.dart';
 import '../connection/connection_providers.dart';
 import 'chat_providers.dart';
 
 final idsProvider = Provider<OpenCodeIds>((ref) => OpenCodeIds());
+
+/// Picks images from the photo library or, with [camera], takes one.
+typedef PickImages = Future<List<PromptFile>> Function({bool camera});
+
+final pickImagesProvider = Provider<PickImages>((ref) => pickImages);
+
+Future<List<PromptFile>> pickImages({bool camera = false}) async {
+  final picker = ImagePicker();
+  // Downscale so photos stay well under the attachment limits.
+  const maxSide = 2048.0;
+  final picked = camera
+      ? [
+          ?await picker.pickImage(
+            source: ImageSource.camera,
+            maxWidth: maxSide,
+            maxHeight: maxSide,
+            imageQuality: 85,
+          ),
+        ]
+      : await picker.pickMultiImage(
+          maxWidth: maxSide,
+          maxHeight: maxSide,
+          imageQuality: 85,
+        );
+  return [
+    for (final file in picked)
+      PromptFile(
+        name: file.name,
+        mime: file.mimeType ?? PromptFile.mimeForName(file.name),
+        bytes: await file.readAsBytes(),
+      ),
+  ];
+}
 
 enum PendingStatus { sending, uncertain }
 
@@ -18,15 +53,17 @@ class PendingPrompt {
   const PendingPrompt({
     required this.id,
     required this.text,
+    this.files = const [],
     this.status = PendingStatus.sending,
   });
 
   final String id;
   final String text;
+  final List<PromptFile> files;
   final PendingStatus status;
 
   PendingPrompt withStatus(PendingStatus status) =>
-      PendingPrompt(id: id, text: text, status: status);
+      PendingPrompt(id: id, text: text, files: files, status: status);
 }
 
 /// Prompts in flight for one session. A prompt leaves this list when its
@@ -51,15 +88,16 @@ class PendingPromptsNotifier extends Notifier<List<PendingPrompt>> {
 
   /// Sends [text]. Returns false when the server rejected it, so the caller
   /// can put the text back into the input.
-  Future<bool> send(String text) async {
+  Future<bool> send(String text, {List<PromptFile> files = const []}) async {
     final client = ref.read(connectionProvider)?.client;
     if (client == null) return false;
     final id = ref.read(idsProvider).message();
-    state = [...state, PendingPrompt(id: id, text: text)];
+    state = [...state, PendingPrompt(id: id, text: text, files: files)];
     final admission = await client.sendPrompt(
       sessionId: sessionId,
       messageId: id,
       text: text,
+      files: files,
     );
     if (!ref.mounted) return true;
     switch (admission) {

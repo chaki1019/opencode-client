@@ -86,3 +86,67 @@ class McpServer {
     _ => status,
   };
 }
+
+/// A file or folder in the project (`GET /api/fs/list`, `/api/fs/find`).
+class FsEntry {
+  const FsEntry({required this.path, required this.isDirectory});
+
+  static FsEntry? tryParse(Object? json) {
+    if (json is! Map || json['path'] is! String) return null;
+    return FsEntry(
+      path: json['path'] as String,
+      isDirectory: json['type'] == 'directory',
+    );
+  }
+
+  /// Relative to the project directory.
+  final String path;
+  final bool isDirectory;
+
+  String get name {
+    final trimmed = path.endsWith('/')
+        ? path.substring(0, path.length - 1)
+        : path;
+    return trimmed.substring(trimmed.lastIndexOf('/') + 1);
+  }
+}
+
+/// A file's contents (`GET /api/fs/read/:path`). [text] is set when the
+/// bytes are UTF-8 text and not an image.
+class FileContent {
+  const FileContent({required this.bytes, this.mimeType, this.text});
+
+  final List<int> bytes;
+  final String? mimeType;
+  final String? text;
+
+  bool get isImage => mimeType?.startsWith('image/') ?? false;
+}
+
+/// A checkout of the project (`GET /api/worktree`): the main one, or a copy
+/// the server manages with `git worktree`.
+class Worktree {
+  const Worktree({required this.directory, this.strategy});
+
+  static Worktree? tryParse(Object? json) {
+    if (json is! Map || json['directory'] is! String) return null;
+    return Worktree(
+      directory: json['directory'] as String,
+      strategy: json['strategy'] as String?,
+    );
+  }
+
+  final String directory;
+  final String? strategy;
+
+  /// The project's own checkout.
+  bool get isMain => strategy == null;
+
+  /// A copy the server created and can remove.
+  bool get isManaged => strategy == 'git' || strategy == 'git_worktree';
+
+  String get name {
+    final parts = directory.split('/').where((p) => p.isNotEmpty);
+    return parts.isEmpty ? directory : parts.last;
+  }
+}
