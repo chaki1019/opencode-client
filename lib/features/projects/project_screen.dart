@@ -5,8 +5,10 @@ import '../files/files_screen.dart';
 import '../git/git_screen.dart';
 import '../mcp/mcp_screen.dart';
 import '../sessions/sessions_screen.dart';
+import '../terminal/terminal_screen.dart';
 
-/// A project's sessions, Git changes, files and MCP servers as tabs. A tab is
+/// A project's sessions, Git changes, files, MCP servers and terminals as
+/// tabs. A tab is
 /// built the first time it is opened and then kept alive.
 class ProjectScreen extends StatefulWidget {
   const ProjectScreen({super.key, required this.project});
@@ -28,6 +30,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
       () => GitScreen(project: widget.project),
       () => FilesScreen(project: widget.project),
       () => McpScreen(project: widget.project),
+      () => TerminalsScreen(project: widget.project),
     ];
     return Scaffold(
       body: IndexedStack(
@@ -57,6 +60,7 @@ class _ProjectScreenState extends State<ProjectScreen> {
             icon: Icon(Icons.extension_outlined),
             label: 'MCP',
           ),
+          NavigationDestination(icon: Icon(Icons.terminal), label: 'ターミナル'),
         ],
       ),
     );

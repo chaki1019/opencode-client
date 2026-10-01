@@ -150,3 +150,41 @@ class Worktree {
     return parts.isEmpty ? directory : parts.last;
   }
 }
+
+/// A terminal process on the server (`GET /api/pty`).
+class Pty {
+  const Pty({
+    required this.id,
+    this.title,
+    this.command,
+    this.cwd,
+    this.status,
+    this.exitCode,
+  });
+
+  static Pty? tryParse(Object? json) {
+    if (json is! Map || json['id'] is! String) return null;
+    return Pty(
+      id: json['id'] as String,
+      title: json['title'] as String?,
+      command: json['command'] as String?,
+      cwd: json['cwd'] as String?,
+      status: json['status'] as String?,
+      exitCode: (json['exitCode'] as num?)?.toInt(),
+    );
+  }
+
+  final String id;
+  final String? title;
+  final String? command;
+  final String? cwd;
+
+  /// `running` or `exited`.
+  final String? status;
+  final int? exitCode;
+
+  bool get isRunning => status != 'exited';
+
+  String get displayTitle =>
+      (title?.trim().isNotEmpty ?? false) ? title!.trim() : (command ?? id);
+}
