@@ -5,9 +5,11 @@ import '../../core/models/session.dart';
 import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
 import 'chat_providers.dart';
+import 'composer.dart';
+import 'composer_providers.dart';
 import 'timeline_widgets.dart';
 
-/// A session's transcript, updated live. Sending arrives in a later phase.
+/// A session's transcript, updated live, with the input at the bottom.
 class ChatScreen extends ConsumerWidget {
   const ChatScreen({super.key, required this.session});
 
@@ -42,51 +44,79 @@ class ChatScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: timeline.when(
-        data: (paged) {
-          final entries = paged.items;
-          if (entries.isEmpty) {
-            return const Center(child: Text('メッセージはまだありません'));
-          }
-          // Reversed so the list starts at the newest entry; the extra last
-          // index is the "older history" control at the top.
-          return NotificationListener<ScrollNotification>(
-            onNotification: (n) {
-              if (n.metrics.extentAfter < 600) {
-                ref.read(provider.notifier).loadMore();
-              }
-              return false;
-            },
-            child: ListView.builder(
-              reverse: true,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              itemCount: entries.length + 1,
-              itemBuilder: (context, index) {
-                if (index == entries.length) {
-                  return OlderHistoryIndicator(
-                    paged: paged,
-                    onRetry: () => ref.read(provider.notifier).loadMore(),
-                  );
+      body: Column(
+        children: [
+          Expanded(
+            child: timeline.when(
+              data: (paged) {
+                final entries = paged.items;
+                final shownIds = {for (final e in entries) e.id};
+                final pending = ref
+                    .watch(pendingPromptsProvider(session.id))
+                    .where((p) => !shownIds.contains(p.id))
+                    .toList();
+                if (entries.isEmpty && pending.isEmpty) {
+                  return const Center(child: Text('メッセージはまだありません'));
                 }
-                final entry = entries[entries.length - 1 - index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
+                // Reversed so the list starts at the newest item. Pending
+                // prompts sit below the transcript; the extra last index is
+                // the "older history" control at the top.
+                final count = pending.length + entries.length;
+                return NotificationListener<ScrollNotification>(
+                  onNotification: (n) {
+                    if (n.metrics.extentAfter < 600) {
+                      ref.read(provider.notifier).loadMore();
+                    }
+                    return false;
+                  },
+                  child: ListView.builder(
+                    reverse: true,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    itemCount: count + 1,
+                    itemBuilder: (context, index) {
+                      if (index == count) {
+                        return OlderHistoryIndicator(
+                          paged: paged,
+                          onRetry: () => ref.read(provider.notifier).loadMore(),
+                        );
+                      }
+                      final Widget child;
+                      if (index < pending.length) {
+                        final prompt = pending[pending.length - 1 - index];
+                        child = PendingPromptBubble(
+                          prompt: prompt,
+                          onDismiss: () => ref
+                              .read(pendingPromptsProvider(session.id).notifier)
+                              .dismiss(prompt.id),
+                        );
+                      } else {
+                        final i = index - pending.length;
+                        child = TimelineEntryView(
+                          entry: entries[entries.length - 1 - i],
+                        );
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        child: child,
+                      );
+                    },
                   ),
-                  child: TimelineEntryView(entry: entry),
                 );
               },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Text('メッセージを読み込めませんでした: $e'),
+                ),
+              ),
             ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Text('メッセージを読み込めませんでした: $e'),
           ),
-        ),
+          Composer(session: session),
+        ],
       ),
     );
   }
