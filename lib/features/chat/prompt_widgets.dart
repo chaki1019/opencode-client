@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/theme.dart';
 import '../../core/api/api_errors.dart';
 import '../../core/models/form.dart';
 import '../../core/models/prompts.dart';
@@ -123,7 +124,7 @@ class _PermissionCardState extends ConsumerState<PermissionCard> {
               Text(
                 patterns.join('\n'),
                 style: theme.textTheme.bodySmall?.copyWith(
-                  fontFamily: 'monospace',
+                  fontFamily: AppFonts.mono,
                 ),
               ),
             ],
@@ -563,37 +564,61 @@ class _TodoStripState extends ConsumerState<TodoStrip> {
         todos.where((t) => t.isActive).firstOrNull ??
         todos.where((t) => !t.isDone).firstOrNull;
 
-    return Material(
-      color: theme.colorScheme.surfaceContainerHigh,
-      child: InkWell(
-        key: const Key('todo-strip'),
-        onTap: () => setState(() => _expanded = !_expanded),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    final scheme = theme.colorScheme;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      child: Material(
+        color: scheme.surfaceContainerLow,
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: BorderSide(color: scheme.outlineVariant),
+        ),
+        child: InkWell(
+          key: const Key('todo-strip'),
+          onTap: () => setState(() => _expanded = !_expanded),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                children: [
-                  const Icon(Icons.checklist, size: 18),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Todo $done/${todos.length}',
-                    style: theme.textTheme.labelLarge,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      _expanded ? '' : (current?.content ?? 'すべて完了'),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 8, 8, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'Todo $done/${todos.length}',
+                          style: theme.textTheme.labelLarge?.copyWith(
+                            fontFamily: AppFonts.mono,
+                            color: scheme.primary,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _expanded ? '' : (current?.content ?? 'すべて完了'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.bodySmall,
+                          ),
+                        ),
+                        Icon(
+                          _expanded ? Icons.expand_less : Icons.expand_more,
+                          size: 20,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ],
                     ),
-                  ),
-                  Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-                ],
+                    if (_expanded) TodoList(todos: todos),
+                  ],
+                ),
               ),
-              if (_expanded) TodoList(todos: todos),
+              LinearProgressIndicator(
+                value: done / todos.length,
+                minHeight: 2,
+                backgroundColor: Colors.transparent,
+              ),
             ],
           ),
         ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:xterm/xterm.dart';
 
+import '../../app/theme.dart';
 import '../../core/api/api_errors.dart';
 import '../../core/models/project.dart';
 import '../../core/models/project_tools.dart';
@@ -47,7 +48,9 @@ class TerminalsScreen extends ConsumerWidget {
                       ListTile(
                         leading: Icon(
                           Icons.terminal,
-                          color: pty.isRunning ? null : Colors.grey,
+                          color: pty.isRunning
+                              ? AppColors.of(context).running
+                              : Theme.of(context).colorScheme.outline,
                         ),
                         title: Text(pty.displayTitle),
                         subtitle: Text(
@@ -192,7 +195,7 @@ class _TerminalScreenState extends ConsumerState<TerminalScreen> {
       PtyConnectionState.open => null,
     };
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: terminalTheme.background,
       appBar: AppBar(
         title: Text(widget.pty.displayTitle),
         bottom: banner == null
@@ -220,7 +223,11 @@ class _TerminalScreenState extends ConsumerState<TerminalScreen> {
                 _terminal,
                 autofocus: true,
                 keyboardType: TextInputType.visiblePassword,
-                textStyle: const TerminalStyle(fontSize: 13),
+                theme: terminalTheme,
+                textStyle: const TerminalStyle(
+                  fontFamily: AppFonts.mono,
+                  fontSize: 13,
+                ),
               ),
             ),
             _ExtraKeys(onKey: _key, onCtrl: _ctrl, onText: _terminal.textInput),
@@ -249,7 +256,9 @@ class _ExtraKeys extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 2),
       child: OutlinedButton(
         style: OutlinedButton.styleFrom(
-          foregroundColor: Colors.white,
+          foregroundColor: terminalTheme.foreground,
+          side: const BorderSide(color: Color(0xFF2A3240)),
+          textStyle: const TextStyle(fontFamily: AppFonts.mono, fontSize: 13),
           minimumSize: const Size(44, 36),
           padding: const EdgeInsets.symmetric(horizontal: 8),
         ),
@@ -258,7 +267,7 @@ class _ExtraKeys extends StatelessWidget {
       ),
     );
     return Material(
-      color: Colors.grey.shade900,
+      color: const Color(0xFF161B22),
       child: SizedBox(
         height: 48,
         child: ListView(
@@ -283,3 +292,31 @@ class _ExtraKeys extends StatelessWidget {
     );
   }
 }
+
+/// Graphite terminal colors, matching the app's dark theme. The terminal
+/// stays dark in light mode, as most shells and prompts expect.
+const terminalTheme = TerminalTheme(
+  cursor: Color(0xFF7CC4FF),
+  selection: Color(0x557CC4FF),
+  foreground: Color(0xFFE6E9EE),
+  background: Color(0xFF0F1216),
+  black: Color(0xFF1F2630),
+  red: Color(0xFFFF8A80),
+  green: Color(0xFF6EE7A0),
+  yellow: Color(0xFFF5C46B),
+  blue: Color(0xFF7CC4FF),
+  magenta: Color(0xFFD7A6FF),
+  cyan: Color(0xFF5EEAD4),
+  white: Color(0xFFC9D1DC),
+  brightBlack: Color(0xFF5B6475),
+  brightRed: Color(0xFFFFB0A8),
+  brightGreen: Color(0xFF9AF2BF),
+  brightYellow: Color(0xFFFAD898),
+  brightBlue: Color(0xFFA8D7FF),
+  brightMagenta: Color(0xFFE6C6FF),
+  brightCyan: Color(0xFF94F1E2),
+  brightWhite: Color(0xFFFFFFFF),
+  searchHitBackground: Color(0xFFF5C46B),
+  searchHitBackgroundCurrent: Color(0xFF7CC4FF),
+  searchHitForeground: Color(0xFF0F1216),
+);

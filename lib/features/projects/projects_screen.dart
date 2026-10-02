@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/theme.dart';
 import '../../core/models/project.dart';
 import '../connection/connection_providers.dart';
+import '../live/live_widgets.dart';
 import 'project_providers.dart';
 
 class ProjectsScreen extends ConsumerWidget {
@@ -30,10 +32,20 @@ class ProjectsScreen extends ConsumerWidget {
             : PreferredSize(
                 preferredSize: const Size.fromHeight(20),
                 child: Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Text(
-                    'OpenCode ${health.version}',
-                    style: Theme.of(context).textTheme.bodySmall,
+                  padding: const EdgeInsets.fromLTRB(20, 0, 16, 6),
+                  child: Row(
+                    children: [
+                      LiveDot(
+                        size: 6,
+                        color: AppColors.of(context).success,
+                        pulse: false,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'OpenCode ${health.version}',
+                        style: Theme.of(context).textTheme.labelSmall,
+                      ),
+                    ],
                   ),
                 ),
               ),
@@ -42,6 +54,7 @@ class ProjectsScreen extends ConsumerWidget {
         onRefresh: () => ref.refresh(projectsProvider.future),
         child: projects.when(
           data: (bootstrap) => ListView(
+            padding: const EdgeInsets.symmetric(vertical: 8),
             children: [
               for (final project in _sorted(bootstrap.projects))
                 _ProjectTile(
@@ -74,11 +87,56 @@ class _ProjectTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final name = project.displayName;
     return ListTile(
-      leading: const Icon(Icons.folder_outlined),
-      title: Text(project.displayName),
-      subtitle: Text(project.directory),
-      trailing: isCurrent ? const Chip(label: Text('現在')) : null,
+      leading: Container(
+        width: 40,
+        height: 40,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: scheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: scheme.outlineVariant),
+        ),
+        child: Text(
+          name.isEmpty ? '/' : name.characters.first.toUpperCase(),
+          style: TextStyle(
+            fontFamily: AppFonts.mono,
+            fontWeight: FontWeight.w600,
+            fontSize: 16,
+            color: scheme.primary,
+          ),
+        ),
+      ),
+      title: Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
+      subtitle: Text(
+        project.directory,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: theme.textTheme.bodySmall?.copyWith(
+          fontFamily: AppFonts.mono,
+          color: scheme.onSurfaceVariant,
+        ),
+      ),
+      trailing: isCurrent
+          ? Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: scheme.primary.withValues(alpha: 0.5),
+                ),
+              ),
+              child: Text(
+                '現在',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: scheme.primary,
+                ),
+              ),
+            )
+          : null,
       onTap: () => context.push(
         '/projects/${Uri.encodeComponent(project.id)}',
         extra: project,

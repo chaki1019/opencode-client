@@ -120,69 +120,85 @@ class _ComposerState extends ConsumerState<Composer> {
     final canSend = _controller.text.trim().isNotEmpty || _files.isNotEmpty;
     final scheme = Theme.of(context).colorScheme;
 
-    return Material(
-      color: scheme.surfaceContainer,
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(8, 4, 8, 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _SettingsRow(session: widget.session),
-              if (_files.isNotEmpty)
-                _AttachmentStrip(
-                  files: _files,
-                  onRemove: (i) =>
-                      setState(() => _files = [..._files]..removeAt(i)),
-                ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  IconButton(
-                    key: const Key('attach'),
-                    tooltip: '画像を添付',
-                    onPressed: _attach,
-                    icon: const Icon(Icons.add_photo_alternate_outlined),
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 4, 10, 10),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainer,
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: scheme.outlineVariant),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(4, 4, 6, 6),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_files.isNotEmpty)
+                  _AttachmentStrip(
+                    files: _files,
+                    onRemove: (i) =>
+                        setState(() => _files = [..._files]..removeAt(i)),
                   ),
-                  Expanded(
-                    child: TextField(
-                      key: const Key('composer'),
-                      controller: _controller,
-                      minLines: 1,
-                      maxLines: 6,
-                      textInputAction: TextInputAction.newline,
-                      decoration: const InputDecoration(
-                        hintText: 'メッセージを入力',
-                        border: OutlineInputBorder(),
-                        isDense: true,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    IconButton(
+                      key: const Key('attach'),
+                      tooltip: '画像を添付',
+                      onPressed: _attach,
+                      icon: const Icon(Icons.add_photo_alternate_outlined),
+                    ),
+                    Expanded(
+                      child: TextField(
+                        key: const Key('composer'),
+                        controller: _controller,
+                        minLines: 1,
+                        maxLines: 6,
+                        textInputAction: TextInputAction.newline,
+                        decoration: const InputDecoration(
+                          hintText: 'メッセージを入力',
+                          filled: false,
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(vertical: 12),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  if (busy && !canSend)
-                    IconButton.filledTonal(
-                      key: const Key('stop'),
-                      tooltip: '中断',
-                      onPressed: _stopping ? null : _stop,
-                      icon: const Icon(Icons.stop),
-                    )
-                  else
-                    IconButton.filled(
-                      key: const Key('send'),
-                      tooltip: '送信',
-                      onPressed: canSend ? _send : null,
-                      icon: const Icon(Icons.arrow_upward),
-                    ),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 4),
+                    if (busy && !canSend)
+                      IconButton.filledTonal(
+                        key: const Key('stop'),
+                        tooltip: '中断',
+                        style: _buttonStyle,
+                        onPressed: _stopping ? null : _stop,
+                        icon: const Icon(Icons.stop_rounded),
+                      )
+                    else
+                      IconButton.filled(
+                        key: const Key('send'),
+                        tooltip: '送信',
+                        style: _buttonStyle,
+                        onPressed: canSend ? _send : null,
+                        icon: const Icon(Icons.arrow_upward_rounded),
+                      ),
+                  ],
+                ),
+                _SettingsRow(session: widget.session),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 }
+
+final _buttonStyle = IconButton.styleFrom(
+  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+);
 
 /// Thumbnails of the images about to be sent, each with a remove button.
 class _AttachmentStrip extends StatelessWidget {
@@ -247,20 +263,32 @@ class _SettingsRow extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(sessionSettingsProvider(session));
+    final scheme = Theme.of(context).colorScheme;
     return SizedBox(
-      height: 40,
+      height: 36,
       child: ListView(
         scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 6),
         children: [
           ActionChip(
-            avatar: const Icon(Icons.smart_toy_outlined, size: 18),
-            label: Text(settings.agent ?? 'エージェント'),
+            avatar: Icon(
+              Icons.smart_toy_outlined,
+              size: 16,
+              color: scheme.primary,
+            ),
+            label: Text(
+              settings.agent ?? 'エージェント',
+              style: TextStyle(color: scheme.primary),
+            ),
+            backgroundColor: scheme.primary.withValues(alpha: 0.12),
+            visualDensity: VisualDensity.compact,
             onPressed: () => _pickAgent(context, ref),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           ActionChip(
-            avatar: const Icon(Icons.memory, size: 18),
+            avatar: const Icon(Icons.memory, size: 16),
             label: Text(settings.model?.label ?? 'モデル'),
+            visualDensity: VisualDensity.compact,
             onPressed: () => _pickModel(context, ref),
           ),
         ],

@@ -114,15 +114,28 @@ class _SessionTile extends ConsumerWidget {
       relativeTime(session.updatedAt),
       if (session.model != null) session.model!.label,
     ].join(' · ');
+    final theme = Theme.of(context);
     return ListTile(
-      leading: const Icon(Icons.chat_bubble_outline),
+      leading: SizedBox(
+        width: 20,
+        child: Center(
+          child: busy
+              ? const SessionBusyIndicator()
+              : Icon(
+                  Icons.chat_bubble_outline,
+                  size: 18,
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+        ),
+      ),
+      minLeadingWidth: 20,
       title: Text(
         session.displayTitle,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontWeight: FontWeight.w500),
       ),
-      subtitle: Text(details),
-      trailing: busy ? const SessionBusyIndicator() : null,
+      subtitle: Text(details, style: theme.textTheme.labelSmall),
       onTap: () => context.push(
         '/sessions/${Uri.encodeComponent(session.id)}',
         extra: session,
