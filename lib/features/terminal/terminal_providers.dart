@@ -40,13 +40,14 @@ class PtyListNotifier extends AsyncNotifier<List<Pty>> {
     }
   }
 
-  Future<Pty?> create() async {
+  /// [title] names the new terminal from its position in the list.
+  Future<Pty?> create(String Function(int count) title) async {
     final client = ref.read(connectionProvider)?.client;
     if (client == null) return null;
     final count = (state.value?.length ?? 0) + 1;
     final pty = await client.createPty(
       directory: directory,
-      title: 'ターミナル $count',
+      title: title(count),
     );
     await _reload();
     return pty;

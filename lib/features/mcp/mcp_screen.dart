@@ -5,6 +5,7 @@ import '../../app/theme.dart';
 import '../../core/api/api_errors.dart';
 import '../../core/models/project.dart';
 import '../../core/models/project_tools.dart';
+import '../../l10n/l10n.dart';
 import '../live/live_widgets.dart';
 import 'mcp_providers.dart';
 
@@ -24,7 +25,7 @@ class McpScreen extends ConsumerWidget {
         bottom: const LiveStatusBanner(),
         actions: [
           IconButton(
-            tooltip: '再読み込み',
+            tooltip: context.l10n.reload,
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(provider),
           ),
@@ -36,7 +37,7 @@ class McpScreen extends ConsumerWidget {
           data: (list) => list.isEmpty
               ? ListView(
                   padding: const EdgeInsets.all(24),
-                  children: const [Center(child: Text('MCP サーバーは設定されていません'))],
+                  children: [Center(child: Text(context.l10n.mcpEmpty))],
                 )
               : ListView(
                   children: [
@@ -47,7 +48,7 @@ class McpScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => ListView(
             padding: const EdgeInsets.all(24),
-            children: [Text('MCP サーバーを読み込めませんでした: $e')],
+            children: [Text(context.l10n.mcpLoadFailed(e))],
           ),
         ),
       ),
@@ -70,6 +71,7 @@ class _McpTileState extends ConsumerState<_McpTile> {
 
   Future<void> _toggle() async {
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
     setState(() => _busy = true);
     try {
       await ref
@@ -77,7 +79,7 @@ class _McpTileState extends ConsumerState<_McpTile> {
           .toggle(widget.server);
     } on OpenCodeApiException catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('切り替えられませんでした: ${e.detail}')),
+        SnackBar(content: Text(l10n.toggleFailed(e.detail))),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -103,8 +105,8 @@ class _McpTileState extends ConsumerState<_McpTile> {
       title: Text(server.name),
       subtitle: Text(
         server.error == null
-            ? server.statusLabel
-            : '${server.statusLabel}: ${server.error}',
+            ? context.l10n.mcpStatus(server.status)
+            : '${context.l10n.mcpStatus(server.status)}: ${server.error}',
         maxLines: 3,
         overflow: TextOverflow.ellipsis,
       ),

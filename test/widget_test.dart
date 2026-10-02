@@ -19,11 +19,38 @@ import 'package:opencode_mobile/main.dart';
 import 'support/fake_adapter.dart';
 
 void main() {
-  setUp(() => FlutterSecureStorage.setMockInitialValues({}));
+  setUp(() {
+    FlutterSecureStorage.setMockInitialValues({});
+    // Most checks below read the Japanese strings.
+    TestWidgetsFlutterBinding.ensureInitialized()
+        .platformDispatcher
+        .localeTestValue = const Locale(
+      'ja',
+    );
+  });
+  tearDown(
+    () => TestWidgetsFlutterBinding.ensureInitialized().platformDispatcher
+        .clearLocalesTestValue(),
+  );
+
+  testWidgets('the connect screen follows the device language', (tester) async {
+    addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+    tester.platformDispatcher.localesTestValue = const [Locale('en', 'US')];
+    await tester.pumpWidget(const ProviderScope(child: OpenCodeMobileApp()));
+    await tester.pumpAndSettle();
+    expect(find.text('Connect to an OpenCode server'), findsOneWidget);
+
+    tester.platformDispatcher.localesTestValue = const [Locale('ja', 'JP')];
+    await tester.pumpAndSettle();
+    expect(find.text('OpenCode サーバーに接続'), findsOneWidget);
+  });
 
   testWidgets('connecting shows the project list and saves the server', (
     tester,
   ) async {
+    // The checks below read the Japanese strings.
+    addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+    tester.platformDispatcher.localesTestValue = const [Locale('ja')];
     final promptIds = <String>[];
     final promptBodies = <Map<String, dynamic>>[];
     final replies = <RequestOptions>[];
@@ -227,7 +254,7 @@ void main() {
     await tester.tap(find.text('login.dart'));
     await tester.pumpAndSettle();
     expect(find.text('+new'), findsOneWidget);
-    await tester.pageBack();
+    await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
 
     // The Files tab browses folders and opens a file.
@@ -237,7 +264,7 @@ void main() {
     await tester.tap(find.text('README.md'));
     await tester.pumpAndSettle();
     expect(find.text('# My app'), findsOneWidget);
-    await tester.pageBack();
+    await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
 
     // The MCP tab toggles a server's connection.

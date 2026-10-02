@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models/session.dart';
 import '../../core/models/timeline.dart';
+import '../../l10n/l10n.dart';
 import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
 import 'agent_labels.dart';
@@ -34,7 +35,7 @@ class ChatScreen extends ConsumerWidget {
         bottom: const LiveStatusBanner(),
         actions: [
           IconButton(
-            tooltip: '再読み込み',
+            tooltip: context.l10n.reload,
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(provider),
           ),
@@ -54,7 +55,7 @@ class ChatScreen extends ConsumerWidget {
                     .where((p) => !shownIds.contains(p.id))
                     .toList();
                 if (entries.isEmpty && pending.isEmpty) {
-                  return const Center(child: Text('メッセージはまだありません'));
+                  return Center(child: Text(context.l10n.messagesEmpty));
                 }
                 // Reversed so the list starts at the newest item. Pending
                 // prompts sit below the transcript; the extra last index is
@@ -115,7 +116,7 @@ class ChatScreen extends ConsumerWidget {
               error: (e, _) => Center(
                 child: Padding(
                   padding: const EdgeInsets.all(24),
-                  child: Text('メッセージを読み込めませんでした: $e'),
+                  child: Text(context.l10n.messagesLoadFailed(e)),
                 ),
               ),
             ),
@@ -139,8 +140,8 @@ class ChatScreen extends ConsumerWidget {
         child: ListTile(
           key: const Key('fork-here'),
           leading: const Icon(Icons.fork_right),
-          title: const Text('このメッセージの前からフォーク'),
-          subtitle: const Text('これより前の会話を新しいセッションにコピーします'),
+          title: Text(context.l10n.forkFromHere),
+          subtitle: Text(context.l10n.forkFromHereHelp),
           onTap: () => Navigator.pop(context, true),
         ),
       ),
@@ -172,7 +173,7 @@ class _ChatTitle extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
-          session.displayTitle,
+          session.displayTitle ?? context.l10n.untitledSession,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -182,7 +183,7 @@ class _ChatTitle extends ConsumerWidget {
               if (busy) ...[const LiveDot(size: 6), const SizedBox(width: 6)],
               Expanded(
                 child: Text(
-                  busy && detail.isEmpty ? '実行中' : detail,
+                  busy && detail.isEmpty ? context.l10n.running : detail,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.labelSmall,

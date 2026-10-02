@@ -1,0 +1,403 @@
+{
+  "@@locale": "en",
+  "reload": "Reload",
+  "delete": "Delete",
+  "cancel": "Cancel",
+  "send": "Send",
+  "create": "Create",
+  "close": "Close",
+  "justNow": "Just now",
+  "minutesAgo": "{count, plural, =1{1 minute ago} other{{count} minutes ago}}",
+  "@minutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "hoursAgo": "{count, plural, =1{1 hour ago} other{{count} hours ago}}",
+  "@hoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "yesterday": "Yesterday",
+  "daysAgo": "{count, plural, =1{1 day ago} other{{count} days ago}}",
+  "@daysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "connectTitle": "Connect to an OpenCode server",
+  "connectUnsupported": "This server doesn't support the OpenCode v2 API. Please update OpenCode.",
+  "connectWrongCredentials": "Wrong username or password",
+  "connectFailed": "Couldn't connect: {error}",
+  "@connectFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "serverUrl": "Server URL",
+  "serverUrlRequired": "Enter a URL",
+  "username": "Username",
+  "password": "Password",
+  "passwordHelper": "OPENCODE_SERVER_PASSWORD (leave blank if unset)",
+  "displayNameOptional": "Display name (optional)",
+  "connect": "Connect",
+  "savedServers": "Saved servers",
+  "savedServersLoadFailed": "Couldn't load saved servers: {error}",
+  "@savedServersLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "reconnecting": "Reconnecting to the server…",
+  "projects": "Projects",
+  "disconnect": "Disconnect",
+  "projectsLoadFailed": "Couldn't load projects: {error}",
+  "@projectsLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "currentProject": "Current",
+  "tabSessions": "Sessions",
+  "tabFiles": "Files",
+  "tabTerminal": "Terminal",
+  "newSession": "New session",
+  "sessionsEmpty": "No sessions yet",
+  "sessionsLoadFailed": "Couldn't load sessions: {error}",
+  "@sessionsLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "sessionCreateFailed": "Couldn't create a session: {error}",
+  "@sessionCreateFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "untitledSession": "Untitled session",
+  "rename": "Rename",
+  "fork": "Fork",
+  "compact": "Summarize conversation",
+  "renameFailed": "Couldn't rename",
+  "forkFailed": "Couldn't fork",
+  "compactFailed": "Couldn't request a summary",
+  "compactRequested": "Requested a summary of the conversation",
+  "deleteSessionTitle": "Delete this session?",
+  "deleteSessionBody": "\"{title}\" will be deleted. This can't be undone.",
+  "@deleteSessionBody": {
+    "placeholders": {
+      "title": {}
+    }
+  },
+  "deleteFailed": "Couldn't delete",
+  "sessionName": "Session name",
+  "renameConfirm": "Rename",
+  "messagesEmpty": "No messages yet",
+  "messagesLoadFailed": "Couldn't load messages: {error}",
+  "@messagesLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "forkFromHere": "Fork from before this message",
+  "forkFromHereHelp": "Copies the conversation before this message into a new session",
+  "running": "Running",
+  "sendFailed": "Couldn't send. Check the message and try again.",
+  "choosePhoto": "Choose a photo",
+  "takePhoto": "Take a photo",
+  "imageLoadFailed": "Couldn't load the image: {error}",
+  "@imageLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "interruptFailed": "Couldn't stop: {error}",
+  "@interruptFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "attachImage": "Attach image",
+  "messageHint": "Message",
+  "interrupt": "Stop",
+  "removeAttachment": "Remove attachment",
+  "agent": "Agent",
+  "model": "Model",
+  "changeFailed": "Couldn't change: {error}",
+  "@changeFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "agentsLoadFailed": "Couldn't load agents: {error}",
+  "@agentsLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "searchModels": "Search models",
+  "modelsLoadFailed": "Couldn't load models: {error}",
+  "@modelsLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "variant": "Variant",
+  "agentBuildDescription": "The default agent with all tools enabled. The standard agent for development work that needs full access to file operations and system commands.",
+  "agentPlanDescription": "A restricted agent for planning and analysis. Permissions prevent unintended changes.",
+  "tooManyAttachments": "Up to {count} attachments",
+  "@tooManyAttachments": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "attachmentTooLarge": "Each file must be 10 MB or less",
+  "attachmentsTooLarge": "Attachments must total 24 MB or less",
+  "sending": "Sending…",
+  "sendUncertain": "Checking whether it was sent. It hasn't been resent.",
+  "dismiss": "Remove from view",
+  "thinking": "Thinking…",
+  "reasoning": "Thinking",
+  "noOutput": "No output",
+  "compacted": "Summarized the conversation so far",
+  "contextAgent": "Agent: {name}",
+  "@contextAgent": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "contextModel": "Model: {name}",
+  "@contextModel": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "contextLocation": "Location: {path}",
+  "@contextLocation": {
+    "placeholders": {
+      "path": {}
+    }
+  },
+  "contextSkill": "Skill: {name}",
+  "@contextSkill": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "linesOmitted": "{count, plural, =1{1 line omitted} other{{count} lines omitted}}",
+  "@linesOmitted": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "reloadOlderMessages": "Reload earlier messages",
+  "replyFailed": "Couldn't reply: {error}",
+  "@replyFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "permissionNeeded": "Permission needed for \"{action}\"",
+  "@permissionNeeded": {
+    "placeholders": {
+      "action": {}
+    }
+  },
+  "moreWaiting": "+{count} more",
+  "@moreWaiting": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "deny": "Deny",
+  "allowAlways": "Always allow",
+  "allowOnce": "Allow once",
+  "sendFailedShort": "Couldn't send",
+  "cancelFailed": "Couldn't cancel",
+  "questionTitle": "A question for you",
+  "formUnsupported": "This question has fields the app doesn't support. Dismiss it or answer from another client.",
+  "dontAnswer": "Don't answer",
+  "otherFreeText": "Other (free text)",
+  "otherCommaSeparated": "Other (comma-separated)",
+  "copyUrl": "Copy URL",
+  "doneInBrowser": "Done in the browser",
+  "allDone": "All done",
+  "fieldRequired": "Required",
+  "fieldText": "Enter text",
+  "fieldPickOption": "Pick one of the options",
+  "fieldMinLength": "At least {count} characters",
+  "@fieldMinLength": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "fieldMaxLength": "At most {count} characters",
+  "@fieldMaxLength": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "fieldPattern": "Invalid format",
+  "fieldNumber": "Enter a number",
+  "fieldInteger": "Enter a whole number",
+  "fieldMinimum": "Must be {value} or more",
+  "@fieldMinimum": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "fieldMaximum": "Must be {value} or less",
+  "@fieldMaximum": {
+    "placeholders": {
+      "value": {}
+    }
+  },
+  "fieldChoose": "Make a selection",
+  "fieldMinItems": "Pick at least {count}",
+  "@fieldMinItems": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "fieldMaxItems": "Pick at most {count}",
+  "@fieldMaxItems": {
+    "placeholders": {
+      "count": {}
+    }
+  },
+  "fieldExternal": "Check this once you're done",
+  "searchFiles": "Search by file name",
+  "notFound": "Nothing found",
+  "emptyFolder": "This folder is empty",
+  "filesLoadFailed": "Couldn't load files: {error}",
+  "@filesLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "binaryFile": "Can't display this file ({bytes} bytes)",
+  "@binaryFile": {
+    "placeholders": {
+      "bytes": {}
+    }
+  },
+  "fileTruncated": "This file is long, so only the beginning is shown",
+  "fileOpenFailed": "Couldn't open the file: {error}",
+  "@fileOpenFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "unknownBranch": "Unknown branch",
+  "uncommitted": "Uncommitted",
+  "wholeBranch": "Whole branch",
+  "diffAgainst": "Diff against {branch}",
+  "@diffAgainst": {
+    "placeholders": {
+      "branch": {}
+    }
+  },
+  "noChanges": "No changes",
+  "gitLoadFailed": "Couldn't load the Git status: {error}",
+  "@gitLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "noDiff": "No diff",
+  "mcpEmpty": "No MCP servers configured",
+  "mcpLoadFailed": "Couldn't load MCP servers: {error}",
+  "@mcpLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "toggleFailed": "Couldn't switch: {error}",
+  "@toggleFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "mcpConnected": "Connected",
+  "mcpDisconnected": "Disconnected",
+  "mcpDisabled": "Disabled",
+  "mcpFailed": "Failed",
+  "mcpNeedsAuth": "Needs authentication",
+  "mcpNeedsClientRegistration": "Needs client registration",
+  "newWorktree": "New worktree",
+  "mainWorktree": "Main",
+  "worktreesLoadFailed": "Couldn't load worktrees: {error}",
+  "@worktreesLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "createFailed": "Couldn't create: {error}",
+  "@createFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "deleteWorktreeTitle": "Delete \"{name}\"?",
+  "@deleteWorktreeTitle": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "deleteWorktreeBody": "The whole folder will be deleted. This can't be undone.",
+  "uncommittedChangesTitle": "There are uncommitted changes",
+  "uncommittedChangesBody": "Delete them along with the worktree? This can't be undone.",
+  "deleteFailedWithError": "Couldn't delete: {error}",
+  "@deleteFailedWithError": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "worktreeNameHint": "Name (leave blank to let the server choose)",
+  "newTerminal": "New terminal",
+  "terminalsEmpty": "No terminals yet",
+  "terminalExited": "Exited (code {code})",
+  "@terminalExited": {
+    "placeholders": {
+      "code": {}
+    }
+  },
+  "terminalsLoadFailed": "Couldn't load terminals: {error}",
+  "@terminalsLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "terminalOpenFailed": "Couldn't open a terminal: {error}",
+  "@terminalOpenFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "closeFailed": "Couldn't close: {error}",
+  "@closeFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
+  "ptyConnecting": "Connecting…",
+  "ptyFailed": "Connection lost",
+  "ptyClosed": "The terminal has exited",
+  "reconnect": "Reconnect",
+  "terminalTitle": "Terminal {count}",
+  "@terminalTitle": {
+    "placeholders": {
+      "count": {}
+    }
+  }
+}

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/router.dart';
 import 'app/theme.dart';
+import 'l10n/l10n.dart';
 
 void main() {
   LicenseRegistry.addLicense(_fontLicenses);
@@ -30,6 +31,8 @@ class OpenCodeMobileApp extends ConsumerWidget {
       title: 'OpenCode Mobile',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: ref.watch(routerProvider),
     );
   }

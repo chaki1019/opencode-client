@@ -7,6 +7,7 @@ import '../../core/models/project.dart';
 import '../../core/models/session.dart';
 import '../../core/paging.dart';
 import '../../core/api/api_errors.dart';
+import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
@@ -47,7 +48,7 @@ class SessionsScreen extends ConsumerWidget {
         heroTag: null,
         onPressed: () => _createSession(context, ref),
         icon: const Icon(Icons.add),
-        label: const Text('新しいセッション'),
+        label: Text(context.l10n.newSession),
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(provider.future),
@@ -55,7 +56,7 @@ class SessionsScreen extends ConsumerWidget {
           data: (paged) => paged.items.isEmpty
               ? ListView(
                   padding: const EdgeInsets.all(24),
-                  children: const [Center(child: Text('セッションはまだありません'))],
+                  children: [Center(child: Text(context.l10n.sessionsEmpty))],
                 )
               : NotificationListener<ScrollNotification>(
                   onNotification: (n) {
@@ -78,7 +79,7 @@ class SessionsScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => ListView(
             padding: const EdgeInsets.all(24),
-            children: [Text('セッションを読み込めませんでした: $e')],
+            children: [Text(context.l10n.sessionsLoadFailed(e))],
           ),
         ),
       ),
@@ -89,6 +90,7 @@ class SessionsScreen extends ConsumerWidget {
     final client = ref.read(connectionProvider)?.client;
     if (client == null) return;
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
     final router = GoRouter.of(context);
     try {
       final session = await client.createSession(directory: project.directory);
@@ -97,7 +99,9 @@ class SessionsScreen extends ConsumerWidget {
         extra: session,
       );
     } on OpenCodeApiException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('セッションを作成できませんでした: $e')));
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.sessionCreateFailed(e))),
+      );
     }
   }
 }
@@ -113,7 +117,7 @@ class _SessionTile extends ConsumerWidget {
       activeSessionsProvider.select((ids) => ids.contains(session.id)),
     );
     final details = [
-      relativeTime(session.updatedAt),
+      relativeTime(context.l10n, session.updatedAt),
       if (session.model != null) session.model!.label,
     ].join(' · ');
     final theme = Theme.of(context);
@@ -132,7 +136,7 @@ class _SessionTile extends ConsumerWidget {
       ),
       minLeadingWidth: 20,
       title: Text(
-        session.displayTitle,
+        session.displayTitle ?? context.l10n.untitledSession,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(fontWeight: FontWeight.w500),
@@ -157,7 +161,7 @@ class _PagingFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     if (paged.loadMoreError != null) {
       return Center(
-        child: TextButton(onPressed: onRetry, child: const Text('再読み込み')),
+        child: TextButton(onPressed: onRetry, child: Text(context.l10n.reload)),
       );
     }
     if (!paged.hasMore) return const SizedBox(height: 24);

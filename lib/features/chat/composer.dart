@@ -5,6 +5,7 @@ import '../../core/api/api_errors.dart';
 import '../../core/models/attachment.dart';
 import '../../core/models/catalog.dart';
 import '../../core/models/session.dart';
+import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
 import 'agent_labels.dart';
@@ -51,11 +52,12 @@ class _ComposerState extends ConsumerState<Composer> {
       // Rejected: put the text and attachments back so nothing is lost.
       if (_controller.text.isEmpty) _controller.text = text;
       if (_files.isEmpty) setState(() => _files = files);
-      _showError('送信できませんでした。内容を確認してもう一度送ってください');
+      _showError(context.l10n.sendFailed);
     }
   }
 
   Future<void> _attach() async {
+    final l10n = context.l10n;
     final camera = await showModalBottomSheet<bool>(
       context: context,
       showDragHandle: true,
@@ -66,12 +68,12 @@ class _ComposerState extends ConsumerState<Composer> {
             ListTile(
               key: const Key('attach-library'),
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('写真を選ぶ'),
+              title: Text(context.l10n.choosePhoto),
               onTap: () => Navigator.pop(context, false),
             ),
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('写真を撮る'),
+              title: Text(context.l10n.takePhoto),
               onTap: () => Navigator.pop(context, true),
             ),
           ],
@@ -83,13 +85,13 @@ class _ComposerState extends ConsumerState<Composer> {
     try {
       picked = await ref.read(pickImagesProvider)(camera: camera);
     } catch (e) {
-      _showError('画像を読み込めませんでした: $e');
+      _showError(l10n.imageLoadFailed(e));
       return;
     }
     if (picked.isEmpty || !mounted) return;
     final problem = PromptFile.checkLimits(_files, picked);
     if (problem != null) {
-      _showError(problem);
+      _showError(l10n.attachmentLimit(problem));
       return;
     }
     setState(() => _files = [..._files, ...picked]);
@@ -98,11 +100,12 @@ class _ComposerState extends ConsumerState<Composer> {
   Future<void> _stop() async {
     final client = ref.read(connectionProvider)?.client;
     if (client == null) return;
+    final l10n = context.l10n;
     setState(() => _stopping = true);
     try {
       await client.interrupt(widget.session.id);
     } on OpenCodeApiException catch (e) {
-      _showError('中断できませんでした: $e');
+      _showError(l10n.interruptFailed(e));
     } finally {
       if (mounted) setState(() => _stopping = false);
     }
@@ -147,7 +150,7 @@ class _ComposerState extends ConsumerState<Composer> {
                   children: [
                     IconButton(
                       key: const Key('attach'),
-                      tooltip: '画像を添付',
+                      tooltip: context.l10n.attachImage,
                       onPressed: _attach,
                       icon: const Icon(Icons.add_photo_alternate_outlined),
                     ),
@@ -158,8 +161,8 @@ class _ComposerState extends ConsumerState<Composer> {
                         minLines: 1,
                         maxLines: 6,
                         textInputAction: TextInputAction.newline,
-                        decoration: const InputDecoration(
-                          hintText: 'メッセージを入力',
+                        decoration: InputDecoration(
+                          hintText: context.l10n.messageHint,
                           filled: false,
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
@@ -172,7 +175,7 @@ class _ComposerState extends ConsumerState<Composer> {
                     if (busy && !canSend)
                       IconButton.filledTonal(
                         key: const Key('stop'),
-                        tooltip: '中断',
+                        tooltip: context.l10n.interrupt,
                         style: _buttonStyle,
                         onPressed: _stopping ? null : _stop,
                         icon: const Icon(Icons.stop_rounded),
@@ -180,7 +183,7 @@ class _ComposerState extends ConsumerState<Composer> {
                     else
                       IconButton.filled(
                         key: const Key('send'),
-                        tooltip: '送信',
+                        tooltip: context.l10n.send,
                         style: _buttonStyle,
                         onPressed: canSend ? _send : null,
                         icon: const Icon(Icons.arrow_upward_rounded),
@@ -236,7 +239,7 @@ class _AttachmentStrip extends StatelessWidget {
               top: -8,
               right: -8,
               child: IconButton(
-                tooltip: '添付を外す',
+                tooltip: context.l10n.removeAttachment,
                 iconSize: 18,
                 onPressed: () => onRemove(index),
                 icon: const Icon(Icons.cancel),
@@ -279,7 +282,7 @@ class _SettingsRow extends ConsumerWidget {
             ),
             label: Text(
               settings.agent == null
-                  ? 'エージェント'
+                  ? context.l10n.agent
                   : agentDisplayName(settings.agent!),
               style: TextStyle(color: scheme.primary),
             ),
@@ -290,7 +293,7 @@ class _SettingsRow extends ConsumerWidget {
           const SizedBox(width: 6),
           ActionChip(
             avatar: const Icon(Icons.memory, size: 16),
-            label: Text(settings.model?.label ?? 'モデル'),
+            label: Text(settings.model?.label ?? context.l10n.model),
             visualDensity: VisualDensity.compact,
             onPressed: () => _pickModel(context, ref),
           ),
@@ -301,6 +304,7 @@ class _SettingsRow extends ConsumerWidget {
 
   Future<void> _pickAgent(BuildContext context, WidgetRef ref) async {
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
     final picked = await showModalBottomSheet<String>(
       context: context,
       showDragHandle: true,
@@ -309,6 +313,7 @@ class _SettingsRow extends ConsumerWidget {
     if (picked == null) return;
     await _apply(
       messenger,
+      l10n,
       () => ref
           .read(sessionSettingsProvider(session).notifier)
           .selectAgent(picked),
@@ -317,6 +322,7 @@ class _SettingsRow extends ConsumerWidget {
 
   Future<void> _pickModel(BuildContext context, WidgetRef ref) async {
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
     final picked = await showModalBottomSheet<ModelRef>(
       context: context,
       showDragHandle: true,
@@ -326,6 +332,7 @@ class _SettingsRow extends ConsumerWidget {
     if (picked == null) return;
     await _apply(
       messenger,
+      l10n,
       () => ref
           .read(sessionSettingsProvider(session).notifier)
           .selectModel(picked),
@@ -334,12 +341,13 @@ class _SettingsRow extends ConsumerWidget {
 
   Future<void> _apply(
     ScaffoldMessengerState messenger,
+    AppLocalizations l10n,
     Future<void> Function() action,
   ) async {
     try {
       await action();
     } on OpenCodeApiException catch (e) {
-      messenger.showSnackBar(SnackBar(content: Text('変更できませんでした: $e')));
+      messenger.showSnackBar(SnackBar(content: Text(l10n.changeFailed(e))));
     }
   }
 }
@@ -359,7 +367,7 @@ class _AgentSheet extends ConsumerWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: Text(
-              'エージェント',
+              context.l10n.agent,
               style: Theme.of(context).textTheme.titleMedium,
             ),
           ),
@@ -372,13 +380,17 @@ class _AgentSheet extends ConsumerWidget {
       ),
       error: (e, _) => Padding(
         padding: const EdgeInsets.all(24),
-        child: Text('エージェントを読み込めませんでした: $e'),
+        child: Text(context.l10n.agentsLoadFailed(e)),
       ),
     );
   }
 
   Widget _agentTile(BuildContext context, AgentInfo agent) {
-    final description = agentDescription(agent.id, agent.description);
+    final description = agentDescription(
+      context.l10n,
+      agent.id,
+      agent.description,
+    );
     return ListTile(
       title: Text(agentDisplayName(agent.id)),
       subtitle: description == null
@@ -412,9 +424,9 @@ class _ModelSheetState extends ConsumerState<_ModelSheet> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
             child: TextField(
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 prefixIcon: Icon(Icons.search),
-                hintText: 'モデルを検索',
+                hintText: context.l10n.searchModels,
                 isDense: true,
               ),
               onChanged: (v) => setState(() => _query = v.toLowerCase()),
@@ -442,7 +454,7 @@ class _ModelSheetState extends ConsumerState<_ModelSheet> {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Padding(
                 padding: const EdgeInsets.all(24),
-                child: Text('モデルを読み込めませんでした: $e'),
+                child: Text(context.l10n.modelsLoadFailed(e)),
               ),
             ),
           ),
@@ -471,7 +483,7 @@ class _ModelTile extends StatelessWidget {
       trailing: option.variants.isEmpty
           ? null
           : PopupMenuButton<String>(
-              tooltip: 'バリアント',
+              tooltip: context.l10n.variant,
               icon: const Icon(Icons.tune),
               onSelected: (v) => Navigator.pop(context, ref(v)),
               itemBuilder: (_) => [

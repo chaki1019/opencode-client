@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme.dart';
 import '../../core/events/event_stream.dart';
+import '../../l10n/l10n.dart';
 import 'live_providers.dart';
 
 /// A thin bar shown while the live event stream is reconnecting, so users
@@ -32,7 +33,7 @@ class LiveStatusBanner extends ConsumerWidget implements PreferredSizeWidget {
         color: scheme.tertiaryContainer,
         alignment: Alignment.center,
         child: Text(
-          'サーバーに再接続しています…',
+          context.l10n.reconnecting,
           style: Theme.of(context).textTheme.labelSmall
               ?.copyWith(color: scheme.onTertiaryContainer),
         ),

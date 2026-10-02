@@ -1,12 +1,15 @@
-/// Short Japanese relative time, e.g. "3分前", "昨日", "2026/09/01".
-String relativeTime(DateTime time, {DateTime? now}) {
+import 'package:intl/intl.dart';
+
+import '../l10n/app_localizations.dart';
+
+/// Short relative time, e.g. "3 minutes ago", "Yesterday", or a date.
+String relativeTime(AppLocalizations l10n, DateTime time, {DateTime? now}) {
   now ??= DateTime.now();
   final diff = now.difference(time);
-  if (diff.inMinutes < 1) return 'たった今';
-  if (diff.inHours < 1) return '${diff.inMinutes}分前';
-  if (diff.inDays < 1) return '${diff.inHours}時間前';
-  if (diff.inDays < 2) return '昨日';
-  if (diff.inDays < 7) return '${diff.inDays}日前';
-  String two(int v) => v.toString().padLeft(2, '0');
-  return '${time.year}/${two(time.month)}/${two(time.day)}';
+  if (diff.inMinutes < 1) return l10n.justNow;
+  if (diff.inHours < 1) return l10n.minutesAgo(diff.inMinutes);
+  if (diff.inDays < 1) return l10n.hoursAgo(diff.inHours);
+  if (diff.inDays < 2) return l10n.yesterday;
+  if (diff.inDays < 7) return l10n.daysAgo(diff.inDays);
+  return DateFormat.yMd(l10n.localeName).format(time);
 }

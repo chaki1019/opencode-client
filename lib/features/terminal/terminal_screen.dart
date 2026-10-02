@@ -9,6 +9,7 @@ import '../../core/api/api_errors.dart';
 import '../../core/models/project.dart';
 import '../../core/models/project_tools.dart';
 import '../../core/terminal/pty_connection.dart';
+import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_widgets.dart';
 import 'terminal_providers.dart';
@@ -34,7 +35,7 @@ class TerminalsScreen extends ConsumerWidget {
         heroTag: null,
         onPressed: () => _create(context, ref),
         icon: const Icon(Icons.add),
-        label: const Text('新しいターミナル'),
+        label: Text(context.l10n.newTerminal),
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(provider.future),
@@ -42,7 +43,7 @@ class TerminalsScreen extends ConsumerWidget {
           data: (list) => list.isEmpty
               ? ListView(
                   padding: const EdgeInsets.all(24),
-                  children: const [Center(child: Text('ターミナルはまだありません'))],
+                  children: [Center(child: Text(context.l10n.terminalsEmpty))],
                 )
               : ListView(
                   children: [
@@ -58,11 +59,13 @@ class TerminalsScreen extends ConsumerWidget {
                         subtitle: Text(
                           pty.isRunning
                               ? (pty.cwd ?? pty.command ?? '')
-                              : '終了しました（コード ${pty.exitCode ?? '-'}）',
+                              : context.l10n.terminalExited(
+                                  pty.exitCode ?? '-',
+                                ),
                           overflow: TextOverflow.ellipsis,
                         ),
                         trailing: IconButton(
-                          tooltip: '閉じる',
+                          tooltip: context.l10n.close,
                           icon: const Icon(Icons.close),
                           onPressed: () => _delete(context, ref, pty),
                         ),
@@ -73,7 +76,7 @@ class TerminalsScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => ListView(
             padding: const EdgeInsets.all(24),
-            children: [Text('ターミナルを読み込めませんでした: $e')],
+            children: [Text(context.l10n.terminalsLoadFailed(e))],
           ),
         ),
       ),
@@ -88,25 +91,27 @@ class TerminalsScreen extends ConsumerWidget {
 
   Future<void> _create(BuildContext context, WidgetRef ref) async {
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
     try {
       final pty = await ref
           .read(ptyListProvider(project.directory).notifier)
-          .create();
+          .create(l10n.terminalTitle);
       if (pty != null && context.mounted) _open(context, pty);
     } on OpenCodeApiException catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('ターミナルを開けませんでした: ${e.detail}')),
+        SnackBar(content: Text(l10n.terminalOpenFailed(e.detail))),
       );
     }
   }
 
   Future<void> _delete(BuildContext context, WidgetRef ref, Pty pty) async {
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
     try {
       await ref.read(ptyListProvider(project.directory).notifier).delete(pty);
     } on OpenCodeApiException catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('閉じられませんでした: ${e.detail}')),
+        SnackBar(content: Text(l10n.closeFailed(e.detail))),
       );
     }
   }
@@ -191,9 +196,9 @@ class _TerminalScreenState extends ConsumerState<TerminalScreen> {
   @override
   Widget build(BuildContext context) {
     final banner = switch (_state) {
-      PtyConnectionState.connecting => '接続しています…',
-      PtyConnectionState.failed => '接続が切れました',
-      PtyConnectionState.closed => 'ターミナルは終了しました',
+      PtyConnectionState.connecting => context.l10n.ptyConnecting,
+      PtyConnectionState.failed => context.l10n.ptyFailed,
+      PtyConnectionState.closed => context.l10n.ptyClosed,
       PtyConnectionState.open => null,
     };
     return Scaffold(
@@ -211,7 +216,7 @@ class _TerminalScreenState extends ConsumerState<TerminalScreen> {
                     if (_state == PtyConnectionState.failed)
                       TextButton(
                         onPressed: () => _connection?.connect(),
-                        child: const Text('再接続'),
+                        child: Text(context.l10n.reconnect),
                       ),
                   ],
                 ),

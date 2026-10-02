@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/api/api_errors.dart';
 import '../../core/models/project.dart';
 import '../../core/models/project_tools.dart';
+import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 
 final worktreesProvider = FutureProvider.autoDispose
@@ -31,7 +32,7 @@ class WorktreesScreen extends ConsumerWidget {
         key: const Key('new-worktree'),
         onPressed: () => _create(context, ref),
         icon: const Icon(Icons.add),
-        label: const Text('新しい worktree'),
+        label: Text(context.l10n.newWorktree),
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(provider.future),
@@ -43,7 +44,9 @@ class WorktreesScreen extends ConsumerWidget {
                   leading: Icon(
                     worktree.isMain ? Icons.home_outlined : Icons.account_tree,
                   ),
-                  title: Text(worktree.isMain ? 'メイン' : worktree.name),
+                  title: Text(
+                    worktree.isMain ? context.l10n.mainWorktree : worktree.name,
+                  ),
                   subtitle: Text(
                     worktree.directory,
                     overflow: TextOverflow.ellipsis,
@@ -51,7 +54,7 @@ class WorktreesScreen extends ConsumerWidget {
                   selected: worktree.directory == project.directory,
                   trailing: worktree.isManaged
                       ? IconButton(
-                          tooltip: '削除',
+                          tooltip: context.l10n.delete,
                           icon: const Icon(Icons.delete_outline),
                           onPressed: () => _remove(context, ref, worktree),
                         )
@@ -63,7 +66,7 @@ class WorktreesScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => ListView(
             padding: const EdgeInsets.all(24),
-            children: [Text('worktree を読み込めませんでした: $e')],
+            children: [Text(context.l10n.worktreesLoadFailed(e))],
           ),
         ),
       ),
@@ -85,6 +88,7 @@ class WorktreesScreen extends ConsumerWidget {
     final client = ref.read(connectionProvider)?.client;
     if (client == null) return;
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
     final name = await showDialog<String>(
       context: context,
       builder: (_) => const _NameDialog(),
@@ -95,7 +99,7 @@ class WorktreesScreen extends ConsumerWidget {
       ref.invalidate(worktreesProvider(project.id));
     } on OpenCodeApiException catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('作成できませんでした: ${e.detail}')),
+        SnackBar(content: Text(l10n.createFailed(e.detail))),
       );
     }
   }
@@ -108,10 +112,11 @@ class WorktreesScreen extends ConsumerWidget {
     final client = ref.read(connectionProvider)?.client;
     if (client == null) return;
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
     if (!await _confirm(
       context,
-      '「${worktree.name}」を削除しますか？',
-      'フォルダごと削除します。元に戻せません。',
+      context.l10n.deleteWorktreeTitle(worktree.name),
+      context.l10n.deleteWorktreeBody,
     )) {
       return;
     }
@@ -129,15 +134,15 @@ class WorktreesScreen extends ConsumerWidget {
         if (force || !context.mounted) return;
         if (!await _confirm(
           context,
-          'コミットしていない変更があります',
-          '変更も含めて削除しますか？元に戻せません。',
+          context.l10n.uncommittedChangesTitle,
+          context.l10n.uncommittedChangesBody,
         )) {
           return;
         }
         force = true;
       } on OpenCodeApiException catch (e) {
         messenger.showSnackBar(
-          SnackBar(content: Text('削除できませんでした: ${e.detail}')),
+          SnackBar(content: Text(l10n.deleteFailedWithError(e.detail))),
         );
         return;
       }
@@ -157,12 +162,12 @@ class WorktreesScreen extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, false),
-              child: const Text('キャンセル'),
+              child: Text(context.l10n.cancel),
             ),
             FilledButton(
               key: const Key('confirm-remove'),
               onPressed: () => Navigator.pop(context, true),
-              child: const Text('削除'),
+              child: Text(context.l10n.delete),
             ),
           ],
         ),
@@ -189,22 +194,22 @@ class _NameDialogState extends State<_NameDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('新しい worktree'),
+      title: Text(context.l10n.newWorktree),
       content: TextField(
         key: const Key('worktree-name'),
         controller: _controller,
         autofocus: true,
-        decoration: const InputDecoration(labelText: '名前（省略するとサーバーが決めます）'),
+        decoration: InputDecoration(labelText: context.l10n.worktreeNameHint),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('キャンセル'),
+          child: Text(context.l10n.cancel),
         ),
         FilledButton(
           key: const Key('confirm-worktree'),
           onPressed: () => Navigator.pop(context, _controller.text),
-          child: const Text('作成'),
+          child: Text(context.l10n.create),
         ),
       ],
     );

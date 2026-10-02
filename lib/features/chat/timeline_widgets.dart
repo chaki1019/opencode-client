@@ -8,6 +8,7 @@ import '../../app/theme.dart';
 import '../../core/models/prompts.dart';
 import '../../core/models/timeline.dart';
 import '../../core/paging.dart';
+import '../../l10n/l10n.dart';
 import '../live/live_widgets.dart';
 import 'agent_labels.dart';
 import 'composer_providers.dart';
@@ -159,8 +160,8 @@ class PendingPromptBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final status = switch (prompt.status) {
-      PendingStatus.sending => '送信中…',
-      PendingStatus.uncertain => '送信できたか確認中です。再送はしていません',
+      PendingStatus.sending => context.l10n.sending,
+      PendingStatus.uncertain => context.l10n.sendUncertain,
     };
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
@@ -188,7 +189,7 @@ class PendingPromptBubble extends StatelessWidget {
             Text(status, style: theme.textTheme.labelSmall),
             if (prompt.status != PendingStatus.sending)
               IconButton(
-                tooltip: '表示から消す',
+                tooltip: context.l10n.dismiss,
                 visualDensity: VisualDensity.compact,
                 iconSize: 16,
                 onPressed: onDismiss,
@@ -293,7 +294,7 @@ class _ThinkingIndicator extends StatelessWidget {
         children: [
           const LiveDot(size: 7),
           const SizedBox(width: 8),
-          Text('考え中…', style: style),
+          Text(context.l10n.thinking, style: style),
         ],
       ),
     );
@@ -316,7 +317,7 @@ class ReasoningView extends StatelessWidget {
         tilePadding: EdgeInsets.zero,
         dense: true,
         leading: const Icon(Icons.psychology_outlined, size: 18),
-        title: Text('思考', style: theme.textTheme.labelLarge),
+        title: Text(context.l10n.reasoning, style: theme.textTheme.labelLarge),
         childrenPadding: const EdgeInsets.only(bottom: 8),
         children: [
           Text(
@@ -415,7 +416,10 @@ class ToolCallView extends StatelessWidget {
                     else if (detail != null && detail.isNotEmpty)
                       MonospaceBlock(text: detail)
                     else
-                      Text('出力なし', style: theme.textTheme.bodySmall),
+                      Text(
+                        context.l10n.noOutput,
+                        style: theme.textTheme.bodySmall,
+                      ),
                   ],
                 ),
               ),
@@ -486,7 +490,7 @@ class CompactionView extends StatelessWidget {
         dense: true,
         leading: const Icon(Icons.compress, size: 18),
         title: Text(
-          'ここまでの会話を要約しました',
+          context.l10n.compacted,
           style: Theme.of(context).textTheme.labelLarge,
         ),
         children: [
@@ -505,10 +509,12 @@ class ContextCaption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = switch (entry.kind) {
-      'agent-switched' => 'エージェント: ${agentDisplayName(entry.text)}',
-      'model-switched' => 'モデル: ${entry.text}',
-      'location-switched' => '場所: ${entry.text}',
-      'skill' => 'スキル: ${entry.text}',
+      'agent-switched' => context.l10n.contextAgent(
+        agentDisplayName(entry.text),
+      ),
+      'model-switched' => context.l10n.contextModel(entry.text),
+      'location-switched' => context.l10n.contextLocation(entry.text),
+      'skill' => context.l10n.contextSkill(entry.text),
       _ => entry.text,
     };
     return Center(
@@ -534,7 +540,7 @@ class MonospaceBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     final lines = text.split('\n');
     final shown = lines.length > maxLines
-        ? '${lines.take(maxLines).join('\n')}\n… (${lines.length - maxLines} 行省略)'
+        ? '${lines.take(maxLines).join('\n')}\n… (${context.l10n.linesOmitted(lines.length - maxLines)})'
         : text;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -566,7 +572,7 @@ class OlderHistoryIndicator extends StatelessWidget {
       return Center(
         child: TextButton(
           onPressed: onRetry,
-          child: const Text('過去のメッセージを再読み込み'),
+          child: Text(context.l10n.reloadOlderMessages),
         ),
       );
     }

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../app/theme.dart';
 import '../../core/models/project.dart';
+import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_widgets.dart';
 import 'project_providers.dart';
@@ -19,10 +20,10 @@ class ProjectsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(connection?.server.displayName ?? 'プロジェクト'),
+        title: Text(connection?.server.displayName ?? context.l10n.projects),
         actions: [
           IconButton(
-            tooltip: '切断',
+            tooltip: context.l10n.disconnect,
             icon: const Icon(Icons.logout),
             onPressed: () => ref.read(connectionProvider.notifier).disconnect(),
           ),
@@ -66,7 +67,7 @@ class ProjectsScreen extends ConsumerWidget {
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => ListView(
             padding: const EdgeInsets.all(24),
-            children: [Text('プロジェクトを読み込めませんでした: $e')],
+            children: [Text(context.l10n.projectsLoadFailed(e))],
           ),
         ),
       ),
@@ -130,7 +131,7 @@ class _ProjectTile extends StatelessWidget {
                 ),
               ),
               child: Text(
-                '現在',
+                context.l10n.currentProject,
                 style: theme.textTheme.labelSmall?.copyWith(
                   color: scheme.primary,
                 ),

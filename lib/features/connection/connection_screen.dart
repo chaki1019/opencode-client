@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/theme.dart';
 import '../../core/api/api_errors.dart';
 import '../../core/models/server_config.dart';
+import '../../l10n/l10n.dart';
 import 'connection_providers.dart';
 
 class ConnectionScreen extends ConsumerStatefulWidget {
@@ -39,13 +40,12 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
     try {
       await action();
     } on UnsupportedServerException {
-      setState(
-        () => _error = 'このサーバーは OpenCode v2 API に対応していません。OpenCode を更新してください',
-      );
+      setState(() => _error = context.l10n.connectUnsupported);
     } on OpenCodeApiException catch (e) {
       setState(
-        () =>
-            _error = e.isUnauthorized ? 'ユーザー名またはパスワードが違います' : '接続できませんでした: $e',
+        () => _error = e.isUnauthorized
+            ? context.l10n.connectWrongCredentials
+            : context.l10n.connectFailed(e),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -93,33 +93,37 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
                   TextFormField(
                     key: const Key('url'),
                     controller: _url,
-                    decoration: const InputDecoration(
-                      labelText: 'サーバー URL',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.serverUrl,
                       hintText: 'http://192.168.1.10:4096',
                     ),
                     keyboardType: TextInputType.url,
                     autocorrect: false,
                     validator: (v) => (v == null || v.trim().isEmpty)
-                        ? 'URL を入力してください'
+                        ? context.l10n.serverUrlRequired
                         : null,
                   ),
                   TextFormField(
                     controller: _username,
-                    decoration: const InputDecoration(labelText: 'ユーザー名'),
+                    decoration: InputDecoration(
+                      labelText: context.l10n.username,
+                    ),
                     autocorrect: false,
                   ),
                   TextFormField(
                     key: const Key('password'),
                     controller: _password,
-                    decoration: const InputDecoration(
-                      labelText: 'パスワード',
-                      helperText: 'OPENCODE_SERVER_PASSWORD（未設定なら空欄）',
+                    decoration: InputDecoration(
+                      labelText: context.l10n.password,
+                      helperText: context.l10n.passwordHelper,
                     ),
                     obscureText: true,
                   ),
                   TextFormField(
                     controller: _label,
-                    decoration: const InputDecoration(labelText: '表示名（任意）'),
+                    decoration: InputDecoration(
+                      labelText: context.l10n.displayNameOptional,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   if (_error != null)
@@ -140,7 +144,7 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
                             dimension: 20,
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
-                        : const Text('接続'),
+                        : Text(context.l10n.connect),
                   ),
                 ],
               ),
@@ -150,7 +154,7 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
               data: (servers) => [
                 if (servers.isNotEmpty)
                   Text(
-                    '保存済みサーバー',
+                    context.l10n.savedServers,
                     style: theme.textTheme.labelLarge?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -175,7 +179,7 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
                                 .connectSaved(server),
                           ),
                     trailing: IconButton(
-                      tooltip: '削除',
+                      tooltip: context.l10n.delete,
                       icon: const Icon(Icons.delete_outline),
                       onPressed: () => ref
                           .read(savedServersProvider.notifier)
@@ -184,7 +188,7 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
                   ),
               ],
               loading: () => [const Center(child: CircularProgressIndicator())],
-              error: (e, _) => [Text('保存済みサーバーを読み込めませんでした: $e')],
+              error: (e, _) => [Text(context.l10n.savedServersLoadFailed(e))],
             ),
           ],
         ),
@@ -233,7 +237,7 @@ class _Brand extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          'OpenCode サーバーに接続',
+          context.l10n.connectTitle,
           style: theme.textTheme.bodyMedium?.copyWith(
             color: scheme.onSurfaceVariant,
           ),

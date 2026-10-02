@@ -4,12 +4,16 @@ import 'package:opencode_mobile/app/theme.dart';
 import 'package:opencode_mobile/core/models/timeline.dart';
 import 'package:opencode_mobile/features/chat/expand_downward.dart';
 import 'package:opencode_mobile/features/chat/timeline_widgets.dart';
+import 'package:opencode_mobile/l10n/app_localizations.dart';
 
 final _output = List.generate(30, (i) => 'line $i').join('\n');
 
 /// A chat-like reversed list; bumping [tick] rebuilds just the list.
 Widget _chat({bool reverse = true, ValueNotifier<int>? tick}) => MaterialApp(
   theme: AppTheme.dark,
+  localizationsDelegates: AppLocalizations.localizationsDelegates,
+  supportedLocales: AppLocalizations.supportedLocales,
+  locale: const Locale('ja'),
   home: Scaffold(
     body: ValueListenableBuilder(
       valueListenable: tick ?? ValueNotifier(0),

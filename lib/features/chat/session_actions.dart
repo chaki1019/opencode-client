@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_errors.dart';
 import '../../core/models/session.dart';
+import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 import 'composer_providers.dart';
 
@@ -25,24 +26,33 @@ class SessionActionsMenu extends ConsumerWidget {
         SessionAction.compact => compactSession(context, ref, session),
         SessionAction.delete => deleteSession(context, ref, session),
       },
-      itemBuilder: (_) => const [
+      itemBuilder: (_) => [
         PopupMenuItem(
           value: SessionAction.rename,
-          child: ListTile(leading: Icon(Icons.edit), title: Text('名前を変更')),
+          child: ListTile(
+            leading: Icon(Icons.edit),
+            title: Text(context.l10n.rename),
+          ),
         ),
         PopupMenuItem(
           value: SessionAction.fork,
-          child: ListTile(leading: Icon(Icons.fork_right), title: Text('フォーク')),
+          child: ListTile(
+            leading: Icon(Icons.fork_right),
+            title: Text(context.l10n.fork),
+          ),
         ),
         PopupMenuItem(
           value: SessionAction.compact,
-          child: ListTile(leading: Icon(Icons.compress), title: Text('会話を要約')),
+          child: ListTile(
+            leading: Icon(Icons.compress),
+            title: Text(context.l10n.compact),
+          ),
         ),
         PopupMenuItem(
           value: SessionAction.delete,
           child: ListTile(
             leading: Icon(Icons.delete_outline),
-            title: Text('削除'),
+            title: Text(context.l10n.delete),
           ),
         ),
       ],
@@ -80,7 +90,7 @@ Future<void> renameSession(
   if (title == null || title.trim().isEmpty || !context.mounted) return;
   final updated = await _guard(
     context,
-    '名前を変更できませんでした',
+    context.l10n.renameFailed,
     () => client.renameSession(session.id, title.trim()),
   );
   // Reopen the chat with the renamed session so the title updates.
@@ -105,7 +115,7 @@ Future<void> forkSession(
   final router = GoRouter.of(context);
   final fork = await _guard(
     context,
-    'フォークできませんでした',
+    context.l10n.forkFailed,
     () => client.forkSession(session.id, beforeMessageId: beforeMessageId),
   );
   if (fork != null) {
@@ -121,13 +131,14 @@ Future<void> compactSession(
   final client = ref.read(connectionProvider)?.client;
   if (client == null) return;
   final messenger = ScaffoldMessenger.of(context);
+  final l10n = context.l10n;
   final id = ref.read(idsProvider).message();
-  final done = await _guard(context, '要約を依頼できませんでした', () async {
+  final done = await _guard(context, context.l10n.compactFailed, () async {
     await client.compactSession(session.id, messageId: id);
     return true;
   });
   if (done == true) {
-    messenger.showSnackBar(const SnackBar(content: Text('会話の要約を依頼しました')));
+    messenger.showSnackBar(SnackBar(content: Text(l10n.compactRequested)));
   }
 }
 
@@ -142,23 +153,27 @@ Future<void> deleteSession(
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('セッションを削除しますか？'),
-      content: Text('「${session.displayTitle}」を削除します。元に戻せません。'),
+      title: Text(context.l10n.deleteSessionTitle),
+      content: Text(
+        context.l10n.deleteSessionBody(
+          session.displayTitle ?? context.l10n.untitledSession,
+        ),
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('キャンセル'),
+          child: Text(context.l10n.cancel),
         ),
         FilledButton(
           key: const Key('confirm-delete'),
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('削除'),
+          child: Text(context.l10n.delete),
         ),
       ],
     ),
   );
   if (confirmed != true || !context.mounted) return;
-  final done = await _guard(context, '削除できませんでした', () async {
+  final done = await _guard(context, context.l10n.deleteFailed, () async {
     await client.deleteSession(session.id);
     return true;
   });
@@ -186,23 +201,23 @@ class _RenameDialogState extends State<_RenameDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('名前を変更'),
+      title: Text(context.l10n.rename),
       content: TextField(
         key: const Key('rename-field'),
         controller: _controller,
         autofocus: true,
-        decoration: const InputDecoration(hintText: 'セッション名'),
+        decoration: InputDecoration(hintText: context.l10n.sessionName),
         onSubmitted: (v) => Navigator.pop(context, v),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('キャンセル'),
+          child: Text(context.l10n.cancel),
         ),
         FilledButton(
           key: const Key('confirm-rename'),
           onPressed: () => Navigator.pop(context, _controller.text),
-          child: const Text('変更'),
+          child: Text(context.l10n.renameConfirm),
         ),
       ],
     );
