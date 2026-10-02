@@ -5,6 +5,7 @@ import '../../core/models/session.dart';
 import '../../core/models/timeline.dart';
 import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
+import 'agent_labels.dart';
 import 'chat_providers.dart';
 import 'composer.dart';
 import 'composer_providers.dart';
@@ -162,7 +163,10 @@ class _ChatTitle extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final settings = ref.watch(sessionSettingsProvider(session));
-    final detail = [?settings.agent, ?settings.model?.label].join(' · ');
+    final detail = [
+      if (settings.agent case final agent?) agentDisplayName(agent),
+      ?settings.model?.label,
+    ].join(' · ');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,

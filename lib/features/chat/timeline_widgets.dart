@@ -9,6 +9,7 @@ import '../../core/models/prompts.dart';
 import '../../core/models/timeline.dart';
 import '../../core/paging.dart';
 import '../live/live_widgets.dart';
+import 'agent_labels.dart';
 import 'composer_providers.dart';
 import 'expand_downward.dart';
 import 'prompt_widgets.dart';
@@ -208,7 +209,10 @@ class AssistantMessageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final caption = [?entry.agent, ?entry.model?.label].join(' · ');
+    final caption = [
+      if (entry.agent case final agent?) agentDisplayName(agent),
+      ?entry.model?.label,
+    ].join(' · ');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -501,7 +505,7 @@ class ContextCaption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = switch (entry.kind) {
-      'agent-switched' => 'エージェント: ${entry.text}',
+      'agent-switched' => 'エージェント: ${agentDisplayName(entry.text)}',
       'model-switched' => 'モデル: ${entry.text}',
       'location-switched' => '場所: ${entry.text}',
       'skill' => 'スキル: ${entry.text}',

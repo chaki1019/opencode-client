@@ -7,6 +7,7 @@ import '../../core/models/catalog.dart';
 import '../../core/models/session.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
+import 'agent_labels.dart';
 import 'composer_providers.dart';
 
 /// Input row at the bottom of the chat, with the agent and model in use.
@@ -277,7 +278,9 @@ class _SettingsRow extends ConsumerWidget {
               color: scheme.primary,
             ),
             label: Text(
-              settings.agent ?? 'エージェント',
+              settings.agent == null
+                  ? 'エージェント'
+                  : agentDisplayName(settings.agent!),
               style: TextStyle(color: scheme.primary),
             ),
             backgroundColor: scheme.primary.withValues(alpha: 0.12),
@@ -353,18 +356,14 @@ class _AgentSheet extends ConsumerWidget {
       data: (list) => ListView(
         shrinkWrap: true,
         children: [
-          for (final agent in list)
-            ListTile(
-              title: Text(agent.id),
-              subtitle: agent.description == null
-                  ? null
-                  : Text(
-                      agent.description!,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-              onTap: () => Navigator.pop(context, agent.id),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+            child: Text(
+              'エージェント',
+              style: Theme.of(context).textTheme.titleMedium,
             ),
+          ),
+          for (final agent in list) _agentTile(context, agent),
         ],
       ),
       loading: () => const Padding(
@@ -375,6 +374,17 @@ class _AgentSheet extends ConsumerWidget {
         padding: const EdgeInsets.all(24),
         child: Text('エージェントを読み込めませんでした: $e'),
       ),
+    );
+  }
+
+  Widget _agentTile(BuildContext context, AgentInfo agent) {
+    final description = agentDescription(agent.id, agent.description);
+    return ListTile(
+      title: Text(agentDisplayName(agent.id)),
+      subtitle: description == null
+          ? null
+          : Text(description, maxLines: 3, overflow: TextOverflow.ellipsis),
+      onTap: () => Navigator.pop(context, agent.id),
     );
   }
 }
