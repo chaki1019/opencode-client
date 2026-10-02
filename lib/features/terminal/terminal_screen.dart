@@ -30,6 +30,8 @@ class TerminalsScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('new-terminal'),
+        // Tabs share one route, so the default tag would clash.
+        heroTag: null,
         onPressed: () => _create(context, ref),
         icon: const Icon(Icons.add),
         label: const Text('新しいターミナル'),
