@@ -243,7 +243,12 @@ void main() {
     expect(find.text('OpenCode 2.0.0'), findsOneWidget);
 
     await tester.tap(find.text('my-app'));
+    // The project slides in over the list rather than replacing it at once.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('OpenCode 2.0.0'), findsOneWidget);
     await tester.pumpAndSettle();
+    expect(find.text('OpenCode 2.0.0'), findsNothing);
     expect(find.text('Fix the login bug'), findsOneWidget);
 
     // The Git tab lists changed files and opens their diff.

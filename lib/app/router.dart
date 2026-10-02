@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -9,6 +9,12 @@ import '../features/connection/connection_providers.dart';
 import '../features/connection/connection_screen.dart';
 import '../features/projects/project_screen.dart';
 import '../features/projects/projects_screen.dart';
+
+/// go_router 18 only recognizes `material_ui`'s MaterialApp and otherwise
+/// falls back to pages without any transition, so every route builds its
+/// [MaterialPage] itself to get the theme's slide.
+Page<void> _page(GoRouterState state, Widget child) =>
+    MaterialPage<void>(key: state.pageKey, child: child);
 
 final routerProvider = Provider<GoRouter>((ref) {
   // Re-run redirects whenever the connection changes.
@@ -29,11 +35,11 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/connect',
-        builder: (context, state) => const ConnectionScreen(),
+        pageBuilder: (context, state) => _page(state, const ConnectionScreen()),
       ),
       GoRoute(
         path: '/projects',
-        builder: (context, state) => const ProjectsScreen(),
+        pageBuilder: (context, state) => _page(state, const ProjectsScreen()),
         routes: [
           // Screens receive their model through `extra`; deep links without
           // it fall back to the project list.
@@ -41,8 +47,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: ':projectId',
             redirect: (context, state) =>
                 state.extra is Project ? null : '/projects',
-            builder: (context, state) =>
-                ProjectScreen(project: state.extra! as Project),
+            pageBuilder: (context, state) =>
+                _page(state, ProjectScreen(project: state.extra! as Project)),
           ),
         ],
       ),
@@ -50,8 +56,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/sessions/:sessionId',
         redirect: (context, state) =>
             state.extra is Session ? null : '/projects',
-        builder: (context, state) =>
-            ChatScreen(session: state.extra! as Session),
+        pageBuilder: (context, state) =>
+            _page(state, ChatScreen(session: state.extra! as Session)),
       ),
     ],
   );
