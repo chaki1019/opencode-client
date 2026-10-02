@@ -500,6 +500,12 @@ abstract class AppLocalizations {
   /// **'Couldn\'t load agents: {error}'**
   String agentsLoadFailed(Object error);
 
+  /// No description provided for @modelCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 model} other{{count} models}}'**
+  String modelCount(int count);
+
   /// No description provided for @searchModels.
   ///
   /// In en, this message translates to:

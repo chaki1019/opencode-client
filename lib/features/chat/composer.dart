@@ -10,6 +10,7 @@ import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
 import 'agent_labels.dart';
 import 'composer_providers.dart';
+import 'model_picker.dart';
 
 /// Input row at the bottom of the chat, with the agent and model in use.
 /// While the session is running, the send button becomes a stop button.
@@ -327,7 +328,10 @@ class _SettingsRow extends ConsumerWidget {
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
-      builder: (_) => _ModelSheet(directory: session.location.directory),
+      builder: (_) => _ModelSheet(
+        directory: session.location.directory,
+        current: ref.read(sessionSettingsProvider(session)).model,
+      ),
     );
     if (picked == null) return;
     await _apply(
@@ -401,96 +405,30 @@ class _AgentSheet extends ConsumerWidget {
   }
 }
 
-class _ModelSheet extends ConsumerStatefulWidget {
-  const _ModelSheet({required this.directory});
+class _ModelSheet extends ConsumerWidget {
+  const _ModelSheet({required this.directory, this.current});
 
   final String directory;
+  final ModelRef? current;
 
   @override
-  ConsumerState<_ModelSheet> createState() => _ModelSheetState();
-}
-
-class _ModelSheetState extends ConsumerState<_ModelSheet> {
-  String _query = '';
-
-  @override
-  Widget build(BuildContext context) {
-    final models = ref.watch(modelsProvider(widget.directory));
+  Widget build(BuildContext context, WidgetRef ref) {
+    final models = ref.watch(modelsProvider(directory));
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.7,
-      builder: (context, scrollController) => Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: TextField(
-              decoration: InputDecoration(
-                prefixIcon: Icon(Icons.search),
-                hintText: context.l10n.searchModels,
-                isDense: true,
-              ),
-              onChanged: (v) => setState(() => _query = v.toLowerCase()),
-            ),
-          ),
-          Expanded(
-            child: models.when(
-              data: (list) {
-                final filtered = list
-                    .where(
-                      (m) =>
-                          _query.isEmpty ||
-                          m.name.toLowerCase().contains(_query) ||
-                          m.id.toLowerCase().contains(_query) ||
-                          m.providerName.toLowerCase().contains(_query),
-                    )
-                    .toList();
-                return ListView.builder(
-                  controller: scrollController,
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) =>
-                      _ModelTile(option: filtered[index]),
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Padding(
-                padding: const EdgeInsets.all(24),
-                child: Text(context.l10n.modelsLoadFailed(e)),
-              ),
-            ),
-          ),
-        ],
+      builder: (context, scrollController) => models.when(
+        data: (list) => ModelPicker(
+          models: list,
+          current: current,
+          scrollController: scrollController,
+        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, _) => Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(context.l10n.modelsLoadFailed(e)),
+        ),
       ),
-    );
-  }
-}
-
-class _ModelTile extends StatelessWidget {
-  const _ModelTile({required this.option});
-
-  final ModelOption option;
-
-  @override
-  Widget build(BuildContext context) {
-    ModelRef ref([String? variant]) => ModelRef(
-      providerID: option.providerID,
-      id: option.id,
-      variant: variant,
-    );
-    return ListTile(
-      title: Text(option.name),
-      subtitle: Text(option.providerName),
-      onTap: () => Navigator.pop(context, ref()),
-      trailing: option.variants.isEmpty
-          ? null
-          : PopupMenuButton<String>(
-              tooltip: context.l10n.variant,
-              icon: const Icon(Icons.tune),
-              onSelected: (v) => Navigator.pop(context, ref(v)),
-              itemBuilder: (_) => [
-                for (final v in option.variants)
-                  PopupMenuItem(value: v, child: Text(v)),
-              ],
-            ),
     );
   }
 }
