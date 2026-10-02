@@ -10,6 +10,7 @@ import '../../core/models/timeline.dart';
 import '../../core/paging.dart';
 import '../live/live_widgets.dart';
 import 'composer_providers.dart';
+import 'expand_downward.dart';
 import 'prompt_widgets.dart';
 
 class TimelineEntryView extends StatelessWidget {
@@ -305,20 +306,23 @@ class ReasoningView extends StatelessWidget {
   Widget build(BuildContext context) {
     if (text.trim().isEmpty) return const SizedBox.shrink();
     final theme = Theme.of(context);
-    return ExpansionTile(
-      tilePadding: EdgeInsets.zero,
-      dense: true,
-      leading: const Icon(Icons.psychology_outlined, size: 18),
-      title: Text('思考', style: theme.textTheme.labelLarge),
-      childrenPadding: const EdgeInsets.only(bottom: 8),
-      children: [
-        Text(
-          text.trim(),
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+    return ExpandDownward(
+      builder: (context, onExpansionChanged) => ExpansionTile(
+        onExpansionChanged: onExpansionChanged,
+        tilePadding: EdgeInsets.zero,
+        dense: true,
+        leading: const Icon(Icons.psychology_outlined, size: 18),
+        title: Text('思考', style: theme.textTheme.labelLarge),
+        childrenPadding: const EdgeInsets.only(bottom: 8),
+        children: [
+          Text(
+            text.trim(),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -361,52 +365,55 @@ class ToolCallView extends StatelessWidget {
           children: [
             Container(width: 2, color: color),
             Expanded(
-              child: ExpansionTile(
-                dense: true,
-                visualDensity: VisualDensity.compact,
-                tilePadding: const EdgeInsets.only(left: 8, right: 4),
-                minTileHeight: 36,
-                title: Row(
-                  children: [
-                    Icon(icon, color: color, size: 16),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text.rich(
-                        TextSpan(
-                          children: [
-                            TextSpan(
-                              text: tool.name,
-                              style: mono?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: scheme.onSurface,
-                              ),
-                            ),
-                            if (tool.subject != null)
+              child: ExpandDownward(
+                builder: (context, onExpansionChanged) => ExpansionTile(
+                  onExpansionChanged: onExpansionChanged,
+                  dense: true,
+                  visualDensity: VisualDensity.compact,
+                  tilePadding: const EdgeInsets.only(left: 8, right: 4),
+                  minTileHeight: 36,
+                  title: Row(
+                    children: [
+                      Icon(icon, color: color, size: 16),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text.rich(
+                          TextSpan(
+                            children: [
                               TextSpan(
-                                text: '  ${tool.subject}',
+                                text: tool.name,
                                 style: mono?.copyWith(
-                                  color: scheme.onSurfaceVariant,
+                                  fontWeight: FontWeight.w600,
+                                  color: scheme.onSurface,
                                 ),
                               ),
-                          ],
+                              if (tool.subject != null)
+                                TextSpan(
+                                  text: '  ${tool.subject}',
+                                  style: mono?.copyWith(
+                                    color: scheme.onSurfaceVariant,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
+                    ],
+                  ),
+                  childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                  expandedAlignment: Alignment.centerLeft,
+                  expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (todos != null)
+                      TodoList(todos: todos)
+                    else if (detail != null && detail.isNotEmpty)
+                      MonospaceBlock(text: detail)
+                    else
+                      Text('出力なし', style: theme.textTheme.bodySmall),
                   ],
                 ),
-                childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-                expandedAlignment: Alignment.centerLeft,
-                expandedCrossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (todos != null)
-                    TodoList(todos: todos)
-                  else if (detail != null && detail.isNotEmpty)
-                    MonospaceBlock(text: detail)
-                  else
-                    Text('出力なし', style: theme.textTheme.bodySmall),
-                ],
               ),
             ),
           ],
@@ -468,17 +475,20 @@ class CompactionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ExpansionTile(
-      tilePadding: EdgeInsets.zero,
-      dense: true,
-      leading: const Icon(Icons.compress, size: 18),
-      title: Text(
-        'ここまでの会話を要約しました',
-        style: Theme.of(context).textTheme.labelLarge,
+    return ExpandDownward(
+      builder: (context, onExpansionChanged) => ExpansionTile(
+        onExpansionChanged: onExpansionChanged,
+        tilePadding: EdgeInsets.zero,
+        dense: true,
+        leading: const Icon(Icons.compress, size: 18),
+        title: Text(
+          'ここまでの会話を要約しました',
+          style: Theme.of(context).textTheme.labelLarge,
+        ),
+        children: [
+          if (entry.summary.isNotEmpty) MarkdownBody(data: entry.summary),
+        ],
       ),
-      children: [
-        if (entry.summary.isNotEmpty) MarkdownBody(data: entry.summary),
-      ],
     );
   }
 }
