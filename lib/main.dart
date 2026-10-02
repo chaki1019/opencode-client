@@ -1,10 +1,24 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/router.dart';
+import 'app/theme.dart';
 
 void main() {
+  LicenseRegistry.addLicense(_fontLicenses);
   runApp(const ProviderScope(child: OpenCodeMobileApp()));
+}
+
+Stream<LicenseEntry> _fontLicenses() async* {
+  for (final (package, file) in [
+    ('IBM Plex Sans', 'OFL-IBMPlexSans.txt'),
+    ('JetBrains Mono', 'OFL-JetBrainsMono.txt'),
+  ]) {
+    final text = await rootBundle.loadString('assets/fonts/$file');
+    yield LicenseEntryWithLineBreaks([package], text);
+  }
 }
 
 class OpenCodeMobileApp extends ConsumerWidget {
@@ -14,12 +28,8 @@ class OpenCodeMobileApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp.router(
       title: 'OpenCode Mobile',
-      theme: ThemeData(colorSchemeSeed: Colors.indigo, useMaterial3: true),
-      darkTheme: ThemeData(
-        colorSchemeSeed: Colors.indigo,
-        brightness: Brightness.dark,
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
       routerConfig: ref.watch(routerProvider),
     );
   }

@@ -4,9 +4,11 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 
+import '../../app/theme.dart';
 import '../../core/models/prompts.dart';
 import '../../core/models/timeline.dart';
 import '../../core/paging.dart';
+import '../live/live_widgets.dart';
 import 'composer_providers.dart';
 import 'prompt_widgets.dart';
 
@@ -42,7 +44,13 @@ class UserMessageBubble extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: scheme.primaryContainer,
-            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: scheme.primary.withValues(alpha: 0.18)),
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(14),
+              topRight: Radius.circular(14),
+              bottomLeft: Radius.circular(14),
+              bottomRight: Radius.circular(4),
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -205,13 +213,12 @@ class AssistantMessageView extends StatelessWidget {
       children: [
         for (final content in entry.content)
           switch (content) {
-            final TextContent c when c.text.trim().isNotEmpty => MarkdownBody(
-              data: c.text,
-              selectable: true,
-              styleSheet: MarkdownStyleSheet.fromTheme(theme).copyWith(
-                code: theme.textTheme.bodyMedium?.copyWith(
-                  fontFamily: 'monospace',
-                ),
+            final TextContent c when c.text.trim().isNotEmpty => Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: MarkdownBody(
+                data: c.text,
+                selectable: true,
+                styleSheet: _markdownStyle(context),
               ),
             ),
             TextContent() => const SizedBox.shrink(),
@@ -238,6 +245,32 @@ class AssistantMessageView extends StatelessWidget {
   }
 }
 
+MarkdownStyleSheet _markdownStyle(BuildContext context) {
+  final theme = Theme.of(context);
+  final colors = AppColors.of(context);
+  return MarkdownStyleSheet.fromTheme(theme).copyWith(
+    p: theme.textTheme.bodyMedium?.copyWith(height: 1.6),
+    code: theme.textTheme.bodySmall?.copyWith(
+      fontFamily: AppFonts.mono,
+      backgroundColor: colors.code,
+    ),
+    codeblockDecoration: BoxDecoration(
+      color: colors.code,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    codeblockPadding: const EdgeInsets.all(12),
+    blockquoteDecoration: BoxDecoration(
+      border: Border(
+        left: BorderSide(color: theme.colorScheme.outline, width: 2),
+      ),
+    ),
+    blockquotePadding: const EdgeInsets.only(left: 12),
+    horizontalRuleDecoration: BoxDecoration(
+      border: Border(top: BorderSide(color: theme.colorScheme.outlineVariant)),
+    ),
+  );
+}
+
 bool _hasVisibleText(AssistantEntry entry) => entry.content.any(
   (c) => c is ToolContent || (c is TextContent && c.text.trim().isNotEmpty),
 );
@@ -253,10 +286,7 @@ class _ThinkingIndicator extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         children: [
-          const SizedBox.square(
-            dimension: 12,
-            child: CircularProgressIndicator(strokeWidth: 1.5),
-          ),
+          const LiveDot(size: 7),
           const SizedBox(width: 8),
           Text('考え中…', style: style),
         ],
@@ -301,41 +331,86 @@ class ToolCallView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final colors = AppColors.of(context);
     final (icon, color) = switch (tool.status) {
-      ToolStatus.completed => (Icons.check_circle_outline, Colors.green),
-      ToolStatus.error => (Icons.error_outline, theme.colorScheme.error),
-      ToolStatus.running ||
-      ToolStatus.pending => (Icons.timelapse, theme.colorScheme.outline),
+      ToolStatus.completed => (Icons.check, colors.success),
+      ToolStatus.error => (Icons.close, scheme.error),
+      ToolStatus.running => (Icons.more_horiz, colors.running),
+      ToolStatus.pending => (Icons.more_horiz, scheme.outline),
     };
     final detail = tool.errorMessage ?? tool.output;
     final todos = TodoItem.isTodoTool(tool.name)
         ? TodoItem.fromToolInput(tool.input)
         : null;
-    return Card.outlined(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: ExpansionTile(
-        dense: true,
-        shape: const Border(),
-        leading: Icon(icon, color: color, size: 18),
-        title: Text(tool.name, style: theme.textTheme.labelLarge),
-        subtitle: tool.subject == null
-            ? null
-            : Text(
-                tool.subject!,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.bodySmall,
+    final mono = theme.textTheme.bodySmall?.copyWith(
+      fontFamily: AppFonts.mono,
+      fontSize: 12,
+    );
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      decoration: BoxDecoration(
+        color: scheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: scheme.outlineVariant),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(width: 2, color: color),
+            Expanded(
+              child: ExpansionTile(
+                dense: true,
+                visualDensity: VisualDensity.compact,
+                tilePadding: const EdgeInsets.only(left: 8, right: 4),
+                minTileHeight: 36,
+                title: Row(
+                  children: [
+                    Icon(icon, color: color, size: 16),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text.rich(
+                        TextSpan(
+                          children: [
+                            TextSpan(
+                              text: tool.name,
+                              style: mono?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: scheme.onSurface,
+                              ),
+                            ),
+                            if (tool.subject != null)
+                              TextSpan(
+                                text: '  ${tool.subject}',
+                                style: mono?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                ),
+                              ),
+                          ],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                childrenPadding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                expandedAlignment: Alignment.centerLeft,
+                expandedCrossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (todos != null)
+                    TodoList(todos: todos)
+                  else if (detail != null && detail.isNotEmpty)
+                    MonospaceBlock(text: detail)
+                  else
+                    Text('出力なし', style: theme.textTheme.bodySmall),
+                ],
               ),
-        childrenPadding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-        expandedCrossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (todos != null)
-            TodoList(todos: todos)
-          else if (detail != null && detail.isNotEmpty)
-            MonospaceBlock(text: detail)
-          else
-            Text('出力なし', style: theme.textTheme.bodySmall),
-        ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -348,8 +423,9 @@ class ShellEntryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card.outlined(
-      margin: EdgeInsets.zero,
+    final colors = AppColors.of(context);
+    return Card(
+      color: colors.code,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -359,11 +435,16 @@ class ShellEntryView extends StatelessWidget {
               children: [
                 Icon(
                   entry.isRunning
-                      ? Icons.timelapse
+                      ? Icons.more_horiz
                       : entry.succeeded
-                      ? Icons.check_circle_outline
-                      : Icons.error_outline,
-                  size: 18,
+                      ? Icons.check
+                      : Icons.close,
+                  size: 16,
+                  color: entry.isRunning
+                      ? colors.running
+                      : entry.succeeded
+                      ? colors.success
+                      : Theme.of(context).colorScheme.error,
                 ),
                 const SizedBox(width: 8),
                 Expanded(child: MonospaceBlock(text: '\$ ${entry.command}')),
@@ -445,7 +526,11 @@ class MonospaceBlock extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: SelectableText(
         shown,
-        style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
+        style: const TextStyle(
+          fontFamily: AppFonts.mono,
+          fontSize: 12,
+          height: 1.45,
+        ),
       ),
     );
   }

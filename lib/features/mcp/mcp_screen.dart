@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/theme.dart';
 import '../../core/api/api_errors.dart';
 import '../../core/models/project.dart';
 import '../../core/models/project_tools.dart';
@@ -94,7 +95,7 @@ class _McpTileState extends ConsumerState<_McpTile> {
       leading: Icon(
         server.isConnected ? Icons.power : Icons.power_off,
         color: server.isConnected
-            ? Colors.green
+            ? AppColors.of(context).success
             : problem
             ? theme.colorScheme.error
             : theme.colorScheme.outline,

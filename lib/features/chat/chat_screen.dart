@@ -28,18 +28,9 @@ class ChatScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          session.displayTitle,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+        title: _ChatTitle(session: session, busy: busy),
         bottom: const LiveStatusBanner(),
         actions: [
-          if (busy)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
-              child: Center(child: SessionBusyIndicator(size: 18)),
-            ),
           IconButton(
             tooltip: '再読み込み',
             icon: const Icon(Icons.refresh),
@@ -153,5 +144,46 @@ class ChatScreen extends ConsumerWidget {
     if (fork == true && context.mounted) {
       await forkSession(context, ref, session, beforeMessageId: entry.id);
     }
+  }
+}
+
+/// Session title over a monospace line with the agent and model, led by a
+/// pulsing dot while the session is running.
+class _ChatTitle extends ConsumerWidget {
+  const _ChatTitle({required this.session, required this.busy});
+
+  final Session session;
+  final bool busy;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final settings = ref.watch(sessionSettingsProvider(session));
+    final detail = [?settings.agent, ?settings.model?.label].join(' · ');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          session.displayTitle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        if (busy || detail.isNotEmpty)
+          Row(
+            children: [
+              if (busy) ...[const LiveDot(size: 6), const SizedBox(width: 6)],
+              Expanded(
+                child: Text(
+                  busy && detail.isEmpty ? '実行中' : detail,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.labelSmall,
+                ),
+              ),
+            ],
+          ),
+      ],
+    );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/theme.dart';
 import '../../core/models/project.dart';
 import '../../core/models/project_tools.dart';
 import '../live/live_widgets.dart';
@@ -133,12 +134,18 @@ class _FileTile extends StatelessWidget {
           children: [
             TextSpan(
               text: '+${change.additions}',
-              style: const TextStyle(color: Colors.green),
+              style: TextStyle(
+                fontFamily: AppFonts.mono,
+                color: AppColors.of(context).success,
+              ),
             ),
             const TextSpan(text: ' '),
             TextSpan(
               text: '−${change.deletions}',
-              style: TextStyle(color: theme.colorScheme.error),
+              style: TextStyle(
+                fontFamily: AppFonts.mono,
+                color: theme.colorScheme.error,
+              ),
             ),
           ],
         ),
@@ -179,9 +186,10 @@ class DiffView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final colors = AppColors.of(context);
     final lines = patch.split('\n');
     final style = theme.textTheme.bodySmall?.copyWith(
-      fontFamily: 'monospace',
+      fontFamily: AppFonts.mono,
       height: 1.4,
     );
     return SelectionArea(
@@ -194,9 +202,9 @@ class DiffView extends StatelessWidget {
             Color? background,
             Color? foreground,
           ) = line.startsWith('+') && !line.startsWith('+++')
-              ? (Colors.green.withValues(alpha: 0.15), null)
+              ? (colors.addedBackground, null)
               : line.startsWith('-') && !line.startsWith('---')
-              ? (scheme.error.withValues(alpha: 0.15), null)
+              ? (colors.removedBackground, null)
               : line.startsWith('@@')
               ? (scheme.primary.withValues(alpha: 0.08), scheme.primary)
               : (null, null);
