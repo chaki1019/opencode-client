@@ -12,6 +12,9 @@ import 'project_providers.dart';
 class ProjectsScreen extends ConsumerWidget {
   const ProjectsScreen({super.key});
 
+  /// Matches [ListTile]'s default start padding used by [_ProjectTile].
+  static const double _edge = 16;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final connection = ref.watch(connectionProvider);
@@ -20,6 +23,9 @@ class ProjectsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        // Root screen with no back button: line the title up with the
+        // project tiles' leading edge instead of the theme's tight spacing.
+        titleSpacing: _edge,
         title: Text(connection?.server.displayName ?? context.l10n.projects),
         actions: [
           IconButton(
@@ -33,7 +39,7 @@ class ProjectsScreen extends ConsumerWidget {
             : PreferredSize(
                 preferredSize: const Size.fromHeight(20),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 16, 6),
+                  padding: const EdgeInsets.fromLTRB(_edge, 0, 16, 6),
                   child: Row(
                     children: [
                       LiveDot(
