@@ -43,6 +43,8 @@ class SessionsScreen extends ConsumerWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('new-session'),
+        // Tabs share one route, so the default tag would clash.
+        heroTag: null,
         onPressed: () => _createSession(context, ref),
         icon: const Icon(Icons.add),
         label: const Text('新しいセッション'),
