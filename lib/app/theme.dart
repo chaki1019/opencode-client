@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 /// Font families bundled under assets/fonts. Japanese glyphs are not in
@@ -190,6 +191,15 @@ abstract final class AppTheme {
     return base.copyWith(
       scaffoldBackgroundColor: scheme.surface,
       textTheme: text,
+      // Screens slide in from the right on both platforms, matching the
+      // drill-down inside the model picker. Android's default zoom-and-fade
+      // barely shows on the dark theme.
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        },
+      ),
       extensions: [colors],
       appBarTheme: AppBarTheme(
         backgroundColor: scheme.surface,
