@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -7,11 +6,13 @@ import 'package:flutter/rendering.dart';
 /// Keeps an accordion's header where it was tapped while it opens or closes.
 ///
 /// The chat transcript is a reversed list, so a growing item keeps its bottom
-/// edge and pushes its header upward. For a short [window] after a
-/// toggle, height changes of [child] are fed back into the enclosing
-/// scroll position in the same layout pass, so the item grows below the
-/// header instead. Outside that window (e.g. text streaming into an open
-/// accordion) the list behaves as usual.
+/// edge and pushes its header upward. For a short [window] after a toggle,
+/// height changes of the accordion are handed to the list's
+/// [AnchoredScrollPhysics], which shifts the scroll offset by the same amount
+/// before the frame is painted, so the item grows below the header instead.
+/// Outside that window (e.g. text streaming into an open accordion) the list
+/// behaves as usual. Does nothing unless the enclosing scrollable is
+/// reversed and uses [AnchoredScrollPhysics].
 class ExpandDownward extends StatefulWidget {
   const ExpandDownward({super.key, required this.builder});
 
@@ -38,7 +39,10 @@ class _ExpandDownwardState extends State<ExpandDownward> {
     _timer?.cancel();
     setState(() => _anchoring = true);
     _timer = Timer(ExpandDownward.window, () {
-      if (mounted) setState(() => _anchoring = false);
+      if (!mounted) return;
+      // Drop anything the list didn't get to apply.
+      _anchorOf(Scrollable.maybeOf(context))?.pending = 0;
+      setState(() => _anchoring = false);
     });
   }
 
@@ -51,10 +55,65 @@ class _ExpandDownwardState extends State<ExpandDownward> {
   @override
   Widget build(BuildContext context) {
     final scrollable = Scrollable.maybeOf(context);
-    final reversed = scrollable?.axisDirection == AxisDirection.up;
     return _AnchorTop(
-      position: _anchoring && reversed ? scrollable!.position : null,
+      position: _anchoring && scrollable?.axisDirection == AxisDirection.up
+          ? scrollable!.position
+          : null,
       child: widget.builder(context, _toggled),
+    );
+  }
+}
+
+/// The anchor the list is actually using. Read from the position rather than
+/// the widget: a rebuilt list with new physics of the same type keeps the old
+/// physics on its position.
+ScrollAnchor? _anchorOf(ScrollableState? scrollable) =>
+    _anchorOfPosition(scrollable?.position);
+
+ScrollAnchor? _anchorOfPosition(ScrollPosition? position) {
+  final physics = position?.physics;
+  return physics is AnchoredScrollPhysics ? physics.anchor : null;
+}
+
+/// Scroll offset still owed to items that changed height this frame.
+class ScrollAnchor {
+  double pending = 0;
+}
+
+/// Applies [ScrollAnchor.pending] when the list's content size changes.
+///
+/// Going through [adjustPositionForNewDimensions] makes the viewport lay out
+/// again with the shifted offset in the same frame, so the header never shows
+/// in the wrong place. (Correcting the position directly from a child's
+/// layout only takes effect a frame later, which reads as a jump.)
+class AnchoredScrollPhysics extends ScrollPhysics {
+  const AnchoredScrollPhysics({required this.anchor, super.parent});
+
+  final ScrollAnchor anchor;
+
+  @override
+  AnchoredScrollPhysics applyTo(ScrollPhysics? ancestor) =>
+      AnchoredScrollPhysics(anchor: anchor, parent: buildParent(ancestor));
+
+  @override
+  double adjustPositionForNewDimensions({
+    required ScrollMetrics oldPosition,
+    required ScrollMetrics newPosition,
+    required bool isScrolling,
+    required double velocity,
+  }) {
+    final pixels = super.adjustPositionForNewDimensions(
+      oldPosition: oldPosition,
+      newPosition: newPosition,
+      isScrolling: isScrolling,
+      velocity: velocity,
+    );
+    final delta = anchor.pending;
+    if (delta == 0) return pixels;
+    anchor.pending = 0;
+    return (pixels + delta).clamp(
+      newPosition.minScrollExtent,
+      newPosition.maxScrollExtent,
     );
   }
 }
@@ -87,14 +146,7 @@ class _RenderAnchorTop extends RenderProxyBox {
     final height = size.height;
     final last = _lastHeight;
     _lastHeight = height;
-    final position = this.position;
-    if (position == null || last == null || !position.hasPixels) return;
-    var delta = height - last;
-    if (delta == 0) return;
-    // A shrinking item can't pull the list past its newest end.
-    delta = math.max(delta, position.minScrollExtent - position.pixels);
-    // Runs inside the viewport's layout; the viewport sees the correction
-    // and lays out again with the new offset before painting.
-    if (delta != 0) position.correctBy(delta);
+    final anchor = _anchorOfPosition(position);
+    if (anchor != null && last != null) anchor.pending += height - last;
   }
 }

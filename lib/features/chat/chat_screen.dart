@@ -8,6 +8,7 @@ import '../live/live_widgets.dart';
 import 'chat_providers.dart';
 import 'composer.dart';
 import 'composer_providers.dart';
+import 'expand_downward.dart';
 import 'prompt_widgets.dart';
 import 'session_actions.dart';
 import 'timeline_widgets.dart';
@@ -67,6 +68,8 @@ class ChatScreen extends ConsumerWidget {
                   },
                   child: ListView.builder(
                     reverse: true,
+                    // Lets accordions open downward from their header.
+                    physics: AnchoredScrollPhysics(anchor: ScrollAnchor()),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     itemCount: count + 1,
                     itemBuilder: (context, index) {
