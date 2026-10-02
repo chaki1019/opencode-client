@@ -98,7 +98,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'OPENCODE_SERVER_PASSWORD (leave blank if unset)';
 
   @override
-  String get displayNameOptional => 'Display name (optional)';
+  String get displayNameOptional => 'Name (optional)';
 
   @override
   String get connect => 'Connect';
@@ -110,6 +110,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String savedServersLoadFailed(Object error) {
     return 'Couldn\'t load saved servers: $error';
   }
+
+  @override
+  String get saveServer => 'Save';
+
+  @override
+  String serverSaved(String name) {
+    return 'Saved \"$name\"';
+  }
+
+  @override
+  String get editServer => 'Edit';
+
+  @override
+  String get editServerTitle => 'Edit server';
+
+  @override
+  String get serverName => 'Name';
+
+  @override
+  String get discoveredServers => 'Found on this network';
+
+  @override
+  String get discoveringServers =>
+      'Searching the network for OpenCode servers…';
+
+  @override
+  String get discoveryHint =>
+      'Servers started with opencode serve --mdns show up here';
 
   @override
   String get reconnecting => 'Reconnecting to the server…';

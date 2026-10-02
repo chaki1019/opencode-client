@@ -46,7 +46,7 @@
   "username": "Username",
   "password": "Password",
   "passwordHelper": "OPENCODE_SERVER_PASSWORD (leave blank if unset)",
-  "displayNameOptional": "Display name (optional)",
+  "displayNameOptional": "Name (optional)",
   "connect": "Connect",
   "savedServers": "Saved servers",
   "savedServersLoadFailed": "Couldn't load saved servers: {error}",
@@ -55,6 +55,21 @@
       "error": {}
     }
   },
+  "saveServer": "Save",
+  "serverSaved": "Saved \"{name}\"",
+  "@serverSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "editServer": "Edit",
+  "editServerTitle": "Edit server",
+  "serverName": "Name",
+  "discoveredServers": "Found on this network",
+  "discoveringServers": "Searching the network for OpenCode servers…",
+  "discoveryHint": "Servers started with opencode serve --mdns show up here",
   "reconnecting": "Reconnecting to the server…",
   "projects": "Projects",
   "disconnect": "Disconnect",
