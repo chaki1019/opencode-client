@@ -85,6 +85,26 @@ void main() {
     expect(results, [const ModelRef(providerID: 'openai', id: 'gpt')]);
   });
 
+  testWidgets('slides between the steps', (tester) async {
+    await _open(tester, [..._anthropic, ..._openai]);
+    await tester.tap(find.text('Anthropic'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    // Mid-slide both steps are on screen.
+    expect(find.text('OpenAI'), findsOneWidget);
+    expect(find.text('Sonnet'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.text('OpenAI'), findsNothing);
+
+    await tester.tap(find.byType(BackButton));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('OpenAI'), findsOneWidget);
+    expect(find.text('Sonnet'), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.text('Sonnet'), findsNothing);
+  });
+
   testWidgets('system back returns to the provider list', (tester) async {
     await _open(tester, [..._anthropic, ..._openai]);
     await tester.tap(find.text('Anthropic'));
