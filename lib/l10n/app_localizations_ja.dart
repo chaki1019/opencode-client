@@ -94,7 +94,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get passwordHelper => 'OPENCODE_SERVER_PASSWORD（未設定なら空欄）';
 
   @override
-  String get displayNameOptional => '表示名（任意）';
+  String get displayNameOptional => '名前（任意）';
 
   @override
   String get connect => '接続';
@@ -106,6 +106,32 @@ class AppLocalizationsJa extends AppLocalizations {
   String savedServersLoadFailed(Object error) {
     return '保存済みサーバーを読み込めませんでした: $error';
   }
+
+  @override
+  String get saveServer => '保存';
+
+  @override
+  String serverSaved(String name) {
+    return '「$name」を保存しました';
+  }
+
+  @override
+  String get editServer => '編集';
+
+  @override
+  String get editServerTitle => '接続先を編集';
+
+  @override
+  String get serverName => '名前';
+
+  @override
+  String get discoveredServers => 'このネットワークで見つかったサーバー';
+
+  @override
+  String get discoveringServers => 'ネットワーク上の OpenCode サーバーを探しています…';
+
+  @override
+  String get discoveryHint => 'opencode serve --mdns で起動したサーバーがここに表示されます';
 
   @override
   String get reconnecting => 'サーバーに再接続しています…';

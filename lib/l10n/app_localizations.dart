@@ -221,7 +221,7 @@ abstract class AppLocalizations {
   /// No description provided for @displayNameOptional.
   ///
   /// In en, this message translates to:
-  /// **'Display name (optional)'**
+  /// **'Name (optional)'**
   String get displayNameOptional;
 
   /// No description provided for @connect.
@@ -241,6 +241,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t load saved servers: {error}'**
   String savedServersLoadFailed(Object error);
+
+  /// No description provided for @saveServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveServer;
+
+  /// No description provided for @serverSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved \"{name}\"'**
+  String serverSaved(String name);
+
+  /// No description provided for @editServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get editServer;
+
+  /// No description provided for @editServerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit server'**
+  String get editServerTitle;
+
+  /// No description provided for @serverName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get serverName;
+
+  /// No description provided for @discoveredServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Found on this network'**
+  String get discoveredServers;
+
+  /// No description provided for @discoveringServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Searching the network for OpenCode servers…'**
+  String get discoveringServers;
+
+  /// No description provided for @discoveryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Servers started with opencode serve --mdns show up here'**
+  String get discoveryHint;
 
   /// No description provided for @reconnecting.
   ///
