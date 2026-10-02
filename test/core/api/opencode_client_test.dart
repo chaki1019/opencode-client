@@ -649,7 +649,7 @@ void main() {
       final client = clientFor(adapter);
       final servers = await client.listMcpServers(directory: '/repo');
       expect(servers.first.isConnected, isTrue);
-      expect(servers.last.statusLabel, '失敗');
+      expect(servers.last.status, 'failed');
       expect(servers.last.error, 'spawn ENOENT');
 
       await client.setMcpConnected(

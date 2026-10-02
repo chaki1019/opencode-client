@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/models/project.dart';
+import '../../l10n/l10n.dart';
 import '../files/files_screen.dart';
 import '../git/git_screen.dart';
 import '../mcp/mcp_screen.dart';
@@ -46,21 +47,24 @@ class _ProjectScreenState extends State<ProjectScreen> {
           _index = i;
           _opened.add(i);
         }),
-        destinations: const [
+        destinations: [
           NavigationDestination(
             icon: Icon(Icons.chat_bubble_outline),
-            label: 'セッション',
+            label: context.l10n.tabSessions,
           ),
           NavigationDestination(icon: Icon(Icons.call_split), label: 'Git'),
           NavigationDestination(
             icon: Icon(Icons.folder_outlined),
-            label: 'ファイル',
+            label: context.l10n.tabFiles,
           ),
           NavigationDestination(
             icon: Icon(Icons.extension_outlined),
             label: 'MCP',
           ),
-          NavigationDestination(icon: Icon(Icons.terminal), label: 'ターミナル'),
+          NavigationDestination(
+            icon: Icon(Icons.terminal),
+            label: context.l10n.tabTerminal,
+          ),
         ],
       ),
     );

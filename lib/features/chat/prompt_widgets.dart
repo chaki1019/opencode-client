@@ -7,6 +7,7 @@ import '../../core/api/api_errors.dart';
 import '../../core/models/form.dart';
 import '../../core/models/prompts.dart';
 import '../../core/models/session.dart';
+import '../../l10n/l10n.dart';
 import 'prompt_providers.dart';
 
 /// Permission requests and questions waiting on the user, shown above the
@@ -69,6 +70,7 @@ class _PermissionCardState extends ConsumerState<PermissionCard> {
 
   Future<void> _reply(PermissionDecision decision) async {
     final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
     setState(() => _busy = true);
     try {
       await ref
@@ -76,7 +78,7 @@ class _PermissionCardState extends ConsumerState<PermissionCard> {
           .reply(widget.request, decision);
     } on OpenCodeApiException catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('返答できませんでした: ${e.detail}')),
+        SnackBar(content: Text(l10n.replyFailed(e.detail))),
       );
     } finally {
       if (mounted) setState(() => _busy = false);
@@ -104,13 +106,13 @@ class _PermissionCardState extends ConsumerState<PermissionCard> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '「${request.action}」の許可が必要です',
+                    context.l10n.permissionNeeded(request.action),
                     style: theme.textTheme.titleSmall,
                   ),
                 ),
                 if (widget.waiting > 0)
                   Text(
-                    'ほか${widget.waiting}件',
+                    context.l10n.moreWaiting(widget.waiting),
                     style: theme.textTheme.labelSmall,
                   ),
               ],
@@ -139,21 +141,21 @@ class _PermissionCardState extends ConsumerState<PermissionCard> {
                   onPressed: _busy
                       ? null
                       : () => _reply(PermissionDecision.reject),
-                  child: const Text('拒否'),
+                  child: Text(context.l10n.deny),
                 ),
                 OutlinedButton(
                   key: const Key('permission-always'),
                   onPressed: _busy
                       ? null
                       : () => _reply(PermissionDecision.always),
-                  child: const Text('常に許可'),
+                  child: Text(context.l10n.allowAlways),
                 ),
                 FilledButton(
                   key: const Key('permission-once'),
                   onPressed: _busy
                       ? null
                       : () => _reply(PermissionDecision.once),
-                  child: const Text('今回だけ許可'),
+                  child: Text(context.l10n.allowOnce),
                 ),
               ],
             ),
@@ -183,7 +185,7 @@ class FormCard extends ConsumerStatefulWidget {
 
 class _FormCardState extends ConsumerState<FormCard> {
   late final Map<String, Object?> _values = widget.form.initialValues();
-  Map<String, String> _errors = const {};
+  Map<String, FieldError> _errors = const {};
   bool _busy = false;
 
   FormsNotifier get _notifier =>
@@ -202,12 +204,12 @@ class _FormCardState extends ConsumerState<FormCard> {
     }
     await _run(
       () => _notifier.submit(widget.form, widget.form.answer(_values)),
-      '送信できませんでした',
+      context.l10n.sendFailedShort,
     );
   }
 
   Future<void> _cancel() =>
-      _run(() => _notifier.cancel(widget.form), '取り消せませんでした');
+      _run(() => _notifier.cancel(widget.form), context.l10n.cancelFailed);
 
   Future<void> _run(Future<void> Function() action, String failure) async {
     final messenger = ScaffoldMessenger.of(context);
@@ -239,21 +241,23 @@ class _FormCardState extends ConsumerState<FormCard> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    form.title.isEmpty ? '質問があります' : form.title,
+                    form.title.isEmpty
+                        ? context.l10n.questionTitle
+                        : form.title,
                     style: theme.textTheme.titleSmall,
                   ),
                 ),
                 if (widget.waiting > 0)
                   Text(
-                    'ほか${widget.waiting}件',
+                    context.l10n.moreWaiting(widget.waiting),
                     style: theme.textTheme.labelSmall,
                   ),
               ],
             ),
             if (!form.isSupported)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(top: 8),
-                child: Text('この質問にはアプリが対応していない項目があります。取り消すか、別のクライアントで答えてください。'),
+                child: Text(context.l10n.formUnsupported),
               )
             else
               for (final field in form.fields)
@@ -264,7 +268,10 @@ class _FormCardState extends ConsumerState<FormCard> {
                       key: ValueKey('form-field-${field.key}'),
                       field: field,
                       value: _values[field.key],
-                      error: _errors[field.key],
+                      error: switch (_errors[field.key]) {
+                        final e? => context.l10n.fieldError(e),
+                        null => null,
+                      },
                       enabled: !_busy,
                       onChanged: (v) => _set(field.key, v),
                     ),
@@ -277,13 +284,13 @@ class _FormCardState extends ConsumerState<FormCard> {
                 TextButton(
                   key: const Key('form-cancel'),
                   onPressed: _busy ? null : _cancel,
-                  child: const Text('答えない'),
+                  child: Text(context.l10n.dontAnswer),
                 ),
                 if (form.isSupported)
                   FilledButton(
                     key: const Key('form-submit'),
                     onPressed: _busy ? null : _submit,
-                    child: const Text('送信'),
+                    child: Text(context.l10n.send),
                   ),
               ],
             ),
@@ -366,7 +373,7 @@ class FormFieldInput extends StatelessWidget {
             if (field.custom)
               _TextInput(
                 initial: isCustom ? selected : '',
-                hint: 'その他（自由入力）',
+                hint: context.l10n.otherFreeText,
                 enabled: enabled,
                 onChanged: (v) => onChanged(v.isEmpty ? null : v),
               ),
@@ -417,7 +424,7 @@ class FormFieldInput extends StatelessWidget {
             if (field.custom)
               _TextInput(
                 initial: extra.join(', '),
-                hint: 'その他（カンマ区切り）',
+                hint: context.l10n.otherCommaSeparated,
                 enabled: enabled,
                 onChanged: (text) => onChanged([
                   ...selected.where(optionValues.contains),
@@ -436,7 +443,7 @@ class FormFieldInput extends StatelessWidget {
               children: [
                 Expanded(child: SelectableText(url)),
                 IconButton(
-                  tooltip: 'URLをコピー',
+                  tooltip: context.l10n.copyUrl,
                   icon: const Icon(Icons.copy, size: 18),
                   onPressed: () => Clipboard.setData(ClipboardData(text: url)),
                 ),
@@ -445,7 +452,7 @@ class FormFieldInput extends StatelessWidget {
             CheckboxListTile(
               contentPadding: EdgeInsets.zero,
               controlAffinity: ListTileControlAffinity.leading,
-              title: const Text('ブラウザで完了した'),
+              title: Text(context.l10n.doneInBrowser),
               value: value == true,
               onChanged: enabled ? (v) => onChanged(v == true) : null,
             ),
@@ -597,7 +604,9 @@ class _TodoStripState extends ConsumerState<TodoStrip> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            _expanded ? '' : (current?.content ?? 'すべて完了'),
+                            _expanded
+                                ? ''
+                                : (current?.content ?? context.l10n.allDone),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: theme.textTheme.bodySmall,

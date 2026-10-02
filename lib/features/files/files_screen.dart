@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models/project.dart';
 import '../../core/models/project_tools.dart';
+import '../../l10n/l10n.dart';
 import '../chat/timeline_widgets.dart';
 import '../live/live_widgets.dart';
 import 'files_providers.dart';
@@ -81,7 +82,7 @@ class _FilesScreenState extends ConsumerState<FilesScreen> {
           bottom: const LiveStatusBanner(),
           actions: [
             IconButton(
-              tooltip: '再読み込み',
+              tooltip: context.l10n.reload,
               icon: const Icon(Icons.refresh),
               onPressed: () => ref.invalidate(provider),
             ),
@@ -94,9 +95,9 @@ class _FilesScreenState extends ConsumerState<FilesScreen> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
               child: TextField(
                 key: const Key('file-search'),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   prefixIcon: Icon(Icons.search),
-                  hintText: 'ファイル名で検索',
+                  hintText: context.l10n.searchFiles,
                   isDense: true,
                   border: OutlineInputBorder(),
                 ),
@@ -113,7 +114,13 @@ class _FilesScreenState extends ConsumerState<FilesScreen> {
             Expanded(
               child: entries.when(
                 data: (list) => list.isEmpty
-                    ? Center(child: Text(searching ? '見つかりませんでした' : '空のフォルダです'))
+                    ? Center(
+                        child: Text(
+                          searching
+                              ? context.l10n.notFound
+                              : context.l10n.emptyFolder,
+                        ),
+                      )
                     : ListView.builder(
                         itemCount: list.length,
                         itemBuilder: (context, index) {
@@ -138,7 +145,7 @@ class _FilesScreenState extends ConsumerState<FilesScreen> {
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => Padding(
                   padding: const EdgeInsets.all(24),
-                  child: Text('ファイルを読み込めませんでした: $e'),
+                  child: Text(context.l10n.filesLoadFailed(e)),
                 ),
               ),
             ),
@@ -182,7 +189,7 @@ class FileViewerScreen extends ConsumerWidget {
           final text = file.text;
           if (text == null) {
             return Center(
-              child: Text('表示できないファイルです（${file.bytes.length} バイト）'),
+              child: Text(context.l10n.binaryFile(file.bytes.length)),
             );
           }
           final truncated = text.length > _maxChars;
@@ -194,9 +201,9 @@ class FileViewerScreen extends ConsumerWidget {
                 maxLines: 1 << 30,
               ),
               if (truncated)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.only(top: 8),
-                  child: Text('長いファイルのため途中までを表示しています'),
+                  child: Text(context.l10n.fileTruncated),
                 ),
             ],
           );
@@ -204,7 +211,7 @@ class FileViewerScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Padding(
           padding: const EdgeInsets.all(24),
-          child: Text('ファイルを開けませんでした: $e'),
+          child: Text(context.l10n.fileOpenFailed(e)),
         ),
       ),
     );

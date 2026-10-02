@@ -41,23 +41,25 @@ class PromptFile {
     };
   }
 
-  /// Returns a message in Japanese when adding [adding] to [current] would
-  /// break a limit, or null when it fits.
-  static String? checkLimits(
+  /// Returns the limit that adding [adding] to [current] would break, or
+  /// null when it fits.
+  static AttachmentLimit? checkLimits(
     List<PromptFile> current,
     List<PromptFile> adding,
   ) {
     if (current.length + adding.length > maxFiles) {
-      return '添付は$maxFiles件までです';
+      return AttachmentLimit.fileCount;
     }
     if (adding.any((f) => f.bytes.length > maxFileBytes)) {
-      return '1ファイル10MBまでです';
+      return AttachmentLimit.fileSize;
     }
     final total = [
       ...current,
       ...adding,
     ].fold<int>(0, (sum, f) => sum + f.bytes.length);
-    if (total > maxTotalBytes) return '添付は合計24MBまでです';
+    if (total > maxTotalBytes) return AttachmentLimit.totalSize;
     return null;
   }
 }
+
+enum AttachmentLimit { fileCount, fileSize, totalSize }

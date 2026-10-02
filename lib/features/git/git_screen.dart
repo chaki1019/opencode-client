@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/theme.dart';
 import '../../core/models/project.dart';
 import '../../core/models/project_tools.dart';
+import '../../l10n/l10n.dart';
 import '../live/live_widgets.dart';
 import 'git_providers.dart';
 
@@ -32,7 +33,7 @@ class _GitScreenState extends ConsumerState<GitScreen> {
         bottom: const LiveStatusBanner(),
         actions: [
           IconButton(
-            tooltip: '再読み込み',
+            tooltip: context.l10n.reload,
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(provider),
           ),
@@ -49,7 +50,7 @@ class _GitScreenState extends ConsumerState<GitScreen> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    branch?.current ?? 'ブランチ不明',
+                    branch?.current ?? context.l10n.unknownBranch,
                     style: Theme.of(context).textTheme.titleSmall,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -61,16 +62,16 @@ class _GitScreenState extends ConsumerState<GitScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             child: SegmentedButton<DiffMode>(
               segments: [
-                const ButtonSegment(
+                ButtonSegment(
                   value: DiffMode.working,
-                  label: Text('未コミット'),
+                  label: Text(context.l10n.uncommitted),
                 ),
                 ButtonSegment(
                   value: DiffMode.branch,
                   label: Text(
                     branch?.defaultBranch == null
-                        ? 'ブランチ全体'
-                        : '${branch!.defaultBranch}との差分',
+                        ? context.l10n.wholeBranch
+                        : context.l10n.diffAgainst(branch!.defaultBranch!),
                   ),
                 ),
               ],
@@ -85,7 +86,7 @@ class _GitScreenState extends ConsumerState<GitScreen> {
                 data: (snapshot) => snapshot.files.isEmpty
                     ? ListView(
                         padding: const EdgeInsets.all(24),
-                        children: const [Center(child: Text('変更はありません'))],
+                        children: [Center(child: Text(context.l10n.noChanges))],
                       )
                     : ListView(
                         children: [
@@ -96,7 +97,7 @@ class _GitScreenState extends ConsumerState<GitScreen> {
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => ListView(
                   padding: const EdgeInsets.all(24),
-                  children: [Text('Git の状態を読み込めませんでした: $e')],
+                  children: [Text(context.l10n.gitLoadFailed(e))],
                 ),
               ),
             ),
@@ -171,7 +172,7 @@ class DiffScreen extends StatelessWidget {
         title: Text(change.file, maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
       body: patch == null || patch.trim().isEmpty
-          ? const Center(child: Text('差分はありません'))
+          ? Center(child: Text(context.l10n.noDiff))
           : DiffView(patch: patch),
     );
   }

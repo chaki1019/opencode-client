@@ -61,8 +61,9 @@ abstract class Session with _$Session {
   factory Session.fromJson(Map<String, dynamic> json) =>
       _$SessionFromJson(json);
 
-  String get displayTitle =>
-      (title?.trim().isNotEmpty ?? false) ? title!.trim() : '無題のセッション';
+  /// The trimmed title, or null when the session has none yet.
+  String? get displayTitle =>
+      (title?.trim().isNotEmpty ?? false) ? title!.trim() : null;
 
   bool get isArchived => time.archived != null;
 

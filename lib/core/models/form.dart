@@ -67,7 +67,7 @@ class FormRequest {
   }
 
   /// Problems with [values], keyed by field. Hidden fields are not checked.
-  Map<String, String> validate(Map<String, Object?> values) => {
+  Map<String, FieldError> validate(Map<String, Object?> values) => {
     for (final field in fields)
       if (isVisible(field, values))
         field.key: ?field.validate(values[field.key]),
@@ -226,46 +226,56 @@ class FormFieldSpec {
   /// A single-choice string field.
   bool get isChoice => type == FormFieldType.string && options.isNotEmpty;
 
-  /// Returns a message in Japanese when [value] is not acceptable.
-  String? validate(Object? value) {
-    if (_isEmpty(value)) return required ? '入力してください' : null;
+  /// Returns why [value] is not acceptable, or null when it is.
+  FieldError? validate(Object? value) {
+    if (_isEmpty(value)) {
+      return required ? const FieldError(FieldErrorKind.required) : null;
+    }
     switch (type) {
       case FormFieldType.string:
-        if (value is! String) return '文字を入力してください';
+        if (value is! String) return const FieldError(FieldErrorKind.text);
         if (isChoice && !custom && !options.any((o) => o.value == value)) {
-          return '選択肢から選んでください';
+          return const FieldError(FieldErrorKind.pickOption);
         }
         if (minLength != null && value.length < minLength!) {
-          return '$minLength文字以上で入力してください';
+          return FieldError(FieldErrorKind.minLength, minLength);
         }
         if (maxLength != null && value.length > maxLength!) {
-          return '$maxLength文字以内で入力してください';
+          return FieldError(FieldErrorKind.maxLength, maxLength);
         }
         if (pattern != null && !_matches(pattern!, value)) {
-          return '形式が正しくありません';
+          return const FieldError(FieldErrorKind.pattern);
         }
       case FormFieldType.number || FormFieldType.integer:
-        if (value is! num || !value.isFinite) return '数値を入力してください';
-        if (type == FormFieldType.integer && value != value.roundToDouble()) {
-          return '整数を入力してください';
+        if (value is! num || !value.isFinite) {
+          return const FieldError(FieldErrorKind.number);
         }
-        if (minimum != null && value < minimum!) return '$minimum以上にしてください';
-        if (maximum != null && value > maximum!) return '$maximum以下にしてください';
+        if (type == FormFieldType.integer && value != value.roundToDouble()) {
+          return const FieldError(FieldErrorKind.integer);
+        }
+        if (minimum != null && value < minimum!) {
+          return FieldError(FieldErrorKind.minimum, minimum);
+        }
+        if (maximum != null && value > maximum!) {
+          return FieldError(FieldErrorKind.maximum, maximum);
+        }
       case FormFieldType.boolean:
-        if (value is! bool) return '選んでください';
+        if (value is! bool) return const FieldError(FieldErrorKind.choose);
       case FormFieldType.multiselect:
-        if (value is! List<String>) return '選んでください';
+        if (value is! List<String>) {
+          return const FieldError(FieldErrorKind.choose);
+        }
         if (!custom && value.any((v) => !options.any((o) => o.value == v))) {
-          return '選択肢から選んでください';
+          return const FieldError(FieldErrorKind.pickOption);
         }
         if (minItems != null && value.length < minItems!) {
-          return '$minItems個以上選んでください';
+          return FieldError(FieldErrorKind.minItems, minItems);
         }
         if (maxItems != null && value.length > maxItems!) {
-          return '$maxItems個以内で選んでください';
+          return FieldError(FieldErrorKind.maxItems, maxItems);
         }
       case FormFieldType.external:
-        if (value != true) return '完了したら確認してください';
+        if (value != true) return const FieldError(FieldErrorKind.external);
     }
     return null;
   }
@@ -285,3 +295,28 @@ bool _isEmpty(Object? value) =>
     value == null ||
     (value is String && value.trim().isEmpty) ||
     (value is List && value.isEmpty);
+
+enum FieldErrorKind {
+  required,
+  text,
+  pickOption,
+  minLength,
+  maxLength,
+  pattern,
+  number,
+  integer,
+  minimum,
+  maximum,
+  choose,
+  minItems,
+  maxItems,
+  external,
+}
+
+/// Why a field's value was rejected; [limit] is the bound it broke, if any.
+class FieldError {
+  const FieldError(this.kind, [this.limit]);
+
+  final FieldErrorKind kind;
+  final num? limit;
+}

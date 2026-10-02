@@ -75,16 +75,6 @@ class McpServer {
   final String? error;
 
   bool get isConnected => status == 'connected';
-
-  String get statusLabel => switch (status) {
-    'connected' => '接続中',
-    'disconnected' => '未接続',
-    'disabled' => '無効',
-    'failed' => '失敗',
-    'needs_auth' => '認証が必要',
-    'needs_client_registration' => 'クライアント登録が必要',
-    _ => status,
-  };
 }
 
 /// A file or folder in the project (`GET /api/fs/list`, `/api/fs/find`).

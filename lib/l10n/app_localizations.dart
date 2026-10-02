@@ -1,0 +1,1106 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations_en.dart';
+import 'app_localizations_ja.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of AppLocalizations
+/// returned by `AppLocalizations.of(context)`.
+///
+/// Applications need to include `AppLocalizations.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'l10n/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: AppLocalizations.localizationsDelegates,
+///   supportedLocales: AppLocalizations.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the AppLocalizations.supportedLocales
+/// property.
+abstract class AppLocalizations {
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static AppLocalizations of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations)!;
+  }
+
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('ja'),
+  ];
+
+  /// No description provided for @reload.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload'**
+  String get reload;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @send.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get send;
+
+  /// No description provided for @create.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get create;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// No description provided for @justNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get justNow;
+
+  /// No description provided for @minutesAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 minute ago} other{{count} minutes ago}}'**
+  String minutesAgo(int count);
+
+  /// No description provided for @hoursAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 hour ago} other{{count} hours ago}}'**
+  String hoursAgo(int count);
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// No description provided for @daysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 day ago} other{{count} days ago}}'**
+  String daysAgo(int count);
+
+  /// No description provided for @connectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to an OpenCode server'**
+  String get connectTitle;
+
+  /// No description provided for @connectUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This server doesn\'t support the OpenCode v2 API. Please update OpenCode.'**
+  String get connectUnsupported;
+
+  /// No description provided for @connectWrongCredentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Wrong username or password'**
+  String get connectWrongCredentials;
+
+  /// No description provided for @connectFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t connect: {error}'**
+  String connectFailed(Object error);
+
+  /// No description provided for @serverUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Server URL'**
+  String get serverUrl;
+
+  /// No description provided for @serverUrlRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a URL'**
+  String get serverUrlRequired;
+
+  /// No description provided for @username.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get username;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
+
+  /// No description provided for @passwordHelper.
+  ///
+  /// In en, this message translates to:
+  /// **'OPENCODE_SERVER_PASSWORD (leave blank if unset)'**
+  String get passwordHelper;
+
+  /// No description provided for @displayNameOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Display name (optional)'**
+  String get displayNameOptional;
+
+  /// No description provided for @connect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get connect;
+
+  /// No description provided for @savedServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved servers'**
+  String get savedServers;
+
+  /// No description provided for @savedServersLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load saved servers: {error}'**
+  String savedServersLoadFailed(Object error);
+
+  /// No description provided for @reconnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnecting to the server…'**
+  String get reconnecting;
+
+  /// No description provided for @projects.
+  ///
+  /// In en, this message translates to:
+  /// **'Projects'**
+  String get projects;
+
+  /// No description provided for @disconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnect'**
+  String get disconnect;
+
+  /// No description provided for @projectsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load projects: {error}'**
+  String projectsLoadFailed(Object error);
+
+  /// No description provided for @currentProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Current'**
+  String get currentProject;
+
+  /// No description provided for @tabSessions.
+  ///
+  /// In en, this message translates to:
+  /// **'Sessions'**
+  String get tabSessions;
+
+  /// No description provided for @tabFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get tabFiles;
+
+  /// No description provided for @tabTerminal.
+  ///
+  /// In en, this message translates to:
+  /// **'Terminal'**
+  String get tabTerminal;
+
+  /// No description provided for @newSession.
+  ///
+  /// In en, this message translates to:
+  /// **'New session'**
+  String get newSession;
+
+  /// No description provided for @sessionsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No sessions yet'**
+  String get sessionsEmpty;
+
+  /// No description provided for @sessionsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load sessions: {error}'**
+  String sessionsLoadFailed(Object error);
+
+  /// No description provided for @sessionCreateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t create a session: {error}'**
+  String sessionCreateFailed(Object error);
+
+  /// No description provided for @untitledSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Untitled session'**
+  String get untitledSession;
+
+  /// No description provided for @rename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get rename;
+
+  /// No description provided for @fork.
+  ///
+  /// In en, this message translates to:
+  /// **'Fork'**
+  String get fork;
+
+  /// No description provided for @compact.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarize conversation'**
+  String get compact;
+
+  /// No description provided for @renameFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t rename'**
+  String get renameFailed;
+
+  /// No description provided for @forkFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t fork'**
+  String get forkFailed;
+
+  /// No description provided for @compactFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t request a summary'**
+  String get compactFailed;
+
+  /// No description provided for @compactRequested.
+  ///
+  /// In en, this message translates to:
+  /// **'Requested a summary of the conversation'**
+  String get compactRequested;
+
+  /// No description provided for @deleteSessionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this session?'**
+  String get deleteSessionTitle;
+
+  /// No description provided for @deleteSessionBody.
+  ///
+  /// In en, this message translates to:
+  /// **'\"{title}\" will be deleted. This can\'t be undone.'**
+  String deleteSessionBody(Object title);
+
+  /// No description provided for @deleteFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete'**
+  String get deleteFailed;
+
+  /// No description provided for @sessionName.
+  ///
+  /// In en, this message translates to:
+  /// **'Session name'**
+  String get sessionName;
+
+  /// No description provided for @renameConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get renameConfirm;
+
+  /// No description provided for @messagesEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet'**
+  String get messagesEmpty;
+
+  /// No description provided for @messagesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load messages: {error}'**
+  String messagesLoadFailed(Object error);
+
+  /// No description provided for @forkFromHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Fork from before this message'**
+  String get forkFromHere;
+
+  /// No description provided for @forkFromHereHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Copies the conversation before this message into a new session'**
+  String get forkFromHereHelp;
+
+  /// No description provided for @running.
+  ///
+  /// In en, this message translates to:
+  /// **'Running'**
+  String get running;
+
+  /// No description provided for @sendFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t send. Check the message and try again.'**
+  String get sendFailed;
+
+  /// No description provided for @choosePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a photo'**
+  String get choosePhoto;
+
+  /// No description provided for @takePhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a photo'**
+  String get takePhoto;
+
+  /// No description provided for @imageLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the image: {error}'**
+  String imageLoadFailed(Object error);
+
+  /// No description provided for @interruptFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t stop: {error}'**
+  String interruptFailed(Object error);
+
+  /// No description provided for @attachImage.
+  ///
+  /// In en, this message translates to:
+  /// **'Attach image'**
+  String get attachImage;
+
+  /// No description provided for @messageHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get messageHint;
+
+  /// No description provided for @interrupt.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get interrupt;
+
+  /// No description provided for @removeAttachment.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove attachment'**
+  String get removeAttachment;
+
+  /// No description provided for @agent.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent'**
+  String get agent;
+
+  /// No description provided for @model.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get model;
+
+  /// No description provided for @changeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t change: {error}'**
+  String changeFailed(Object error);
+
+  /// No description provided for @agentsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load agents: {error}'**
+  String agentsLoadFailed(Object error);
+
+  /// No description provided for @searchModels.
+  ///
+  /// In en, this message translates to:
+  /// **'Search models'**
+  String get searchModels;
+
+  /// No description provided for @modelsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load models: {error}'**
+  String modelsLoadFailed(Object error);
+
+  /// No description provided for @variant.
+  ///
+  /// In en, this message translates to:
+  /// **'Variant'**
+  String get variant;
+
+  /// No description provided for @agentBuildDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'The default agent with all tools enabled. The standard agent for development work that needs full access to file operations and system commands.'**
+  String get agentBuildDescription;
+
+  /// No description provided for @agentPlanDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'A restricted agent for planning and analysis. Permissions prevent unintended changes.'**
+  String get agentPlanDescription;
+
+  /// No description provided for @tooManyAttachments.
+  ///
+  /// In en, this message translates to:
+  /// **'Up to {count} attachments'**
+  String tooManyAttachments(Object count);
+
+  /// No description provided for @attachmentTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Each file must be 10 MB or less'**
+  String get attachmentTooLarge;
+
+  /// No description provided for @attachmentsTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'Attachments must total 24 MB or less'**
+  String get attachmentsTooLarge;
+
+  /// No description provided for @sending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending…'**
+  String get sending;
+
+  /// No description provided for @sendUncertain.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking whether it was sent. It hasn\'t been resent.'**
+  String get sendUncertain;
+
+  /// No description provided for @dismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from view'**
+  String get dismiss;
+
+  /// No description provided for @thinking.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking…'**
+  String get thinking;
+
+  /// No description provided for @reasoning.
+  ///
+  /// In en, this message translates to:
+  /// **'Thinking'**
+  String get reasoning;
+
+  /// No description provided for @noOutput.
+  ///
+  /// In en, this message translates to:
+  /// **'No output'**
+  String get noOutput;
+
+  /// No description provided for @compacted.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarized the conversation so far'**
+  String get compacted;
+
+  /// No description provided for @contextAgent.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent: {name}'**
+  String contextAgent(Object name);
+
+  /// No description provided for @contextModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model: {name}'**
+  String contextModel(Object name);
+
+  /// No description provided for @contextLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'Location: {path}'**
+  String contextLocation(Object path);
+
+  /// No description provided for @contextSkill.
+  ///
+  /// In en, this message translates to:
+  /// **'Skill: {name}'**
+  String contextSkill(Object name);
+
+  /// No description provided for @linesOmitted.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 line omitted} other{{count} lines omitted}}'**
+  String linesOmitted(int count);
+
+  /// No description provided for @reloadOlderMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'Reload earlier messages'**
+  String get reloadOlderMessages;
+
+  /// No description provided for @replyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reply: {error}'**
+  String replyFailed(Object error);
+
+  /// No description provided for @permissionNeeded.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission needed for \"{action}\"'**
+  String permissionNeeded(Object action);
+
+  /// No description provided for @moreWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'+{count} more'**
+  String moreWaiting(Object count);
+
+  /// No description provided for @deny.
+  ///
+  /// In en, this message translates to:
+  /// **'Deny'**
+  String get deny;
+
+  /// No description provided for @allowAlways.
+  ///
+  /// In en, this message translates to:
+  /// **'Always allow'**
+  String get allowAlways;
+
+  /// No description provided for @allowOnce.
+  ///
+  /// In en, this message translates to:
+  /// **'Allow once'**
+  String get allowOnce;
+
+  /// No description provided for @sendFailedShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t send'**
+  String get sendFailedShort;
+
+  /// No description provided for @cancelFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t cancel'**
+  String get cancelFailed;
+
+  /// No description provided for @questionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A question for you'**
+  String get questionTitle;
+
+  /// No description provided for @formUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'This question has fields the app doesn\'t support. Dismiss it or answer from another client.'**
+  String get formUnsupported;
+
+  /// No description provided for @dontAnswer.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t answer'**
+  String get dontAnswer;
+
+  /// No description provided for @otherFreeText.
+  ///
+  /// In en, this message translates to:
+  /// **'Other (free text)'**
+  String get otherFreeText;
+
+  /// No description provided for @otherCommaSeparated.
+  ///
+  /// In en, this message translates to:
+  /// **'Other (comma-separated)'**
+  String get otherCommaSeparated;
+
+  /// No description provided for @copyUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy URL'**
+  String get copyUrl;
+
+  /// No description provided for @doneInBrowser.
+  ///
+  /// In en, this message translates to:
+  /// **'Done in the browser'**
+  String get doneInBrowser;
+
+  /// No description provided for @allDone.
+  ///
+  /// In en, this message translates to:
+  /// **'All done'**
+  String get allDone;
+
+  /// No description provided for @fieldRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get fieldRequired;
+
+  /// No description provided for @fieldText.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter text'**
+  String get fieldText;
+
+  /// No description provided for @fieldPickOption.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick one of the options'**
+  String get fieldPickOption;
+
+  /// No description provided for @fieldMinLength.
+  ///
+  /// In en, this message translates to:
+  /// **'At least {count} characters'**
+  String fieldMinLength(Object count);
+
+  /// No description provided for @fieldMaxLength.
+  ///
+  /// In en, this message translates to:
+  /// **'At most {count} characters'**
+  String fieldMaxLength(Object count);
+
+  /// No description provided for @fieldPattern.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid format'**
+  String get fieldPattern;
+
+  /// No description provided for @fieldNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a number'**
+  String get fieldNumber;
+
+  /// No description provided for @fieldInteger.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a whole number'**
+  String get fieldInteger;
+
+  /// No description provided for @fieldMinimum.
+  ///
+  /// In en, this message translates to:
+  /// **'Must be {value} or more'**
+  String fieldMinimum(Object value);
+
+  /// No description provided for @fieldMaximum.
+  ///
+  /// In en, this message translates to:
+  /// **'Must be {value} or less'**
+  String fieldMaximum(Object value);
+
+  /// No description provided for @fieldChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Make a selection'**
+  String get fieldChoose;
+
+  /// No description provided for @fieldMinItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at least {count}'**
+  String fieldMinItems(Object count);
+
+  /// No description provided for @fieldMaxItems.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick at most {count}'**
+  String fieldMaxItems(Object count);
+
+  /// No description provided for @fieldExternal.
+  ///
+  /// In en, this message translates to:
+  /// **'Check this once you\'re done'**
+  String get fieldExternal;
+
+  /// No description provided for @searchFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Search by file name'**
+  String get searchFiles;
+
+  /// No description provided for @notFound.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing found'**
+  String get notFound;
+
+  /// No description provided for @emptyFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'This folder is empty'**
+  String get emptyFolder;
+
+  /// No description provided for @filesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load files: {error}'**
+  String filesLoadFailed(Object error);
+
+  /// No description provided for @binaryFile.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t display this file ({bytes} bytes)'**
+  String binaryFile(Object bytes);
+
+  /// No description provided for @fileTruncated.
+  ///
+  /// In en, this message translates to:
+  /// **'This file is long, so only the beginning is shown'**
+  String get fileTruncated;
+
+  /// No description provided for @fileOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the file: {error}'**
+  String fileOpenFailed(Object error);
+
+  /// No description provided for @unknownBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown branch'**
+  String get unknownBranch;
+
+  /// No description provided for @uncommitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Uncommitted'**
+  String get uncommitted;
+
+  /// No description provided for @wholeBranch.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole branch'**
+  String get wholeBranch;
+
+  /// No description provided for @diffAgainst.
+  ///
+  /// In en, this message translates to:
+  /// **'Diff against {branch}'**
+  String diffAgainst(Object branch);
+
+  /// No description provided for @noChanges.
+  ///
+  /// In en, this message translates to:
+  /// **'No changes'**
+  String get noChanges;
+
+  /// No description provided for @gitLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load the Git status: {error}'**
+  String gitLoadFailed(Object error);
+
+  /// No description provided for @noDiff.
+  ///
+  /// In en, this message translates to:
+  /// **'No diff'**
+  String get noDiff;
+
+  /// No description provided for @mcpEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No MCP servers configured'**
+  String get mcpEmpty;
+
+  /// No description provided for @mcpLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load MCP servers: {error}'**
+  String mcpLoadFailed(Object error);
+
+  /// No description provided for @toggleFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t switch: {error}'**
+  String toggleFailed(Object error);
+
+  /// No description provided for @mcpConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get mcpConnected;
+
+  /// No description provided for @mcpDisconnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Disconnected'**
+  String get mcpDisconnected;
+
+  /// No description provided for @mcpDisabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get mcpDisabled;
+
+  /// No description provided for @mcpFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed'**
+  String get mcpFailed;
+
+  /// No description provided for @mcpNeedsAuth.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs authentication'**
+  String get mcpNeedsAuth;
+
+  /// No description provided for @mcpNeedsClientRegistration.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs client registration'**
+  String get mcpNeedsClientRegistration;
+
+  /// No description provided for @newWorktree.
+  ///
+  /// In en, this message translates to:
+  /// **'New worktree'**
+  String get newWorktree;
+
+  /// No description provided for @mainWorktree.
+  ///
+  /// In en, this message translates to:
+  /// **'Main'**
+  String get mainWorktree;
+
+  /// No description provided for @worktreesLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load worktrees: {error}'**
+  String worktreesLoadFailed(Object error);
+
+  /// No description provided for @createFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t create: {error}'**
+  String createFailed(Object error);
+
+  /// No description provided for @deleteWorktreeTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete \"{name}\"?'**
+  String deleteWorktreeTitle(Object name);
+
+  /// No description provided for @deleteWorktreeBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The whole folder will be deleted. This can\'t be undone.'**
+  String get deleteWorktreeBody;
+
+  /// No description provided for @uncommittedChangesTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'There are uncommitted changes'**
+  String get uncommittedChangesTitle;
+
+  /// No description provided for @uncommittedChangesBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete them along with the worktree? This can\'t be undone.'**
+  String get uncommittedChangesBody;
+
+  /// No description provided for @deleteFailedWithError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t delete: {error}'**
+  String deleteFailedWithError(Object error);
+
+  /// No description provided for @worktreeNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Name (leave blank to let the server choose)'**
+  String get worktreeNameHint;
+
+  /// No description provided for @newTerminal.
+  ///
+  /// In en, this message translates to:
+  /// **'New terminal'**
+  String get newTerminal;
+
+  /// No description provided for @terminalsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No terminals yet'**
+  String get terminalsEmpty;
+
+  /// No description provided for @terminalExited.
+  ///
+  /// In en, this message translates to:
+  /// **'Exited (code {code})'**
+  String terminalExited(Object code);
+
+  /// No description provided for @terminalsLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load terminals: {error}'**
+  String terminalsLoadFailed(Object error);
+
+  /// No description provided for @terminalOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open a terminal: {error}'**
+  String terminalOpenFailed(Object error);
+
+  /// No description provided for @closeFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t close: {error}'**
+  String closeFailed(Object error);
+
+  /// No description provided for @ptyConnecting.
+  ///
+  /// In en, this message translates to:
+  /// **'Connecting…'**
+  String get ptyConnecting;
+
+  /// No description provided for @ptyFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection lost'**
+  String get ptyFailed;
+
+  /// No description provided for @ptyClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'The terminal has exited'**
+  String get ptyClosed;
+
+  /// No description provided for @reconnect.
+  ///
+  /// In en, this message translates to:
+  /// **'Reconnect'**
+  String get reconnect;
+
+  /// No description provided for @terminalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Terminal {count}'**
+  String terminalTitle(Object count);
+}
+
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationsDelegate();
+
+  @override
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) =>
+      <String>['en', 'ja'].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_AppLocalizationsDelegate old) => false;
+}
+
+AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'en':
+      return AppLocalizationsEn();
+    case 'ja':
+      return AppLocalizationsJa();
+  }
+
+  throw FlutterError(
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
+}
