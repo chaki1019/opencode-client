@@ -104,16 +104,15 @@ void main() {
     expect(find.byType(BackButton), findsNothing);
   });
 
-  testWidgets('searching on the provider step spans providers', (tester) async {
+  testWidgets('only the model step has a search field', (tester) async {
     await _open(tester, [..._anthropic, ..._openai]);
-    await tester.enterText(find.byType(TextField), 'o');
+    expect(find.byType(TextField), findsNothing);
+
+    await tester.tap(find.text('Anthropic'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField), 'op');
     await tester.pumpAndSettle();
     expect(find.text('Opus'), findsOneWidget);
-    expect(find.text('Sonnet'), findsOneWidget); // provider name matches
-    expect(find.text('GPT'), findsOneWidget); // OpenAI matches
-    await tester.enterText(find.byType(TextField), 'opus');
-    await tester.pumpAndSettle();
-    expect(find.text('Opus'), findsOneWidget);
-    expect(find.text('GPT'), findsNothing);
+    expect(find.text('Sonnet'), findsNothing);
   });
 }
