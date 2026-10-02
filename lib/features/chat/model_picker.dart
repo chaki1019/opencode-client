@@ -5,8 +5,8 @@ import '../../core/models/session.dart';
 import '../../l10n/l10n.dart';
 
 /// Picks a model in two steps: the provider first, then one of its models.
-/// With a single provider the model list is shown straight away. Typing a
-/// query on the provider step searches models across every provider.
+/// With a single provider the model list is shown straight away. Only the
+/// model step has a search field.
 ///
 /// Pops the enclosing route with the chosen [ModelRef].
 class ModelPicker extends StatefulWidget {
@@ -62,8 +62,7 @@ class _ModelPickerState extends State<ModelPicker> {
   bool _matches(ModelOption m) =>
       _query.isEmpty ||
       m.name.toLowerCase().contains(_query) ||
-      m.id.toLowerCase().contains(_query) ||
-      m.providerName.toLowerCase().contains(_query);
+      m.id.toLowerCase().contains(_query);
 
   void _open(String? providerID) {
     _search.clear();
@@ -104,18 +103,19 @@ class _ModelPickerState extends State<ModelPicker> {
                 ],
               ),
             ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: TextField(
-              controller: _search,
-              decoration: InputDecoration(
-                prefixIcon: const Icon(Icons.search),
-                hintText: context.l10n.searchModels,
-                isDense: true,
+          if (selected != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+              child: TextField(
+                controller: _search,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search),
+                  hintText: context.l10n.searchModels,
+                  isDense: true,
+                ),
+                onChanged: (v) => setState(() => _query = v.toLowerCase()),
               ),
-              onChanged: (v) => setState(() => _query = v.toLowerCase()),
             ),
-          ),
           Expanded(child: _body(context, providers, selected)),
         ],
       ),
@@ -132,23 +132,8 @@ class _ModelPickerState extends State<ModelPicker> {
       return ListView.builder(
         controller: widget.scrollController,
         itemCount: models.length,
-        itemBuilder: (context, index) => _ModelTile(
-          option: models[index],
-          current: widget.current,
-          showProvider: false,
-        ),
-      );
-    }
-    if (_query.isNotEmpty) {
-      final models = widget.models.where(_matches).toList();
-      return ListView.builder(
-        controller: widget.scrollController,
-        itemCount: models.length,
-        itemBuilder: (context, index) => _ModelTile(
-          option: models[index],
-          current: widget.current,
-          showProvider: true,
-        ),
+        itemBuilder: (context, index) =>
+            _ModelTile(option: models[index], current: widget.current),
       );
     }
     return ListView.builder(
@@ -172,15 +157,10 @@ class _ModelPickerState extends State<ModelPicker> {
 }
 
 class _ModelTile extends StatelessWidget {
-  const _ModelTile({
-    required this.option,
-    required this.current,
-    required this.showProvider,
-  });
+  const _ModelTile({required this.option, required this.current});
 
   final ModelOption option;
   final ModelRef? current;
-  final bool showProvider;
 
   @override
   Widget build(BuildContext context) {
@@ -193,7 +173,6 @@ class _ModelTile extends StatelessWidget {
         current?.providerID == option.providerID && current?.id == option.id;
     return ListTile(
       title: Text(option.name),
-      subtitle: showProvider ? Text(option.providerName) : null,
       leading: inUse
           ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
           : const SizedBox(width: 24),
