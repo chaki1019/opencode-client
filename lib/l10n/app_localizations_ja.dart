@@ -255,6 +255,16 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String modelCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'モデル $count 個',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get searchModels => 'モデルを検索';
 
   @override

@@ -143,6 +143,8 @@
       "error": {}
     }
   },
+  "modelCount": "{count, plural, =1{1 model} other{{count} models}}",
+  "@modelCount": {"placeholders": {"count": {"type": "int"}}},
   "searchModels": "Search models",
   "modelsLoadFailed": "Couldn't load models: {error}",
   "@modelsLoadFailed": {
