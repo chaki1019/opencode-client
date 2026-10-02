@@ -33,13 +33,31 @@ class _Provider {
   final List<ModelOption> models = [];
 }
 
-class _ModelPickerState extends State<ModelPicker> {
+class _ModelPickerState extends State<ModelPicker>
+    with SingleTickerProviderStateMixin {
   final _search = TextEditingController();
+  late final _slide = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 280),
+  )..addStatusListener((_) => setState(() {}));
+  late final _curve = CurvedAnimation(
+    parent: _slide,
+    curve: Curves.easeOutCubic,
+    reverseCurve: Curves.easeInCubic,
+  );
   String _query = '';
+
+  /// The provider being drilled into, or null on the provider step.
   String? _providerID;
+
+  /// The provider whose models are on screen. Kept while sliding back so the
+  /// model step does not go blank mid-animation.
+  String? _shownProviderID;
 
   @override
   void dispose() {
+    _curve.dispose();
+    _slide.dispose();
     _search.dispose();
     super.dispose();
   }
@@ -68,76 +86,83 @@ class _ModelPickerState extends State<ModelPicker> {
     _search.clear();
     setState(() {
       _providerID = providerID;
+      if (providerID != null) _shownProviderID = providerID;
       _query = '';
     });
+    final instant = MediaQuery.of(context).disableAnimations;
+    if (providerID == null) {
+      instant ? _slide.value = 0 : _slide.reverse();
+    } else {
+      instant ? _slide.value = 1 : _slide.forward();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final providers = _providers;
-    final single = providers.length == 1;
-    final selected = single
-        ? providers.single
-        : providers.where((p) => p.id == _providerID).firstOrNull;
+    if (providers.length == 1) {
+      return _modelStep(context, providers.single, showHeader: false);
+    }
+    final onModels = _providerID != null;
+    final shown = providers.where((p) => p.id == _shownProviderID).firstOrNull;
 
     return PopScope(
-      canPop: single || selected == null,
+      canPop: !onModels,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) _open(null);
       },
-      child: Column(
-        children: [
-          if (selected != null && !single)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(4, 0, 16, 4),
-              child: Row(
-                children: [
-                  BackButton(onPressed: () => _open(null)),
-                  Expanded(
-                    child: Text(
-                      selected.name,
-                      style: Theme.of(context).textTheme.titleMedium,
-                      overflow: TextOverflow.ellipsis,
+      child: ClipRect(
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (!_slide.isCompleted || shown == null)
+              SlideTransition(
+                position: Tween(
+                  begin: Offset.zero,
+                  end: const Offset(-0.3, 0),
+                ).animate(_curve),
+                child: IgnorePointer(
+                  ignoring: onModels,
+                  child: _providerStep(context, providers, active: !onModels),
+                ),
+              ),
+            if (!_slide.isDismissed && shown != null)
+              SlideTransition(
+                position: Tween(
+                  begin: const Offset(1, 0),
+                  end: Offset.zero,
+                ).animate(_curve),
+                child: IgnorePointer(
+                  ignoring: !onModels,
+                  child: Material(
+                    color:
+                        Theme.of(context).bottomSheetTheme.backgroundColor ??
+                        Theme.of(context).colorScheme.surfaceContainerLow,
+                    child: _modelStep(
+                      context,
+                      shown,
+                      showHeader: true,
+                      active: onModels,
                     ),
                   ),
-                ],
-              ),
-            ),
-          if (selected != null)
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-              child: TextField(
-                controller: _search,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.search),
-                  hintText: context.l10n.searchModels,
-                  isDense: true,
                 ),
-                onChanged: (v) => setState(() => _query = v.toLowerCase()),
               ),
-            ),
-          Expanded(child: _body(context, providers, selected)),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _body(
+  /// [active] decides which step drives the sheet's scroll controller while
+  /// both are on screen.
+  Widget _providerStep(
     BuildContext context,
-    List<_Provider> providers,
-    _Provider? selected,
-  ) {
-    if (selected != null) {
-      final models = selected.models.where(_matches).toList();
-      return ListView.builder(
-        controller: widget.scrollController,
-        itemCount: models.length,
-        itemBuilder: (context, index) =>
-            _ModelTile(option: models[index], current: widget.current),
-      );
-    }
+    List<_Provider> providers, {
+    required bool active,
+  }) {
     return ListView.builder(
-      controller: widget.scrollController,
+      controller: active ? widget.scrollController : null,
+      primary: false,
       itemCount: providers.length,
       itemBuilder: (context, index) {
         final provider = providers[index];
@@ -152,6 +177,56 @@ class _ModelPickerState extends State<ModelPicker> {
           onTap: () => _open(provider.id),
         );
       },
+    );
+  }
+
+  Widget _modelStep(
+    BuildContext context,
+    _Provider provider, {
+    required bool showHeader,
+    bool active = true,
+  }) {
+    final models = provider.models.where(_matches).toList();
+    return Column(
+      children: [
+        if (showHeader)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 0, 16, 4),
+            child: Row(
+              children: [
+                BackButton(onPressed: () => _open(null)),
+                Expanded(
+                  child: Text(
+                    provider.name,
+                    style: Theme.of(context).textTheme.titleMedium,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: TextField(
+            controller: _search,
+            decoration: InputDecoration(
+              prefixIcon: const Icon(Icons.search),
+              hintText: context.l10n.searchModels,
+              isDense: true,
+            ),
+            onChanged: (v) => setState(() => _query = v.toLowerCase()),
+          ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            controller: active ? widget.scrollController : null,
+            primary: false,
+            itemCount: models.length,
+            itemBuilder: (context, index) =>
+                _ModelTile(option: models[index], current: widget.current),
+          ),
+        ),
+      ],
     );
   }
 }
