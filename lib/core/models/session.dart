@@ -42,6 +42,35 @@ abstract class ModelRef with _$ModelRef {
   String get label => variant == null ? id : '$id ($variant)';
 }
 
+/// Token counts the server reports for a step or a whole session.
+@freezed
+abstract class TokenUsage with _$TokenUsage {
+  const TokenUsage._();
+
+  const factory TokenUsage({
+    @Default(0) int input,
+    @Default(0) int output,
+    @Default(0) int reasoning,
+    @Default(TokenCache()) TokenCache cache,
+  }) = _TokenUsage;
+
+  factory TokenUsage.fromJson(Map<String, dynamic> json) =>
+      _$TokenUsageFromJson(json);
+
+  /// Everything the step sent and received, which is what fills the
+  /// model's context window.
+  int get total => input + output + reasoning + cache.read + cache.write;
+}
+
+@freezed
+abstract class TokenCache with _$TokenCache {
+  const factory TokenCache({@Default(0) int read, @Default(0) int write}) =
+      _TokenCache;
+
+  factory TokenCache.fromJson(Map<String, dynamic> json) =>
+      _$TokenCacheFromJson(json);
+}
+
 /// A v2 session (`/api/session`). Times are epoch milliseconds.
 @freezed
 abstract class Session with _$Session {
@@ -56,6 +85,12 @@ abstract class Session with _$Session {
     required SessionTime time,
     String? agent,
     ModelRef? model,
+
+    /// Total spend in USD across the session.
+    double? cost,
+
+    /// Tokens used across the session.
+    TokenUsage? tokens,
   }) = _Session;
 
   factory Session.fromJson(Map<String, dynamic> json) =>

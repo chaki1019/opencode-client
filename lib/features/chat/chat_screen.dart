@@ -10,6 +10,7 @@ import 'agent_labels.dart';
 import 'chat_providers.dart';
 import 'composer.dart';
 import 'composer_providers.dart';
+import 'context_sheet.dart';
 import 'expand_downward.dart';
 import 'prompt_widgets.dart';
 import 'session_actions.dart';
@@ -34,6 +35,7 @@ class ChatScreen extends ConsumerWidget {
         title: _ChatTitle(session: session, busy: busy),
         bottom: const LiveStatusBanner(),
         actions: [
+          ContextUsageButton(session: session),
           IconButton(
             tooltip: context.l10n.reload,
             icon: const Icon(Icons.refresh),

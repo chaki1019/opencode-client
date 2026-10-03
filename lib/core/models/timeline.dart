@@ -60,6 +60,7 @@ sealed class TimelineEntry {
           finish: json['finish'] as String?,
           errorMessage: _obj(json['error'])?['message'] as String?,
           cost: _num(json['cost']),
+          tokens: parseTokenUsage(json['tokens']),
           content: [
             for (final c in _list(json['content']))
               if (c is Map)
@@ -139,6 +140,7 @@ class AssistantEntry extends TimelineEntry {
     this.finish,
     this.errorMessage,
     this.cost,
+    this.tokens,
     this.content = const [],
   });
 
@@ -148,6 +150,9 @@ class AssistantEntry extends TimelineEntry {
   final String? finish;
   final String? errorMessage;
   final double? cost;
+
+  /// Set once the step ends.
+  final TokenUsage? tokens;
   final List<AssistantContent> content;
 
   /// True while the model is still producing this message.
@@ -160,6 +165,7 @@ class AssistantEntry extends TimelineEntry {
     String? Function()? finish,
     String? Function()? errorMessage,
     double? cost,
+    TokenUsage? tokens,
     List<AssistantContent>? content,
   }) => AssistantEntry(
     id: id,
@@ -170,6 +176,7 @@ class AssistantEntry extends TimelineEntry {
     finish: finish != null ? finish() : this.finish,
     errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
     cost: cost ?? this.cost,
+    tokens: tokens ?? this.tokens,
     content: content ?? this.content,
   );
 }
@@ -339,3 +346,13 @@ Json? _obj(Object? value) =>
 List<Object?> _list(Object? value) => value is List ? value : const [];
 
 double? _num(Object? value) => value is num ? value.toDouble() : null;
+
+/// Parses a `tokens` object; null when it is missing or malformed.
+TokenUsage? parseTokenUsage(Object? value) {
+  if (value is! Map) return null;
+  try {
+    return TokenUsage.fromJson(value.cast<String, dynamic>());
+  } on Object {
+    return null;
+  }
+}

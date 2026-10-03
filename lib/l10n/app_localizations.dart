@@ -1123,6 +1123,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Terminal {count}'**
   String terminalTitle(Object count);
+
+  /// Session list: a permission request or question is waiting on the user.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs you'**
+  String get sessionWaiting;
+
+  /// Session list: the session's last run ended in an error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get sessionFailed;
+
+  /// No description provided for @usageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Context'**
+  String get usageTitle;
+
+  /// No description provided for @usageTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Context and usage'**
+  String get usageTooltip;
+
+  /// No description provided for @usageTokensUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} tokens used'**
+  String usageTokensUsed(String count);
+
+  /// No description provided for @usageProvider.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get usageProvider;
+
+  /// No description provided for @usageModel.
+  ///
+  /// In en, this message translates to:
+  /// **'Model'**
+  String get usageModel;
+
+  /// No description provided for @usageLimit.
+  ///
+  /// In en, this message translates to:
+  /// **'Context limit'**
+  String get usageLimit;
+
+  /// No description provided for @usageTotalTokens.
+  ///
+  /// In en, this message translates to:
+  /// **'Total tokens'**
+  String get usageTotalTokens;
+
+  /// No description provided for @usagePercent.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage'**
+  String get usagePercent;
+
+  /// No description provided for @usageInputTokens.
+  ///
+  /// In en, this message translates to:
+  /// **'Input tokens'**
+  String get usageInputTokens;
+
+  /// No description provided for @usageOutputTokens.
+  ///
+  /// In en, this message translates to:
+  /// **'Output tokens'**
+  String get usageOutputTokens;
+
+  /// No description provided for @usageReasoningTokens.
+  ///
+  /// In en, this message translates to:
+  /// **'Reasoning tokens'**
+  String get usageReasoningTokens;
+
+  /// No description provided for @usageCacheTokens.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache read / write'**
+  String get usageCacheTokens;
+
+  /// No description provided for @usageLastActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'Last activity'**
+  String get usageLastActivity;
+
+  /// No description provided for @usageNoReplies.
+  ///
+  /// In en, this message translates to:
+  /// **'No replies yet. Usage appears after the first reply.'**
+  String get usageNoReplies;
+
+  /// No description provided for @usageLastStepHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Counts from the latest reply, which is what fills the context window.'**
+  String get usageLastStepHelp;
+
+  /// No description provided for @sessionUsage.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole session'**
+  String get sessionUsage;
+
+  /// No description provided for @sessionCost.
+  ///
+  /// In en, this message translates to:
+  /// **'Cost'**
+  String get sessionCost;
+
+  /// No description provided for @sessionCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Created'**
+  String get sessionCreated;
 }
 
 class _AppLocalizationsDelegate

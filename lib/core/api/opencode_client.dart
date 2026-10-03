@@ -556,6 +556,36 @@ class OpenCodeClient {
       'Authorization': auth,
   };
 
+  /// Requests across all sessions in [directory] that wait on the user,
+  /// as request ID to session ID: permissions and questions. Either list
+  /// is skipped when the server does not offer it.
+  Future<Map<String, String>> pendingRequestSessions({
+    required String directory,
+  }) async {
+    final result = <String, String>{};
+    for (final path in const [
+      '/api/permission/request',
+      '/api/question/request',
+    ]) {
+      final Object? body;
+      try {
+        body = await _getJson(path, query: _location(directory));
+      } on OpenCodeApiException catch (e) {
+        if (e.statusCode == 404 || e.statusCode == 405) continue;
+        rethrow;
+      }
+      for (final item in _map(body)['data'] as List? ?? const []) {
+        final request = _obj(item);
+        if (request?['id'] case final String id) {
+          if (request?['sessionID'] case final String sessionId) {
+            result[id] = sessionId;
+          }
+        }
+      }
+    }
+    return result;
+  }
+
   /// Permission requests waiting on the user in [sessionId].
   Future<List<PermissionRequest>> listPermissions(String sessionId) async {
     final body = _map(
@@ -665,6 +695,10 @@ class OpenCodeClient {
               for (final v in model['variants'] as List? ?? const [])
                 if (v is Map && v['id'] is String) v['id'] as String,
             ],
+            contextLimit: switch (_obj(model['limit'])?['context']) {
+              final num limit when limit > 0 => limit.toInt(),
+              _ => null,
+            },
           ),
         );
       }

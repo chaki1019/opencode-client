@@ -43,6 +43,31 @@ Map<String, dynamic> _$ModelRefToJson(_ModelRef instance) => <String, dynamic>{
   'variant': instance.variant,
 };
 
+_TokenUsage _$TokenUsageFromJson(Map<String, dynamic> json) => _TokenUsage(
+  input: (json['input'] as num?)?.toInt() ?? 0,
+  output: (json['output'] as num?)?.toInt() ?? 0,
+  reasoning: (json['reasoning'] as num?)?.toInt() ?? 0,
+  cache: json['cache'] == null
+      ? const TokenCache()
+      : TokenCache.fromJson(json['cache'] as Map<String, dynamic>),
+);
+
+Map<String, dynamic> _$TokenUsageToJson(_TokenUsage instance) =>
+    <String, dynamic>{
+      'input': instance.input,
+      'output': instance.output,
+      'reasoning': instance.reasoning,
+      'cache': instance.cache,
+    };
+
+_TokenCache _$TokenCacheFromJson(Map<String, dynamic> json) => _TokenCache(
+  read: (json['read'] as num?)?.toInt() ?? 0,
+  write: (json['write'] as num?)?.toInt() ?? 0,
+);
+
+Map<String, dynamic> _$TokenCacheToJson(_TokenCache instance) =>
+    <String, dynamic>{'read': instance.read, 'write': instance.write};
+
 _Session _$SessionFromJson(Map<String, dynamic> json) => _Session(
   id: json['id'] as String,
   projectID: json['projectID'] as String,
@@ -54,6 +79,10 @@ _Session _$SessionFromJson(Map<String, dynamic> json) => _Session(
   model: json['model'] == null
       ? null
       : ModelRef.fromJson(json['model'] as Map<String, dynamic>),
+  cost: (json['cost'] as num?)?.toDouble(),
+  tokens: json['tokens'] == null
+      ? null
+      : TokenUsage.fromJson(json['tokens'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$SessionToJson(_Session instance) => <String, dynamic>{
@@ -65,4 +94,6 @@ Map<String, dynamic> _$SessionToJson(_Session instance) => <String, dynamic>{
   'time': instance.time,
   'agent': instance.agent,
   'model': instance.model,
+  'cost': instance.cost,
+  'tokens': instance.tokens,
 };
