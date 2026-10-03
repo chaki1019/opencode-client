@@ -6,6 +6,7 @@ import '../../core/models/project.dart';
 import '../../core/models/project_tools.dart';
 import '../../l10n/l10n.dart';
 import '../projects/project_tools.dart';
+import 'change_tree.dart';
 import 'git_providers.dart';
 
 /// The project's branch and changed files. Tapping a file opens its diff.
@@ -88,11 +89,13 @@ class _GitScreenState extends ConsumerState<GitScreen> {
                         padding: const EdgeInsets.all(24),
                         children: [Center(child: Text(context.l10n.noChanges))],
                       )
-                    : ListView(
-                        children: [
-                          for (final file in snapshot.files)
-                            _FileTile(change: file),
-                        ],
+                    : ChangeTree(
+                        changes: snapshot.files,
+                        fileTile: (change, name, indent) => _FileTile(
+                          change: change,
+                          name: name,
+                          indent: indent,
+                        ),
                       ),
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, _) => ListView(
@@ -109,27 +112,36 @@ class _GitScreenState extends ConsumerState<GitScreen> {
 }
 
 class _FileTile extends StatelessWidget {
-  const _FileTile({required this.change});
+  const _FileTile({
+    required this.change,
+    required this.name,
+    required this.indent,
+  });
 
   final FileChange change;
+  final String name;
+  final double indent;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final slash = change.file.lastIndexOf('/');
-    final name = change.file.substring(slash + 1);
-    final folder = slash < 0 ? null : change.file.substring(0, slash);
     return ListTile(
+      dense: true,
+      minTileHeight: 40,
+      contentPadding: EdgeInsets.only(left: indent, right: 16),
+      horizontalTitleGap: 8,
+      minLeadingWidth: 0,
       leading: Icon(switch (change.status) {
         'added' || 'untracked' => Icons.add_circle_outline,
         'deleted' || 'removed' => Icons.remove_circle_outline,
         'renamed' => Icons.drive_file_rename_outline,
         _ => Icons.edit_outlined,
       }, size: 20),
-      title: Text(name, overflow: TextOverflow.ellipsis),
-      subtitle: folder == null
-          ? null
-          : Text(folder, overflow: TextOverflow.ellipsis),
+      title: Text(
+        name,
+        overflow: TextOverflow.ellipsis,
+        style: theme.textTheme.bodyMedium,
+      ),
       trailing: Text.rich(
         TextSpan(
           children: [
