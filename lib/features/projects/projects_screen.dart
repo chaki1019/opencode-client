@@ -13,7 +13,8 @@ import 'project_providers.dart';
 class ProjectsScreen extends ConsumerWidget {
   const ProjectsScreen({super.key});
 
-  /// Matches [ListTile]'s default start padding used by [_ProjectTile].
+  /// Leading edge shared by the title, the section header and the project
+  /// list card.
   static const double _edge = 16;
 
   @override
@@ -25,7 +26,7 @@ class ProjectsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(
         // Root screen with no back button: line the title up with the
-        // project tiles' leading edge instead of the theme's tight spacing.
+        // project list's leading edge instead of the theme's tight spacing.
         titleSpacing: _edge,
         title: Text(connection?.server.displayName ?? context.l10n.projects),
         actions: [
@@ -62,16 +63,30 @@ class ProjectsScreen extends ConsumerWidget {
         onRefresh: () => ref.refresh(projectsProvider.future),
         child: projects.when(
           data: (bootstrap) => ListView(
-            padding: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.only(bottom: 16),
             children: [
               _SectionHeader(
                 title: context.l10n.projects,
                 onAdd: () => _addProject(context, ref),
               ),
-              for (final project in _sorted(bootstrap.projects))
-                _ProjectTile(
-                  project: project,
-                  isCurrent: project.id == bootstrap.current?.id,
+              if (bootstrap.projects.isNotEmpty)
+                Card(
+                  key: const Key('project-list'),
+                  margin: const EdgeInsets.symmetric(horizontal: _edge),
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    children: [
+                      for (final (i, project) in _sorted(
+                        bootstrap.projects,
+                      ).indexed) ...[
+                        if (i > 0) const Divider(),
+                        _ProjectTile(
+                          project: project,
+                          isCurrent: project.id == bootstrap.current?.id,
+                        ),
+                      ],
+                    ],
+                  ),
                 ),
             ],
           ),

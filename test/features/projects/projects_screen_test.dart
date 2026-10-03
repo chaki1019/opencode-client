@@ -45,7 +45,13 @@ void main() {
     );
     expect(label.center.dy, closeTo(header.center.dy, 1));
     expect(label.left, lessThan(header.left));
-    expect(find.text('app'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('project-list')),
+        matching: find.text('app'),
+      ),
+      findsOneWidget,
+    );
   });
 
   testWidgets('asks for an absolute folder path', (tester) async {
