@@ -1484,6 +1484,12 @@ abstract class AppLocalizations {
   /// **'Dark'**
   String get themeDark;
 
+  /// No description provided for @chatPaneEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick a session to show its chat here'**
+  String get chatPaneEmpty;
+
   /// No description provided for @settingsInteraction.
   ///
   /// In en, this message translates to:

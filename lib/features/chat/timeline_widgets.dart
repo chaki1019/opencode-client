@@ -39,61 +39,63 @@ class UserMessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Align(
-      alignment: Alignment.centerRight,
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: MediaQuery.sizeOf(context).width * 0.85,
-        ),
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: scheme.primaryContainer,
-            border: Border.all(color: scheme.primary.withValues(alpha: 0.18)),
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(14),
-              topRight: Radius.circular(14),
-              bottomLeft: Radius.circular(14),
-              bottomRight: Radius.circular(4),
+    // Measured against the transcript, which on a tablet is narrower than
+    // the screen.
+    return LayoutBuilder(
+      builder: (context, constraints) => Align(
+        alignment: Alignment.centerRight,
+        child: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.85),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: scheme.primaryContainer,
+              border: Border.all(color: scheme.primary.withValues(alpha: 0.18)),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(14),
+                topRight: Radius.circular(14),
+                bottomLeft: Radius.circular(14),
+                bottomRight: Radius.circular(4),
+              ),
             ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Plain text so a long-press opens the message menu instead
-                // of starting a selection.
-                if (entry.text.isNotEmpty)
-                  Text(
-                    entry.text,
-                    style: TextStyle(color: scheme.onPrimaryContainer),
-                  ),
-                for (final file in entry.files)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 6),
-                    child: file.isImage && file.base64Data != null
-                        ? _InlineImage(base64Data: file.base64Data!)
-                        : Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.attach_file,
-                                size: 16,
-                                color: scheme.onPrimaryContainer,
-                              ),
-                              const SizedBox(width: 4),
-                              Flexible(
-                                child: Text(
-                                  file.name ?? file.mime ?? 'file',
-                                  style: TextStyle(
-                                    color: scheme.onPrimaryContainer,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Plain text so a long-press opens the message menu instead
+                  // of starting a selection.
+                  if (entry.text.isNotEmpty)
+                    Text(
+                      entry.text,
+                      style: TextStyle(color: scheme.onPrimaryContainer),
+                    ),
+                  for (final file in entry.files)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: file.isImage && file.base64Data != null
+                          ? _InlineImage(base64Data: file.base64Data!)
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.attach_file,
+                                  size: 16,
+                                  color: scheme.onPrimaryContainer,
+                                ),
+                                const SizedBox(width: 4),
+                                Flexible(
+                                  child: Text(
+                                    file.name ?? file.mime ?? 'file',
+                                    style: TextStyle(
+                                      color: scheme.onPrimaryContainer,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                  ),
-              ],
+                              ],
+                            ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),

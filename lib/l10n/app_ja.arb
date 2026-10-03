@@ -231,6 +231,7 @@
   "settingsFollowSystem": "システム設定に従う",
   "themeLight": "ライト",
   "themeDark": "ダーク",
+  "chatPaneEmpty": "セッションを選ぶと\nここにチャットが表示されます",
   "settingsInteraction": "操作",
   "settingsHaptics": "触覚フィードバック",
   "settingsHapticsHelp": "送信時、AI の返信完了時、AI が回答を待っているときに軽く振動します",

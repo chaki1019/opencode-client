@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/layout.dart';
 import '../../app/theme.dart';
 import '../../core/models/server_config.dart';
 import '../../core/push/push_store.dart';
@@ -106,7 +107,12 @@ class _PairingViewState extends ConsumerState<_PairingView> {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => _Message(context.l10n.pushFailed('$e')),
       data: (pairing) => ListView(
-        padding: const EdgeInsets.only(bottom: 24),
+        padding: EdgeInsets.fromLTRB(
+          readableSide(context),
+          0,
+          readableSide(context),
+          24,
+        ),
         children: [
           SwitchListTile(
             key: const Key('push-switch'),

@@ -13,6 +13,7 @@ import '../../core/push/push_store.dart';
 import '../../core/push/relay_client.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
+import '../home/pane_selection.dart';
 
 /// Overridden in tests; real builds read `--dart-define`s.
 final pushConfigProvider = Provider<PushConfig>(
@@ -217,7 +218,7 @@ Future<void> openPushMessage(Ref ref, PushMessage message) async {
     final session = await client.getSession(message.sessionId);
     final router = ref.read(routerProvider);
     router.go('/projects');
-    unawaited(router.push('/sessions/${session.id}', extra: session));
+    openSession(router, ref.read(paneSelectionProvider.notifier), session);
   } on Object catch (e) {
     final messenger = ref.read(scaffoldMessengerKeyProvider).currentState;
     final context = messenger?.context;

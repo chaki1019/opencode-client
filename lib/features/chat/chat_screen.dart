@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/layout.dart';
 import '../../core/models/session.dart';
 import '../../core/models/timeline.dart';
 import '../../l10n/l10n.dart';
@@ -23,9 +24,13 @@ import 'timeline_widgets.dart';
 
 /// A session's transcript, updated live, with the input at the bottom.
 class ChatScreen extends ConsumerWidget {
-  const ChatScreen({super.key, required this.session});
+  const ChatScreen({super.key, required this.session, this.pane = false});
 
   final Session session;
+
+  /// Shown as the right of two panes rather than as its own page, so it
+  /// has no back button.
+  final bool pane;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,6 +45,9 @@ class ChatScreen extends ConsumerWidget {
       onArrived: () => ref.read(provider.notifier).loadMore(),
       builder: (context, scrollController) => Scaffold(
         appBar: AppBar(
+          automaticallyImplyLeading: !pane,
+          // Without a back button the title would touch the pane divider.
+          titleSpacing: pane ? 16 : null,
           title: _ChatTitle(session: session, busy: busy),
           bottom: const LiveStatusBanner(),
           actions: [ContextUsageButton(session: session)],
@@ -47,7 +55,7 @@ class ChatScreen extends ConsumerWidget {
         body: PrimaryScrollController.none(
           child: Column(
             children: [
-              TodoStrip(sessionId: session.id),
+              ReadableWidth(child: TodoStrip(sessionId: session.id)),
               Expanded(
                 child: timeline.when(
                   data: (paged) {
@@ -131,12 +139,14 @@ class ChatScreen extends ConsumerWidget {
                                         )
                                       : TimelineEntryView(entry: entry);
                                 }
-                                return Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
+                                return ReadableWidth(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    child: child,
                                   ),
-                                  child: child,
                                 );
                               },
                             ),
@@ -162,8 +172,8 @@ class ChatScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              SessionPromptsPanel(session: session),
-              Composer(session: session),
+              ReadableWidth(child: SessionPromptsPanel(session: session)),
+              ReadableWidth(child: Composer(session: session)),
             ],
           ),
         ),

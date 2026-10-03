@@ -42,8 +42,9 @@ void main() {
   Future<void> pumpApp(WidgetTester tester) async {
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     tester.platformDispatcher.localesTestValue = const [Locale('ja')];
-    // Tall enough that the saved and found lists sit on screen.
-    tester.view.physicalSize = const Size(800, 1600);
+    // Tall enough that the saved and found lists sit on screen, and narrow
+    // enough to be a phone rather than a tablet with two panes.
+    tester.view.physicalSize = const Size(430, 1600);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(

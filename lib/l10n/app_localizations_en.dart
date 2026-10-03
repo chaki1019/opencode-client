@@ -852,6 +852,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get themeDark => 'Dark';
 
   @override
+  String get chatPaneEmpty => 'Pick a session to show its chat here';
+
+  @override
   String get settingsInteraction => 'Interaction';
 
   @override
