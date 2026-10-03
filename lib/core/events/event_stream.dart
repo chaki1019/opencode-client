@@ -125,7 +125,12 @@ class EventStream {
     );
     await done.future;
     watchdog?.cancel();
-    unawaited(subscription.cancel());
+    // The parser is an async* generator, so an error that reaches it after
+    // cancellation surfaces through the cancel() future instead of onError.
+    // Typically that is the CancelToken's own "request cancelled"
+    // DioException from stop() or the watchdog. The connection is being
+    // dropped on purpose here, so any such error is an expected end.
+    unawaited(subscription.cancel().catchError((Object _) {}));
   }
 
   void _setStatus(EventStreamStatus status) {
