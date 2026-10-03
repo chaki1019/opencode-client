@@ -30,4 +30,6 @@ jobs:
       # Trusted Publishing needs npm 11.5.1 or later.
       - run: npm install -g npm@latest
       - run: npm test
-      - run: npm stage publish --access public
+      # Provenance is off: npm checks it against package.json "repository",
+      # which the package leaves out because the repository is private.
+      - run: npm stage publish --access public --provenance=false
