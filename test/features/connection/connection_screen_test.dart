@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -20,11 +21,15 @@ import '../../support/fake_discovery.dart';
 void main() {
   late FakeDiscovery discovery;
   final adapter = FakeAdapter({
-    '/api/health': FakeRoute.json({
-      'healthy': true,
-      'version': '2.0.0',
-      'pid': 1,
-    }),
+    '/api/health': (RequestOptions request) {
+      if (request.uri.host == 'down.test') {
+        throw DioException.connectionError(
+          requestOptions: request,
+          reason: 'Connection refused',
+        );
+      }
+      return FakeRoute.json({'healthy': true, 'version': '2.0.0', 'pid': 1});
+    },
     '/api/location': FakeRoute.json({'project': <String, Object?>{}}),
     '/api/project': FakeRoute.json(<Object>[]),
   });
@@ -125,6 +130,24 @@ void main() {
     await connectTo(tester, '10.0.0.5:4096');
     expect(find.text(askTitle), findsNothing);
     expect(find.byType(ProjectsScreen), findsOneWidget);
+  });
+
+  testWidgets('rejects a malformed URL before connecting', (tester) async {
+    await pumpApp(tester);
+    final before = adapter.requests.length;
+    await connectTo(tester, 'htt@://192.168.0.14:4096');
+    expect(
+      find.text('URL の形式が正しくありません（例: http://192.168.1.10:4096）'),
+      findsOneWidget,
+    );
+    expect(adapter.requests, hasLength(before));
+  });
+
+  testWidgets('says why when the server cannot be reached', (tester) async {
+    await pumpApp(tester);
+    await connectTo(tester, 'down.test:4096');
+    expect(find.textContaining('サーバーに接続できませんでした'), findsOneWidget);
+    expect(find.byType(ProjectsScreen), findsNothing);
   });
 
   testWidgets('long-pressing a saved server renames it', (tester) async {

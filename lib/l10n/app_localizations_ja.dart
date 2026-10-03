@@ -85,6 +85,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get serverUrlRequired => 'URL を入力してください';
 
   @override
+  String get serverUrlInvalid =>
+      'URL の形式が正しくありません（例: http://192.168.1.10:4096）';
+
+  @override
+  String get connectTimeout =>
+      'サーバーから応答がありませんでした。サーバーが起動していて、このネットワークから届くか確認してください。';
+
+  @override
+  String get connectUnreachable =>
+      'サーバーに接続できませんでした。URL、サーバーが起動しているか、ネットワークからの接続を受け付けているか（--hostname 0.0.0.0）を確認してください。';
+
+  @override
   String get username => 'ユーザー名';
 
   @override

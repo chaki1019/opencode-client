@@ -36,6 +36,7 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
   }
 
   Future<void> _run(Future<void> Function() action) async {
+    final l10n = context.l10n;
     setState(() {
       _busy = true;
       _error = null;
@@ -43,13 +44,20 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
     try {
       await action();
     } on UnsupportedServerException {
-      setState(() => _error = context.l10n.connectUnsupported);
+      setState(() => _error = l10n.connectUnsupported);
     } on OpenCodeApiException catch (e) {
       setState(
         () => _error = e.isUnauthorized
-            ? context.l10n.connectWrongCredentials
-            : context.l10n.connectFailed(e),
+            ? l10n.connectWrongCredentials
+            : switch (e.network) {
+                NetworkFailure.timeout => l10n.connectTimeout,
+                NetworkFailure.unreachable => l10n.connectUnreachable,
+                null => l10n.connectFailed(e),
+              },
       );
+    } catch (e) {
+      // Anything unexpected still says why, instead of failing silently.
+      setState(() => _error = l10n.connectFailed(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -163,7 +171,9 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
                     autocorrect: false,
                     validator: (v) => (v == null || v.trim().isEmpty)
                         ? context.l10n.serverUrlRequired
-                        : null,
+                        : ServerConfig.isValidBaseUrl(v)
+                        ? null
+                        : context.l10n.serverUrlInvalid,
                   ),
                   TextFormField(
                     controller: _username,
@@ -513,7 +523,9 @@ class _EditServerDialogState extends State<_EditServerDialog> {
                 autocorrect: false,
                 validator: (v) => (v == null || v.trim().isEmpty)
                     ? context.l10n.serverUrlRequired
-                    : null,
+                    : ServerConfig.isValidBaseUrl(v)
+                    ? null
+                    : context.l10n.serverUrlInvalid,
               ),
               TextFormField(
                 controller: _username,

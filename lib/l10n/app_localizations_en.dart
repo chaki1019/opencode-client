@@ -88,6 +88,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get serverUrlRequired => 'Enter a URL';
 
   @override
+  String get serverUrlInvalid =>
+      'Not a valid URL (e.g. http://192.168.1.10:4096)';
+
+  @override
+  String get connectTimeout =>
+      'The server didn\'t answer in time. Check that it is running and reachable from this network.';
+
+  @override
+  String get connectUnreachable =>
+      'Couldn\'t reach the server. Check the URL, that the server is running, and that it listens on the network (--hostname 0.0.0.0).';
+
+  @override
   String get username => 'Username';
 
   @override

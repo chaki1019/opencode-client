@@ -33,4 +33,12 @@ abstract class ServerConfig with _$ServerConfig {
     }
     return value;
   }
+
+  /// Whether [input] (as typed) normalizes to an http(s) URL with a host.
+  static bool isValidBaseUrl(String input) {
+    final uri = Uri.tryParse(normalizeBaseUrl(input));
+    return uri != null &&
+        (uri.scheme == 'http' || uri.scheme == 'https') &&
+        uri.host.isNotEmpty;
+  }
 }

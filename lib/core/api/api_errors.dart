@@ -7,11 +7,22 @@ class ServerHealth {
   final int pid;
 }
 
+/// Why a request never got an answer from the server.
+enum NetworkFailure {
+  /// The server did not answer in time.
+  timeout,
+
+  /// Nothing accepted the connection (wrong address, server not running,
+  /// or not listening on the network).
+  unreachable,
+}
+
 class OpenCodeApiException implements Exception {
-  const OpenCodeApiException(this.message, {this.statusCode});
+  const OpenCodeApiException(this.message, {this.statusCode, this.network});
 
   final String message;
   final int? statusCode;
+  final NetworkFailure? network;
 
   bool get isUnauthorized => statusCode == 401 || statusCode == 403;
 
