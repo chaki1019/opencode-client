@@ -465,5 +465,8 @@
   "settingsLanguage": "Language",
   "settingsFollowSystem": "Use system setting",
   "themeLight": "Light",
-  "themeDark": "Dark"
+  "themeDark": "Dark",
+  "settingsInteraction": "Interaction",
+  "settingsHaptics": "Haptic feedback",
+  "settingsHapticsHelp": "Vibrate lightly on send, when a reply finishes, and when the AI needs your answer"
 }

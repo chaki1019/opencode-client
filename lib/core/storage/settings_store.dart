@@ -5,20 +5,31 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// App-wide preferences that do not depend on any server.
 class AppSettings {
-  const AppSettings({this.themeMode = ThemeMode.system, this.languageCode});
+  const AppSettings({
+    this.themeMode = ThemeMode.system,
+    this.languageCode,
+    this.haptics = true,
+  });
 
   final ThemeMode themeMode;
 
   /// `ja`, `en`, or null to follow the device language.
   final String? languageCode;
 
+  /// Whether the app gives haptic feedback at key moments.
+  final bool haptics;
+
   Locale? get locale => languageCode == null ? null : Locale(languageCode!);
 
-  AppSettings copyWith({ThemeMode? themeMode, String? Function()? language}) =>
-      AppSettings(
-        themeMode: themeMode ?? this.themeMode,
-        languageCode: language == null ? languageCode : language(),
-      );
+  AppSettings copyWith({
+    ThemeMode? themeMode,
+    String? Function()? language,
+    bool? haptics,
+  }) => AppSettings(
+    themeMode: themeMode ?? this.themeMode,
+    languageCode: language == null ? languageCode : language(),
+    haptics: haptics ?? this.haptics,
+  );
 }
 
 /// Keeps [AppSettings] next to the other stored data, so the app needs no
@@ -40,6 +51,7 @@ class SettingsStore {
           ThemeMode.values.where((m) => m.name == json['theme']).firstOrNull ??
           ThemeMode.system,
       languageCode: json['language'] as String?,
+      haptics: json['haptics'] as bool? ?? true,
     );
   }
 
@@ -48,6 +60,7 @@ class SettingsStore {
     value: jsonEncode({
       'theme': settings.themeMode.name,
       'language': ?settings.languageCode,
+      'haptics': settings.haptics,
     }),
   );
 }

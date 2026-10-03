@@ -30,6 +30,8 @@ class SettingsNotifier extends Notifier<AppSettings> {
   Future<void> setLanguage(String? code) =>
       _update(state.copyWith(language: () => code));
 
+  Future<void> setHaptics(bool on) => _update(state.copyWith(haptics: on));
+
   Future<void> _update(AppSettings settings) async {
     _changed = true;
     state = settings;
