@@ -151,6 +151,26 @@ class AppLocalizationsJa extends AppLocalizations {
   String get currentProject => '現在';
 
   @override
+  String get addProject => 'プロジェクトを追加';
+
+  @override
+  String get projectFolderLabel => 'サーバー上のフォルダのパス';
+
+  @override
+  String get projectFolderHint => '/home/me/my-app';
+
+  @override
+  String get projectFolderMustBeAbsolute => '絶対パスを入力してください';
+
+  @override
+  String get openProject => '開く';
+
+  @override
+  String projectOpenFailed(Object error) {
+    return 'フォルダを開けませんでした: $error';
+  }
+
+  @override
   String get tabSessions => 'セッション';
 
   @override

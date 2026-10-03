@@ -171,6 +171,53 @@ void main() {
     });
   });
 
+  group('openProject', () {
+    test('resolves the folder and returns the listed project', () async {
+      final adapter = FakeAdapter({
+        '/api/fs/list': FakeRoute.json({'data': []}),
+        '/api/location': FakeRoute.json({
+          'directory': '/srv/app/sub',
+          'project': {'id': 'app', 'directory': '/srv/app'},
+        }),
+        '/api/project': FakeRoute.json([
+          {'id': 'app', 'canonical': '/srv/app', 'name': 'App'},
+        ]),
+      });
+      final project = await clientFor(adapter).openProject('/srv/app/sub');
+      expect(project.id, 'app');
+      expect(project.displayName, 'App');
+      final location = adapter.requests.firstWhere(
+        (r) => r.path == '/api/location',
+      );
+      expect(location.queryParameters['location[directory]'], '/srv/app/sub');
+      expect(location.headers['x-opencode-directory'], '/srv/app/sub');
+    });
+
+    test('keeps a non-Git folder as its own directory', () async {
+      final adapter = FakeAdapter({
+        '/api/fs/list': FakeRoute.json({'data': []}),
+        '/api/location': FakeRoute.json({
+          'directory': '/srv/notes',
+          'project': {'id': 'global', 'directory': '/'},
+        }),
+      });
+      final project = await clientFor(adapter).openProject('/srv/notes');
+      expect(project.id, 'global');
+      expect(project.directory, '/srv/notes');
+    });
+
+    test('fails without resolving when the folder cannot be read', () async {
+      final adapter = FakeAdapter({
+        '/api/fs/list': FakeRoute.json({'message': 'nope'}, status: 400),
+      });
+      await expectLater(
+        clientFor(adapter).openProject('/missing'),
+        throwsA(isA<OpenCodeApiException>()),
+      );
+      expect(adapter.requests.map((r) => r.path), ['/api/fs/list']);
+    });
+  });
+
   group('listSessions', () {
     Map<String, Object> session(String id) => {
       'id': id,

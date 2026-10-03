@@ -80,6 +80,17 @@
     }
   },
   "currentProject": "Current",
+  "addProject": "Add project",
+  "projectFolderLabel": "Folder path on the server",
+  "projectFolderHint": "/home/me/my-app",
+  "projectFolderMustBeAbsolute": "Enter an absolute path",
+  "openProject": "Open",
+  "projectOpenFailed": "Couldn't open the folder: {error}",
+  "@projectOpenFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "tabSessions": "Sessions",
   "tabFiles": "Files",
   "tabTerminal": "Terminal",
