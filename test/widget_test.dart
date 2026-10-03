@@ -14,6 +14,7 @@ import 'package:opencode_mobile/core/storage/server_store.dart';
 import 'package:opencode_mobile/features/chat/composer_providers.dart';
 import 'package:opencode_mobile/features/connection/connection_providers.dart';
 import 'package:opencode_mobile/features/live/live_providers.dart';
+import 'package:opencode_mobile/features/projects/projects_screen.dart';
 import 'package:opencode_mobile/main.dart';
 
 import 'support/fake_adapter.dart';
@@ -49,6 +50,61 @@ void main() {
     tester.platformDispatcher.localesTestValue = const [Locale('ja', 'JP')];
     await tester.pumpAndSettle();
     expect(find.text('OpenCode サーバーに接続'), findsOneWidget);
+  });
+
+  testWidgets('disconnecting slides the project list back out', (tester) async {
+    addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+    tester.platformDispatcher.localesTestValue = const [Locale('ja')];
+    final adapter = FakeAdapter({
+      '/api/health': FakeRoute.json({
+        'healthy': true,
+        'version': '2.0.0',
+        'pid': 1,
+      }),
+      '/api/location': FakeRoute.json({
+        'directory': '/home/me/my-app',
+        'project': {'id': 'abc', 'directory': '/home/me/my-app'},
+      }),
+      '/api/project': FakeRoute.json([
+        {'id': 'abc', 'canonical': '/home/me/my-app', 'sandboxes': []},
+      ]),
+    });
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ...noDiscoveryOverrides,
+          serverStoreProvider.overrideWithValue(ServerStore()),
+          eventStreamProvider.overrideWith((ref) => null),
+          clientFactoryProvider.overrideWithValue(
+            (server, password) => OpenCodeClient(
+              baseUrl: server.baseUrl,
+              username: server.username,
+              password: password,
+              dio: fakeDio(adapter),
+            ),
+          ),
+        ],
+        child: const OpenCodeMobileApp(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('url')), 'example.test:4096');
+    await tester.enterText(find.byKey(const Key('password')), 'pw');
+    await tester.tap(find.byKey(const Key('connect')));
+    await tester.pumpAndSettle();
+    expect(find.byType(ProjectsScreen), findsOneWidget);
+
+    await tester.tap(find.byTooltip('切断'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    // The list pops off the connect screen, as the reverse of connecting,
+    // instead of the connect screen pushing in over it.
+    final route = ModalRoute.of(tester.element(find.byType(ProjectsScreen)))!;
+    expect(route.animation!.status, AnimationStatus.reverse);
+    expect(find.byKey(const Key('connect')), findsOneWidget);
+    await tester.pumpAndSettle();
+    expect(find.byType(ProjectsScreen), findsNothing);
   });
 
   testWidgets('connecting shows the project list and saves the server', (

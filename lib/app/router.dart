@@ -25,40 +25,48 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.onDispose(refresh.dispose);
 
   return GoRouter(
-    initialLocation: '/connect',
+    initialLocation: '/',
     refreshListenable: refresh,
     redirect: (context, state) {
       final connected = ref.read(connectionProvider) != null;
-      final atConnect = state.matchedLocation == '/connect';
-      if (!connected && !atConnect) return '/connect';
+      final atConnect = state.matchedLocation == '/';
+      if (!connected && !atConnect) return '/';
       if (connected && atConnect) return '/projects';
       return null;
     },
     routes: [
+      // The project list stacks on top of the connect screen, so connecting
+      // pushes it in and disconnecting pops it back out instead of sliding
+      // the connect screen in as a new page.
       GoRoute(
-        path: '/connect',
+        path: '/',
         pageBuilder: (context, state) => _page(state, const ConnectionScreen()),
-      ),
-      GoRoute(
-        path: '/projects',
-        pageBuilder: (context, state) => _page(state, const ProjectsScreen()),
         routes: [
-          // Pops with the opened project, so the page is typed for it.
           GoRoute(
-            path: 'add',
-            pageBuilder: (context, state) => MaterialPage<Project>(
-              key: state.pageKey,
-              child: const FolderPickerScreen(),
-            ),
-          ),
-          // Screens receive their model through `extra`; deep links without
-          // it fall back to the project list.
-          GoRoute(
-            path: ':projectId',
-            redirect: (context, state) =>
-                state.extra is Project ? null : '/projects',
+            path: 'projects',
             pageBuilder: (context, state) =>
-                _page(state, ProjectScreen(project: state.extra! as Project)),
+                _page(state, const ProjectsScreen()),
+            routes: [
+              // Pops with the opened project, so the page is typed for it.
+              GoRoute(
+                path: 'add',
+                pageBuilder: (context, state) => MaterialPage<Project>(
+                  key: state.pageKey,
+                  child: const FolderPickerScreen(),
+                ),
+              ),
+              // Screens receive their model through `extra`; deep links without
+              // it fall back to the project list.
+              GoRoute(
+                path: ':projectId',
+                redirect: (context, state) =>
+                    state.extra is Project ? null : '/projects',
+                pageBuilder: (context, state) => _page(
+                  state,
+                  ProjectScreen(project: state.extra! as Project),
+                ),
+              ),
+            ],
           ),
         ],
       ),

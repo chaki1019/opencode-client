@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -22,84 +23,94 @@ class ProjectsScreen extends ConsumerWidget {
     final projects = ref.watch(projectsProvider);
     final health = connection?.health;
 
-    return Scaffold(
-      appBar: AppBar(
-        // Root screen with no back button: line the title up with the
-        // project list's leading edge instead of the theme's tight spacing.
-        titleSpacing: _edge,
-        title: Text(connection?.server.displayName ?? context.l10n.projects),
-        actions: [
-          IconButton(
-            key: const Key('push-settings'),
-            tooltip: context.l10n.pushTitle,
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () => context.push('/push'),
-          ),
-          IconButton(
-            tooltip: context.l10n.disconnect,
-            icon: const Icon(Icons.logout),
-            onPressed: () => ref.read(connectionProvider.notifier).disconnect(),
-          ),
-        ],
-        bottom: health == null
-            ? null
-            : PreferredSize(
-                preferredSize: const Size.fromHeight(20),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(_edge, 0, 16, 6),
-                  child: Row(
-                    children: [
-                      LiveDot(
-                        size: 6,
-                        color: AppColors.of(context).success,
-                        pulse: false,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'OpenCode ${health.version}',
-                        style: Theme.of(context).textTheme.labelSmall,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-      ),
-      body: RefreshIndicator(
-        onRefresh: () => ref.refresh(projectsProvider.future),
-        child: projects.when(
-          data: (bootstrap) => ListView(
-            padding: const EdgeInsets.only(bottom: 16),
-            children: [
-              _SectionHeader(
-                title: context.l10n.projects,
-                onAdd: () => _addProject(context, ref),
-              ),
-              if (bootstrap.projects.isNotEmpty)
-                Card(
-                  key: const Key('project-list'),
-                  margin: const EdgeInsets.symmetric(horizontal: _edge),
-                  clipBehavior: Clip.antiAlias,
-                  shape: _listShape(Theme.of(context)),
-                  child: Column(
-                    children: [
-                      for (final (i, project) in _sorted(
-                        bootstrap.projects,
-                      ).indexed) ...[
-                        if (i > 0) const Divider(),
-                        _ProjectTile(
-                          project: project,
-                          isCurrent: project.id == bootstrap.current?.id,
+    // The connect screen sits underneath only so disconnecting can pop this
+    // page; going back there is what the disconnect button is for, so back
+    // leaves the app as it does on a root screen.
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) SystemNavigator.pop();
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          // Root screen with no back button: line the title up with the
+          // project list's leading edge instead of the theme's tight spacing.
+          titleSpacing: _edge,
+          title: Text(connection?.server.displayName ?? context.l10n.projects),
+          actions: [
+            IconButton(
+              key: const Key('push-settings'),
+              tooltip: context.l10n.pushTitle,
+              icon: const Icon(Icons.notifications_outlined),
+              onPressed: () => context.push('/push'),
+            ),
+            IconButton(
+              tooltip: context.l10n.disconnect,
+              icon: const Icon(Icons.logout),
+              onPressed: () =>
+                  ref.read(connectionProvider.notifier).disconnect(),
+            ),
+          ],
+          bottom: health == null
+              ? null
+              : PreferredSize(
+                  preferredSize: const Size.fromHeight(20),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(_edge, 0, 16, 6),
+                    child: Row(
+                      children: [
+                        LiveDot(
+                          size: 6,
+                          color: AppColors.of(context).success,
+                          pulse: false,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'OpenCode ${health.version}',
+                          style: Theme.of(context).textTheme.labelSmall,
                         ),
                       ],
-                    ],
+                    ),
                   ),
                 ),
-            ],
-          ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => ListView(
-            padding: const EdgeInsets.all(24),
-            children: [Text(context.l10n.projectsLoadFailed(e))],
+        ),
+        body: RefreshIndicator(
+          onRefresh: () => ref.refresh(projectsProvider.future),
+          child: projects.when(
+            data: (bootstrap) => ListView(
+              padding: const EdgeInsets.only(bottom: 16),
+              children: [
+                _SectionHeader(
+                  title: context.l10n.projects,
+                  onAdd: () => _addProject(context, ref),
+                ),
+                if (bootstrap.projects.isNotEmpty)
+                  Card(
+                    key: const Key('project-list'),
+                    margin: const EdgeInsets.symmetric(horizontal: _edge),
+                    clipBehavior: Clip.antiAlias,
+                    shape: _listShape(Theme.of(context)),
+                    child: Column(
+                      children: [
+                        for (final (i, project) in _sorted(
+                          bootstrap.projects,
+                        ).indexed) ...[
+                          if (i > 0) const Divider(),
+                          _ProjectTile(
+                            project: project,
+                            isCurrent: project.id == bootstrap.current?.id,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => ListView(
+              padding: const EdgeInsets.all(24),
+              children: [Text(context.l10n.projectsLoadFailed(e))],
+            ),
           ),
         ),
       ),
