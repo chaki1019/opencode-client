@@ -240,6 +240,7 @@
       }
     }
   },
+  "scrollToNewest": "Jump to latest",
   "reloadOlderMessages": "Reload earlier messages",
   "replyFailed": "Couldn't reply: {error}",
   "@replyFailed": {

@@ -438,6 +438,9 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get scrollToNewest => '最新のメッセージへ';
+
+  @override
   String get reloadOlderMessages => '過去のメッセージを再読み込み';
 
   @override
