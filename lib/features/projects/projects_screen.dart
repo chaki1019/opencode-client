@@ -74,6 +74,7 @@ class ProjectsScreen extends ConsumerWidget {
                   key: const Key('project-list'),
                   margin: const EdgeInsets.symmetric(horizontal: _edge),
                   clipBehavior: Clip.antiAlias,
+                  shape: _listShape(Theme.of(context)),
                   child: Column(
                     children: [
                       for (final (i, project) in _sorted(
@@ -96,6 +97,18 @@ class ProjectsScreen extends ConsumerWidget {
             children: [Text(context.l10n.projectsLoadFailed(e))],
           ),
         ),
+      ),
+    );
+  }
+
+  /// The theme's hairline almost vanishes against the dark background, so
+  /// the list frame uses the stronger outline there.
+  static ShapeBorder? _listShape(ThemeData theme) {
+    if (theme.brightness != Brightness.dark) return null;
+    return RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(12),
+      side: BorderSide(
+        color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
       ),
     );
   }
