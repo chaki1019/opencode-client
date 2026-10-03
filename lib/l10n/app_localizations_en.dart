@@ -788,7 +788,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pushSetupSteps =>
-      '1. Copy push/plugin/opencode-push.js from this app\'s repository to ~/.config/opencode/plugins/\n2. Add the entry below to ~/.config/opencode/opencode.json\n3. Restart OpenCode';
+      '1. Add the entry below to ~/.config/opencode/opencode.json\n2. Restart OpenCode (it installs the opencode-push plugin from npm)';
 
   @override
   String get pushSendTest => 'Send a test notification';
@@ -860,6 +860,21 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get settingsHapticsHelp =>
       'Vibrate lightly on send, when a reply finishes, and when the AI needs your answer';
+
+  @override
+  String get updateRequiredTitle => 'Update required';
+
+  @override
+  String updateRequiredBody(String installed, String minimum) {
+    return 'Version $installed can no longer be used. Please update to version $minimum or later.';
+  }
+
+  @override
+  String get updateOpenStore => 'Open the store';
+
+  @override
+  String get updateFromStore =>
+      'Update the app from the App Store or Google Play.';
 
   @override
   String get rewardTitle => 'Today\'s free messages are used up';

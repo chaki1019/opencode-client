@@ -1367,7 +1367,7 @@ abstract class AppLocalizations {
   /// No description provided for @pushSetupSteps.
   ///
   /// In en, this message translates to:
-  /// **'1. Copy push/plugin/opencode-push.js from this app\'s repository to ~/.config/opencode/plugins/\n2. Add the entry below to ~/.config/opencode/opencode.json\n3. Restart OpenCode'**
+  /// **'1. Add the entry below to ~/.config/opencode/opencode.json\n2. Restart OpenCode (it installs the opencode-push plugin from npm)'**
   String get pushSetupSteps;
 
   /// No description provided for @pushSendTest.
@@ -1501,6 +1501,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Vibrate lightly on send, when a reply finishes, and when the AI needs your answer'**
   String get settingsHapticsHelp;
+
+  /// No description provided for @updateRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update required'**
+  String get updateRequiredTitle;
+
+  /// No description provided for @updateRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {installed} can no longer be used. Please update to version {minimum} or later.'**
+  String updateRequiredBody(String installed, String minimum);
+
+  /// No description provided for @updateOpenStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the store'**
+  String get updateOpenStore;
+
+  /// No description provided for @updateFromStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Update the app from the App Store or Google Play.'**
+  String get updateFromStore;
 
   /// No description provided for @rewardTitle.
   ///

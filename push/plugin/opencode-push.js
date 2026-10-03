@@ -1,11 +1,12 @@
 // OpenCode v2 plugin: forwards "agent finished / needs you" events to the
 // opencode-client push relay, which delivers them to the phone over FCM.
 //
-// Install: copy this single file to ~/.config/opencode/plugins/ and add to
-// ~/.config/opencode/opencode.json (the app shows this snippet with your key):
+// Install from npm (package "opencode-push") or copy this single file to
+// ~/.config/opencode/plugins/, then add to ~/.config/opencode/opencode.json
+// (the app shows this snippet with your key):
 //
 //   "plugins": [{
-//     "package": "./plugins/opencode-push.js",
+//     "package": "opencode-push",   // or "./plugins/opencode-push.js"
 //     "options": { "relay": "https://<your-relay>", "key": "<pairing key>" }
 //   }]
 //
