@@ -13,3 +13,13 @@ String relativeTime(AppLocalizations l10n, DateTime time, {DateTime? now}) {
   if (diff.inDays < 7) return l10n.daysAgo(diff.inDays);
   return DateFormat.yMd(l10n.localeName).format(time);
 }
+
+/// A USD amount such as "$0.02", or "<$0.01" for a tiny non-zero spend.
+String formatCost(double cost) {
+  if (cost > 0 && cost < 0.005) return r'<$0.01';
+  return '\$${cost.toStringAsFixed(2)}';
+}
+
+/// A count with thousands separators for [locale], e.g. "59,412".
+String formatCount(int count, String locale) =>
+    NumberFormat.decimalPattern(locale).format(count);

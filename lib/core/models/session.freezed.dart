@@ -839,9 +839,581 @@ as String?,
 
 
 /// @nodoc
+mixin _$TokenUsage {
+
+ int get input; int get output; int get reasoning; TokenCache get cache;
+/// Create a copy of TokenUsage
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$TokenUsageCopyWith<TokenUsage> get copyWith => _$TokenUsageCopyWithImpl<TokenUsage>(this as TokenUsage, _$identity);
+
+  /// Serializes this TokenUsage to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as TokenUsage;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TokenUsage&&(identical(other.input, _this.input) || other.input == _this.input)&&(identical(other.output, _this.output) || other.output == _this.output)&&(identical(other.reasoning, _this.reasoning) || other.reasoning == _this.reasoning)&&(identical(other.cache, _this.cache) || other.cache == _this.cache));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as TokenUsage;
+  return Object.hash(runtimeType,_this.input,_this.output,_this.reasoning,_this.cache);
+}
+
+@override
+String toString() {
+  final _this = this as TokenUsage;
+  return 'TokenUsage(input: ${_this.input}, output: ${_this.output}, reasoning: ${_this.reasoning}, cache: ${_this.cache})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $TokenUsageCopyWith<$Res>  {
+  factory $TokenUsageCopyWith(TokenUsage value, $Res Function(TokenUsage) _then) = _$TokenUsageCopyWithImpl;
+@useResult
+$Res call({
+ int input, int output, int reasoning, TokenCache cache
+});
+
+
+$TokenCacheCopyWith<$Res> get cache;
+
+}
+/// @nodoc
+class _$TokenUsageCopyWithImpl<$Res>
+    implements $TokenUsageCopyWith<$Res> {
+  _$TokenUsageCopyWithImpl(this._self, this._then);
+
+  final TokenUsage _self;
+  final $Res Function(TokenUsage) _then;
+
+/// Create a copy of TokenUsage
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? input = null,Object? output = null,Object? reasoning = null,Object? cache = null,}) {
+  return _then(TokenUsage(
+input: null == input ? _self.input : input // ignore: cast_nullable_to_non_nullable
+as int,output: null == output ? _self.output : output // ignore: cast_nullable_to_non_nullable
+as int,reasoning: null == reasoning ? _self.reasoning : reasoning // ignore: cast_nullable_to_non_nullable
+as int,cache: null == cache ? _self.cache : cache // ignore: cast_nullable_to_non_nullable
+as TokenCache,
+  ));
+}
+/// Create a copy of TokenUsage
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$TokenCacheCopyWith<$Res> get cache {
+  
+  return $TokenCacheCopyWith<$Res>(_self.cache, (value) {
+    return _then(_self.copyWith(cache: value));
+  });
+}
+}
+
+
+/// Adds pattern-matching-related methods to [TokenUsage].
+extension TokenUsagePatterns on TokenUsage {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _TokenUsage value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _TokenUsage() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _TokenUsage value)  $default,){
+final _that = this;
+switch (_that) {
+case _TokenUsage():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _TokenUsage value)?  $default,){
+final _that = this;
+switch (_that) {
+case _TokenUsage() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int input,  int output,  int reasoning,  TokenCache cache)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _TokenUsage() when $default != null:
+return $default(_that.input,_that.output,_that.reasoning,_that.cache);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int input,  int output,  int reasoning,  TokenCache cache)  $default,) {final _that = this;
+switch (_that) {
+case _TokenUsage():
+return $default(_that.input,_that.output,_that.reasoning,_that.cache);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int input,  int output,  int reasoning,  TokenCache cache)?  $default,) {final _that = this;
+switch (_that) {
+case _TokenUsage() when $default != null:
+return $default(_that.input,_that.output,_that.reasoning,_that.cache);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _TokenUsage extends TokenUsage {
+  const _TokenUsage({this.input = 0, this.output = 0, this.reasoning = 0, this.cache = const TokenCache()}): super._();
+  factory _TokenUsage.fromJson(Map<String, dynamic> json) => _$TokenUsageFromJson(json);
+
+@override@JsonKey() final  int input;
+@override@JsonKey() final  int output;
+@override@JsonKey() final  int reasoning;
+@override@JsonKey() final  TokenCache cache;
+
+/// Create a copy of TokenUsage
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$TokenUsageCopyWith<_TokenUsage> get copyWith => __$TokenUsageCopyWithImpl<_TokenUsage>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$TokenUsageToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TokenUsage&&(identical(other.input, input) || other.input == input)&&(identical(other.output, output) || other.output == output)&&(identical(other.reasoning, reasoning) || other.reasoning == reasoning)&&(identical(other.cache, cache) || other.cache == cache));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,input,output,reasoning,cache);
+}
+
+@override
+String toString() {
+    return 'TokenUsage(input: $input, output: $output, reasoning: $reasoning, cache: $cache)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$TokenUsageCopyWith<$Res> implements $TokenUsageCopyWith<$Res> {
+  factory _$TokenUsageCopyWith(_TokenUsage value, $Res Function(_TokenUsage) _then) = __$TokenUsageCopyWithImpl;
+@override @useResult
+$Res call({
+ int input, int output, int reasoning, TokenCache cache
+});
+
+
+@override $TokenCacheCopyWith<$Res> get cache;
+
+}
+/// @nodoc
+class __$TokenUsageCopyWithImpl<$Res>
+    implements _$TokenUsageCopyWith<$Res> {
+  __$TokenUsageCopyWithImpl(this._self, this._then);
+
+  final _TokenUsage _self;
+  final $Res Function(_TokenUsage) _then;
+
+/// Create a copy of TokenUsage
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? input = null,Object? output = null,Object? reasoning = null,Object? cache = null,}) {
+  return _then(_TokenUsage(
+input: null == input ? _self.input : input // ignore: cast_nullable_to_non_nullable
+as int,output: null == output ? _self.output : output // ignore: cast_nullable_to_non_nullable
+as int,reasoning: null == reasoning ? _self.reasoning : reasoning // ignore: cast_nullable_to_non_nullable
+as int,cache: null == cache ? _self.cache : cache // ignore: cast_nullable_to_non_nullable
+as TokenCache,
+  ));
+}
+
+/// Create a copy of TokenUsage
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$TokenCacheCopyWith<$Res> get cache {
+  
+  return $TokenCacheCopyWith<$Res>(_self.cache, (value) {
+    return _then(_self.copyWith(cache: value));
+  });
+}
+}
+
+
+/// @nodoc
+mixin _$TokenCache {
+
+ int get read; int get write;
+/// Create a copy of TokenCache
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$TokenCacheCopyWith<TokenCache> get copyWith => _$TokenCacheCopyWithImpl<TokenCache>(this as TokenCache, _$identity);
+
+  /// Serializes this TokenCache to a JSON map.
+  Map<String, dynamic> toJson();
+
+
+@override
+bool operator ==(Object other) {
+  final _this = this as TokenCache;
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TokenCache&&(identical(other.read, _this.read) || other.read == _this.read)&&(identical(other.write, _this.write) || other.write == _this.write));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+  final _this = this as TokenCache;
+  return Object.hash(runtimeType,_this.read,_this.write);
+}
+
+@override
+String toString() {
+  final _this = this as TokenCache;
+  return 'TokenCache(read: ${_this.read}, write: ${_this.write})';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $TokenCacheCopyWith<$Res>  {
+  factory $TokenCacheCopyWith(TokenCache value, $Res Function(TokenCache) _then) = _$TokenCacheCopyWithImpl;
+@useResult
+$Res call({
+ int read, int write
+});
+
+
+
+
+}
+/// @nodoc
+class _$TokenCacheCopyWithImpl<$Res>
+    implements $TokenCacheCopyWith<$Res> {
+  _$TokenCacheCopyWithImpl(this._self, this._then);
+
+  final TokenCache _self;
+  final $Res Function(TokenCache) _then;
+
+/// Create a copy of TokenCache
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') @override $Res call({Object? read = null,Object? write = null,}) {
+  return _then(TokenCache(
+read: null == read ? _self.read : read // ignore: cast_nullable_to_non_nullable
+as int,write: null == write ? _self.write : write // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+}
+
+
+/// Adds pattern-matching-related methods to [TokenCache].
+extension TokenCachePatterns on TokenCache {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>(TResult Function( _TokenCache value)?  $default,{required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case _TokenCache() when $default != null:
+return $default(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>(TResult Function( _TokenCache value)  $default,){
+final _that = this;
+switch (_that) {
+case _TokenCache():
+return $default(_that);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>(TResult? Function( _TokenCache value)?  $default,){
+final _that = this;
+switch (_that) {
+case _TokenCache() when $default != null:
+return $default(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( int read,  int write)?  $default,{required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case _TokenCache() when $default != null:
+return $default(_that.read,_that.write);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( int read,  int write)  $default,) {final _that = this;
+switch (_that) {
+case _TokenCache():
+return $default(_that.read,_that.write);case _:
+  throw StateError('Unexpected subclass');
+
+}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( int read,  int write)?  $default,) {final _that = this;
+switch (_that) {
+case _TokenCache() when $default != null:
+return $default(_that.read,_that.write);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+@JsonSerializable()
+
+class _TokenCache implements TokenCache {
+  const _TokenCache({this.read = 0, this.write = 0});
+  factory _TokenCache.fromJson(Map<String, dynamic> json) => _$TokenCacheFromJson(json);
+
+@override@JsonKey() final  int read;
+@override@JsonKey() final  int write;
+
+/// Create a copy of TokenCache
+/// with the given fields replaced by the non-null parameter values.
+@override @JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+_$TokenCacheCopyWith<_TokenCache> get copyWith => __$TokenCacheCopyWithImpl<_TokenCache>(this, _$identity);
+
+@override
+Map<String, dynamic> toJson() {
+  return _$TokenCacheToJson(this, );
+}
+
+@override
+bool operator ==(Object other) {
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _TokenCache&&(identical(other.read, read) || other.read == read)&&(identical(other.write, write) || other.write == write));
+}
+
+@JsonKey(includeFromJson: false, includeToJson: false)
+@override
+int get hashCode {
+    return Object.hash(runtimeType,read,write);
+}
+
+@override
+String toString() {
+    return 'TokenCache(read: $read, write: $write)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class _$TokenCacheCopyWith<$Res> implements $TokenCacheCopyWith<$Res> {
+  factory _$TokenCacheCopyWith(_TokenCache value, $Res Function(_TokenCache) _then) = __$TokenCacheCopyWithImpl;
+@override @useResult
+$Res call({
+ int read, int write
+});
+
+
+
+
+}
+/// @nodoc
+class __$TokenCacheCopyWithImpl<$Res>
+    implements _$TokenCacheCopyWith<$Res> {
+  __$TokenCacheCopyWithImpl(this._self, this._then);
+
+  final _TokenCache _self;
+  final $Res Function(_TokenCache) _then;
+
+/// Create a copy of TokenCache
+/// with the given fields replaced by the non-null parameter values.
+@override @pragma('vm:prefer-inline') $Res call({Object? read = null,Object? write = null,}) {
+  return _then(_TokenCache(
+read: null == read ? _self.read : read // ignore: cast_nullable_to_non_nullable
+as int,write: null == write ? _self.write : write // ignore: cast_nullable_to_non_nullable
+as int,
+  ));
+}
+
+
+}
+
+
+/// @nodoc
 mixin _$Session {
 
- String get id; String get projectID; String? get parentID; String? get title; SessionLocation get location; SessionTime get time; String? get agent; ModelRef? get model;
+ String get id; String get projectID; String? get parentID; String? get title; SessionLocation get location; SessionTime get time; String? get agent; ModelRef? get model;/// Total spend in USD across the session.
+ double? get cost;/// Tokens used across the session.
+ TokenUsage? get tokens;
 /// Create a copy of Session
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -855,20 +1427,20 @@ $SessionCopyWith<Session> get copyWith => _$SessionCopyWithImpl<Session>(this as
 @override
 bool operator ==(Object other) {
   final _this = this as Session;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Session&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.projectID, _this.projectID) || other.projectID == _this.projectID)&&(identical(other.parentID, _this.parentID) || other.parentID == _this.parentID)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.location, _this.location) || other.location == _this.location)&&(identical(other.time, _this.time) || other.time == _this.time)&&(identical(other.agent, _this.agent) || other.agent == _this.agent)&&(identical(other.model, _this.model) || other.model == _this.model));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Session&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.projectID, _this.projectID) || other.projectID == _this.projectID)&&(identical(other.parentID, _this.parentID) || other.parentID == _this.parentID)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.location, _this.location) || other.location == _this.location)&&(identical(other.time, _this.time) || other.time == _this.time)&&(identical(other.agent, _this.agent) || other.agent == _this.agent)&&(identical(other.model, _this.model) || other.model == _this.model)&&(identical(other.cost, _this.cost) || other.cost == _this.cost)&&(identical(other.tokens, _this.tokens) || other.tokens == _this.tokens));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Session;
-  return Object.hash(runtimeType,_this.id,_this.projectID,_this.parentID,_this.title,_this.location,_this.time,_this.agent,_this.model);
+  return Object.hash(runtimeType,_this.id,_this.projectID,_this.parentID,_this.title,_this.location,_this.time,_this.agent,_this.model,_this.cost,_this.tokens);
 }
 
 @override
 String toString() {
   final _this = this as Session;
-  return 'Session(id: ${_this.id}, projectID: ${_this.projectID}, parentID: ${_this.parentID}, title: ${_this.title}, location: ${_this.location}, time: ${_this.time}, agent: ${_this.agent}, model: ${_this.model})';
+  return 'Session(id: ${_this.id}, projectID: ${_this.projectID}, parentID: ${_this.parentID}, title: ${_this.title}, location: ${_this.location}, time: ${_this.time}, agent: ${_this.agent}, model: ${_this.model}, cost: ${_this.cost}, tokens: ${_this.tokens})';
 }
 
 
@@ -879,11 +1451,11 @@ abstract mixin class $SessionCopyWith<$Res>  {
   factory $SessionCopyWith(Session value, $Res Function(Session) _then) = _$SessionCopyWithImpl;
 @useResult
 $Res call({
- String id, String projectID, String? parentID, String? title, SessionLocation location, SessionTime time, String? agent, ModelRef? model
+ String id, String projectID, String? parentID, String? title, SessionLocation location, SessionTime time, String? agent, ModelRef? model, double? cost, TokenUsage? tokens
 });
 
 
-$SessionLocationCopyWith<$Res> get location;$SessionTimeCopyWith<$Res> get time;$ModelRefCopyWith<$Res>? get model;
+$SessionLocationCopyWith<$Res> get location;$SessionTimeCopyWith<$Res> get time;$ModelRefCopyWith<$Res>? get model;$TokenUsageCopyWith<$Res>? get tokens;
 
 }
 /// @nodoc
@@ -896,7 +1468,7 @@ class _$SessionCopyWithImpl<$Res>
 
 /// Create a copy of Session
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? projectID = null,Object? parentID = freezed,Object? title = freezed,Object? location = null,Object? time = null,Object? agent = freezed,Object? model = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? projectID = null,Object? parentID = freezed,Object? title = freezed,Object? location = null,Object? time = null,Object? agent = freezed,Object? model = freezed,Object? cost = freezed,Object? tokens = freezed,}) {
   return _then(Session(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,projectID: null == projectID ? _self.projectID : projectID // ignore: cast_nullable_to_non_nullable
@@ -906,7 +1478,9 @@ as String?,location: null == location ? _self.location : location // ignore: cas
 as SessionLocation,time: null == time ? _self.time : time // ignore: cast_nullable_to_non_nullable
 as SessionTime,agent: freezed == agent ? _self.agent : agent // ignore: cast_nullable_to_non_nullable
 as String?,model: freezed == model ? _self.model : model // ignore: cast_nullable_to_non_nullable
-as ModelRef?,
+as ModelRef?,cost: freezed == cost ? _self.cost : cost // ignore: cast_nullable_to_non_nullable
+as double?,tokens: freezed == tokens ? _self.tokens : tokens // ignore: cast_nullable_to_non_nullable
+as TokenUsage?,
   ));
 }
 /// Create a copy of Session
@@ -938,6 +1512,18 @@ $ModelRefCopyWith<$Res>? get model {
 
   return $ModelRefCopyWith<$Res>(_self.model!, (value) {
     return _then(_self.copyWith(model: value));
+  });
+}/// Create a copy of Session
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$TokenUsageCopyWith<$Res>? get tokens {
+    if (_self.tokens == null) {
+    return null;
+  }
+
+  return $TokenUsageCopyWith<$Res>(_self.tokens!, (value) {
+    return _then(_self.copyWith(tokens: value));
   });
 }
 }
@@ -1021,10 +1607,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String projectID,  String? parentID,  String? title,  SessionLocation location,  SessionTime time,  String? agent,  ModelRef? model)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String projectID,  String? parentID,  String? title,  SessionLocation location,  SessionTime time,  String? agent,  ModelRef? model,  double? cost,  TokenUsage? tokens)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Session() when $default != null:
-return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.location,_that.time,_that.agent,_that.model);case _:
+return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.location,_that.time,_that.agent,_that.model,_that.cost,_that.tokens);case _:
   return orElse();
 
 }
@@ -1042,10 +1628,10 @@ return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.locati
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String projectID,  String? parentID,  String? title,  SessionLocation location,  SessionTime time,  String? agent,  ModelRef? model)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String projectID,  String? parentID,  String? title,  SessionLocation location,  SessionTime time,  String? agent,  ModelRef? model,  double? cost,  TokenUsage? tokens)  $default,) {final _that = this;
 switch (_that) {
 case _Session():
-return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.location,_that.time,_that.agent,_that.model);case _:
+return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.location,_that.time,_that.agent,_that.model,_that.cost,_that.tokens);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1062,10 +1648,10 @@ return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.locati
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String projectID,  String? parentID,  String? title,  SessionLocation location,  SessionTime time,  String? agent,  ModelRef? model)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String projectID,  String? parentID,  String? title,  SessionLocation location,  SessionTime time,  String? agent,  ModelRef? model,  double? cost,  TokenUsage? tokens)?  $default,) {final _that = this;
 switch (_that) {
 case _Session() when $default != null:
-return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.location,_that.time,_that.agent,_that.model);case _:
+return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.location,_that.time,_that.agent,_that.model,_that.cost,_that.tokens);case _:
   return null;
 
 }
@@ -1077,7 +1663,7 @@ return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.locati
 @JsonSerializable()
 
 class _Session extends Session {
-  const _Session({required this.id, required this.projectID, this.parentID, this.title, required this.location, required this.time, this.agent, this.model}): super._();
+  const _Session({required this.id, required this.projectID, this.parentID, this.title, required this.location, required this.time, this.agent, this.model, this.cost, this.tokens}): super._();
   factory _Session.fromJson(Map<String, dynamic> json) => _$SessionFromJson(json);
 
 @override final  String id;
@@ -1088,6 +1674,10 @@ class _Session extends Session {
 @override final  SessionTime time;
 @override final  String? agent;
 @override final  ModelRef? model;
+/// Total spend in USD across the session.
+@override final  double? cost;
+/// Tokens used across the session.
+@override final  TokenUsage? tokens;
 
 /// Create a copy of Session
 /// with the given fields replaced by the non-null parameter values.
@@ -1102,18 +1692,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Session&&(identical(other.id, id) || other.id == id)&&(identical(other.projectID, projectID) || other.projectID == projectID)&&(identical(other.parentID, parentID) || other.parentID == parentID)&&(identical(other.title, title) || other.title == title)&&(identical(other.location, location) || other.location == location)&&(identical(other.time, time) || other.time == time)&&(identical(other.agent, agent) || other.agent == agent)&&(identical(other.model, model) || other.model == model));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Session&&(identical(other.id, id) || other.id == id)&&(identical(other.projectID, projectID) || other.projectID == projectID)&&(identical(other.parentID, parentID) || other.parentID == parentID)&&(identical(other.title, title) || other.title == title)&&(identical(other.location, location) || other.location == location)&&(identical(other.time, time) || other.time == time)&&(identical(other.agent, agent) || other.agent == agent)&&(identical(other.model, model) || other.model == model)&&(identical(other.cost, cost) || other.cost == cost)&&(identical(other.tokens, tokens) || other.tokens == tokens));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,projectID,parentID,title,location,time,agent,model);
+    return Object.hash(runtimeType,id,projectID,parentID,title,location,time,agent,model,cost,tokens);
 }
 
 @override
 String toString() {
-    return 'Session(id: $id, projectID: $projectID, parentID: $parentID, title: $title, location: $location, time: $time, agent: $agent, model: $model)';
+    return 'Session(id: $id, projectID: $projectID, parentID: $parentID, title: $title, location: $location, time: $time, agent: $agent, model: $model, cost: $cost, tokens: $tokens)';
 }
 
 
@@ -1124,11 +1714,11 @@ abstract mixin class _$SessionCopyWith<$Res> implements $SessionCopyWith<$Res> {
   factory _$SessionCopyWith(_Session value, $Res Function(_Session) _then) = __$SessionCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String projectID, String? parentID, String? title, SessionLocation location, SessionTime time, String? agent, ModelRef? model
+ String id, String projectID, String? parentID, String? title, SessionLocation location, SessionTime time, String? agent, ModelRef? model, double? cost, TokenUsage? tokens
 });
 
 
-@override $SessionLocationCopyWith<$Res> get location;@override $SessionTimeCopyWith<$Res> get time;@override $ModelRefCopyWith<$Res>? get model;
+@override $SessionLocationCopyWith<$Res> get location;@override $SessionTimeCopyWith<$Res> get time;@override $ModelRefCopyWith<$Res>? get model;@override $TokenUsageCopyWith<$Res>? get tokens;
 
 }
 /// @nodoc
@@ -1141,7 +1731,7 @@ class __$SessionCopyWithImpl<$Res>
 
 /// Create a copy of Session
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? projectID = null,Object? parentID = freezed,Object? title = freezed,Object? location = null,Object? time = null,Object? agent = freezed,Object? model = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? projectID = null,Object? parentID = freezed,Object? title = freezed,Object? location = null,Object? time = null,Object? agent = freezed,Object? model = freezed,Object? cost = freezed,Object? tokens = freezed,}) {
   return _then(_Session(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,projectID: null == projectID ? _self.projectID : projectID // ignore: cast_nullable_to_non_nullable
@@ -1151,7 +1741,9 @@ as String?,location: null == location ? _self.location : location // ignore: cas
 as SessionLocation,time: null == time ? _self.time : time // ignore: cast_nullable_to_non_nullable
 as SessionTime,agent: freezed == agent ? _self.agent : agent // ignore: cast_nullable_to_non_nullable
 as String?,model: freezed == model ? _self.model : model // ignore: cast_nullable_to_non_nullable
-as ModelRef?,
+as ModelRef?,cost: freezed == cost ? _self.cost : cost // ignore: cast_nullable_to_non_nullable
+as double?,tokens: freezed == tokens ? _self.tokens : tokens // ignore: cast_nullable_to_non_nullable
+as TokenUsage?,
   ));
 }
 
@@ -1184,6 +1776,18 @@ $ModelRefCopyWith<$Res>? get model {
 
   return $ModelRefCopyWith<$Res>(_self.model!, (value) {
     return _then(_self.copyWith(model: value));
+  });
+}/// Create a copy of Session
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$TokenUsageCopyWith<$Res>? get tokens {
+    if (_self.tokens == null) {
+    return null;
+  }
+
+  return $TokenUsageCopyWith<$Res>(_self.tokens!, (value) {
+    return _then(_self.copyWith(tokens: value));
   });
 }
 }

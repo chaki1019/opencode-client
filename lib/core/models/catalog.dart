@@ -34,6 +34,7 @@ class ModelOption {
     required this.id,
     required this.name,
     this.variants = const [],
+    this.contextLimit,
   });
 
   final String providerID;
@@ -43,4 +44,7 @@ class ModelOption {
 
   /// Variant IDs such as reasoning-effort levels.
   final List<String> variants;
+
+  /// The most tokens the model can hold in its context window.
+  final int? contextLimit;
 }

@@ -646,4 +646,66 @@ class AppLocalizationsJa extends AppLocalizations {
   String terminalTitle(Object count) {
     return 'ターミナル $count';
   }
+
+  @override
+  String get sessionWaiting => '対応待ち';
+
+  @override
+  String get sessionFailed => 'エラー';
+
+  @override
+  String get usageTitle => 'コンテキスト';
+
+  @override
+  String get usageTooltip => 'コンテキストと使用量';
+
+  @override
+  String usageTokensUsed(String count) {
+    return '$count トークン使用';
+  }
+
+  @override
+  String get usageProvider => 'プロバイダー';
+
+  @override
+  String get usageModel => 'モデル';
+
+  @override
+  String get usageLimit => 'コンテキスト上限';
+
+  @override
+  String get usageTotalTokens => '合計トークン';
+
+  @override
+  String get usagePercent => '使用率';
+
+  @override
+  String get usageInputTokens => '入力トークン';
+
+  @override
+  String get usageOutputTokens => '出力トークン';
+
+  @override
+  String get usageReasoningTokens => '推論トークン';
+
+  @override
+  String get usageCacheTokens => 'キャッシュ 読み / 書き';
+
+  @override
+  String get usageLastActivity => '最終アクティビティ';
+
+  @override
+  String get usageNoReplies => 'まだ応答がありません。最初の応答のあとに使用量が表示されます。';
+
+  @override
+  String get usageLastStepHelp => '直近の応答の数値です。これがコンテキストを占める量になります。';
+
+  @override
+  String get sessionUsage => 'セッション全体';
+
+  @override
+  String get sessionCost => 'コスト';
+
+  @override
+  String get sessionCreated => '作成日時';
 }

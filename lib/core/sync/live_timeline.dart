@@ -133,6 +133,7 @@ class LiveTimeline {
               agent: data['agent'] as String?,
               model: _model(data['model']),
               cost: cost is num ? cost.toDouble() : null,
+              tokens: parseTokenUsage(data['tokens']),
             ),
           ),
         );

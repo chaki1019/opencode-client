@@ -416,5 +416,28 @@
     "placeholders": {
       "count": {}
     }
-  }
+  },
+  "sessionWaiting": "Needs you",
+  "@sessionWaiting": {"description": "Session list: a permission request or question is waiting on the user."},
+  "sessionFailed": "Error",
+  "@sessionFailed": {"description": "Session list: the session's last run ended in an error."},
+  "usageTitle": "Context",
+  "usageTooltip": "Context and usage",
+  "usageTokensUsed": "{count} tokens used",
+  "@usageTokensUsed": {"placeholders": {"count": {"type": "String"}}},
+  "usageProvider": "Provider",
+  "usageModel": "Model",
+  "usageLimit": "Context limit",
+  "usageTotalTokens": "Total tokens",
+  "usagePercent": "Usage",
+  "usageInputTokens": "Input tokens",
+  "usageOutputTokens": "Output tokens",
+  "usageReasoningTokens": "Reasoning tokens",
+  "usageCacheTokens": "Cache read / write",
+  "usageLastActivity": "Last activity",
+  "usageNoReplies": "No replies yet. Usage appears after the first reply.",
+  "usageLastStepHelp": "Counts from the latest reply, which is what fills the context window.",
+  "sessionUsage": "Whole session",
+  "sessionCost": "Cost",
+  "sessionCreated": "Created"
 }

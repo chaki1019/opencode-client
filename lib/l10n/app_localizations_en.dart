@@ -659,4 +659,68 @@ class AppLocalizationsEn extends AppLocalizations {
   String terminalTitle(Object count) {
     return 'Terminal $count';
   }
+
+  @override
+  String get sessionWaiting => 'Needs you';
+
+  @override
+  String get sessionFailed => 'Error';
+
+  @override
+  String get usageTitle => 'Context';
+
+  @override
+  String get usageTooltip => 'Context and usage';
+
+  @override
+  String usageTokensUsed(String count) {
+    return '$count tokens used';
+  }
+
+  @override
+  String get usageProvider => 'Provider';
+
+  @override
+  String get usageModel => 'Model';
+
+  @override
+  String get usageLimit => 'Context limit';
+
+  @override
+  String get usageTotalTokens => 'Total tokens';
+
+  @override
+  String get usagePercent => 'Usage';
+
+  @override
+  String get usageInputTokens => 'Input tokens';
+
+  @override
+  String get usageOutputTokens => 'Output tokens';
+
+  @override
+  String get usageReasoningTokens => 'Reasoning tokens';
+
+  @override
+  String get usageCacheTokens => 'Cache read / write';
+
+  @override
+  String get usageLastActivity => 'Last activity';
+
+  @override
+  String get usageNoReplies =>
+      'No replies yet. Usage appears after the first reply.';
+
+  @override
+  String get usageLastStepHelp =>
+      'Counts from the latest reply, which is what fills the context window.';
+
+  @override
+  String get sessionUsage => 'Whole session';
+
+  @override
+  String get sessionCost => 'Cost';
+
+  @override
+  String get sessionCreated => 'Created';
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/theme.dart';
 import '../../core/format.dart';
 import '../../core/models/project.dart';
 import '../../core/models/session.dart';
@@ -113,39 +114,89 @@ class _SessionTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final busy = ref.watch(
-      activeSessionsProvider.select((ids) => ids.contains(session.id)),
+    final activity = ref.watch(
+      sessionActivityProvider((
+        sessionId: session.id,
+        directory: session.location.directory,
+      )),
     );
     final details = [
       relativeTime(context.l10n, session.updatedAt),
       if (session.model != null) session.model!.label,
+      if (session.cost case final cost? when cost > 0) formatCost(cost),
     ].join(' · ');
     final theme = Theme.of(context);
+    final style = theme.textTheme.labelSmall;
     return ListTile(
-      leading: SizedBox(
-        width: 20,
-        child: Center(
-          child: busy
-              ? const SessionBusyIndicator()
-              : Icon(
-                  Icons.chat_bubble_outline,
-                  size: 18,
-                  color: theme.colorScheme.onSurfaceVariant,
-                ),
-        ),
-      ),
-      minLeadingWidth: 20,
       title: Text(
         session.displayTitle ?? context.l10n.untitledSession,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
         style: const TextStyle(fontWeight: FontWeight.w500),
       ),
-      subtitle: Text(details, style: theme.textTheme.labelSmall),
+      subtitle: Text.rich(
+        TextSpan(
+          children: [
+            if (activity != null) ...[
+              WidgetSpan(
+                alignment: PlaceholderAlignment.middle,
+                child: SessionActivityLabel(activity: activity, style: style),
+              ),
+              const TextSpan(text: ' · '),
+            ],
+            TextSpan(text: details),
+          ],
+        ),
+        style: style,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
       onTap: () => context.push(
         '/sessions/${Uri.encodeComponent(session.id)}',
         extra: session,
       ),
+    );
+  }
+}
+
+/// A colored marker and word for what a session is doing.
+class SessionActivityLabel extends StatelessWidget {
+  const SessionActivityLabel({super.key, required this.activity, this.style});
+
+  final SessionActivity activity;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final l10n = context.l10n;
+    final (Widget marker, String label, Color color) = switch (activity) {
+      SessionActivity.running => (
+        const SessionBusyIndicator(size: 12),
+        l10n.running,
+        AppColors.of(context).running,
+      ),
+      SessionActivity.waiting => (
+        Icon(Icons.pan_tool_outlined, size: 12, color: scheme.tertiary),
+        l10n.sessionWaiting,
+        scheme.tertiary,
+      ),
+      SessionActivity.failed => (
+        Icon(Icons.error_outline, size: 12, color: scheme.error),
+        l10n.sessionFailed,
+        scheme.error,
+      ),
+    };
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        marker,
+        const SizedBox(width: 4),
+        Text(
+          label,
+          style: style?.copyWith(color: color, fontWeight: FontWeight.w600),
+        ),
+      ],
     );
   }
 }
