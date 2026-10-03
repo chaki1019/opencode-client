@@ -6,9 +6,10 @@ import '../../core/api/api_errors.dart';
 import '../../core/models/session.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
+import 'chat_providers.dart';
 import 'composer_providers.dart';
 
-enum SessionAction { rename, fork, compact, delete }
+enum SessionAction { reload, rename, fork, compact, delete }
 
 /// The overflow menu of the chat screen.
 class SessionActionsMenu extends ConsumerWidget {
@@ -21,12 +22,20 @@ class SessionActionsMenu extends ConsumerWidget {
     return PopupMenuButton<SessionAction>(
       key: const Key('session-menu'),
       onSelected: (action) => switch (action) {
+        SessionAction.reload => ref.invalidate(timelineProvider(session.id)),
         SessionAction.rename => renameSession(context, ref, session),
         SessionAction.fork => forkSession(context, ref, session),
         SessionAction.compact => compactSession(context, ref, session),
         SessionAction.delete => deleteSession(context, ref, session),
       },
       itemBuilder: (_) => [
+        PopupMenuItem(
+          value: SessionAction.reload,
+          child: ListTile(
+            leading: Icon(Icons.refresh),
+            title: Text(context.l10n.reload),
+          ),
+        ),
         PopupMenuItem(
           value: SessionAction.rename,
           child: ListTile(

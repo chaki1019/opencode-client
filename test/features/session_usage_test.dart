@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/core/api/opencode_client.dart';
 import 'package:opencode_mobile/core/events/event_stream.dart';
 import 'package:opencode_mobile/core/storage/server_store.dart';
+import 'package:opencode_mobile/features/chat/context_sheet.dart';
 import 'package:opencode_mobile/features/connection/connection_providers.dart';
 import 'package:opencode_mobile/features/live/live_providers.dart';
 import 'package:opencode_mobile/main.dart';
@@ -208,5 +209,19 @@ void main() {
     expect(find.text('1,000,000'), findsOneWidget);
     expect(find.text('58,368 / 0'), findsOneWidget);
     expect(find.text(r'$0.02'), findsWidgets);
+
+    // Reloading the transcript lives in the overflow menu.
+    Navigator.of(tester.element(find.byType(ContextSheet))).pop();
+    await tester.pumpAndSettle();
+    expect(find.byIcon(Icons.refresh), findsNothing);
+    int messageLoads() => adapter.requests
+        .where((r) => r.path == '/api/session/s1/message')
+        .length;
+    final before = messageLoads();
+    await tester.tap(find.byKey(const Key('session-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('再読み込み'));
+    await tester.pumpAndSettle();
+    expect(messageLoads(), before + 1);
   });
 }

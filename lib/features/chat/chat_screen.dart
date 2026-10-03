@@ -36,11 +36,6 @@ class ChatScreen extends ConsumerWidget {
         bottom: const LiveStatusBanner(),
         actions: [
           ContextUsageButton(session: session),
-          IconButton(
-            tooltip: context.l10n.reload,
-            icon: const Icon(Icons.refresh),
-            onPressed: () => ref.invalidate(provider),
-          ),
           SessionActionsMenu(session: session),
         ],
       ),
