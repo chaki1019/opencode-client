@@ -200,6 +200,24 @@ abstract class AppLocalizations {
   /// **'Enter a URL'**
   String get serverUrlRequired;
 
+  /// No description provided for @serverUrlInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Not a valid URL (e.g. http://192.168.1.10:4096)'**
+  String get serverUrlInvalid;
+
+  /// No description provided for @connectTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The server didn\'t answer in time. Check that it is running and reachable from this network.'**
+  String get connectTimeout;
+
+  /// No description provided for @connectUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t reach the server. Check the URL, that the server is running, and that it listens on the network (--hostname 0.0.0.0).'**
+  String get connectUnreachable;
+
   /// No description provided for @username.
   ///
   /// In en, this message translates to:

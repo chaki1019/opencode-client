@@ -864,7 +864,16 @@ class OpenCodeClient {
         ),
       );
     } on DioException catch (e) {
-      throw OpenCodeApiException(e.message ?? e.type.name);
+      throw OpenCodeApiException(
+        e.message ?? e.type.name,
+        network: switch (e.type) {
+          DioExceptionType.connectionTimeout ||
+          DioExceptionType.sendTimeout ||
+          DioExceptionType.receiveTimeout => NetworkFailure.timeout,
+          DioExceptionType.connectionError => NetworkFailure.unreachable,
+          _ => null,
+        },
+      );
     }
   }
 
