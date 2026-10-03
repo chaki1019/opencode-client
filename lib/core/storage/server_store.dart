@@ -12,6 +12,7 @@ class ServerStore {
     : _storage = storage ?? const FlutterSecureStorage();
 
   static const _serversKey = 'servers.v1';
+  static const _declinedKey = 'servers.declined.v1';
   static String _passwordKey(String id) => 'server.$id.password';
 
   final FlutterSecureStorage _storage;
@@ -39,4 +40,14 @@ class ServerStore {
 
   Future<void> deletePassword(String id) =>
       _storage.delete(key: _passwordKey(id));
+
+  /// Servers the user chose not to save, as `username@baseUrl`.
+  Future<Set<String>> loadDeclined() async {
+    final raw = await _storage.read(key: _declinedKey);
+    if (raw == null || raw.isEmpty) return {};
+    return {for (final item in jsonDecode(raw) as List) item as String};
+  }
+
+  Future<void> saveDeclined(Set<String> keys) =>
+      _storage.write(key: _declinedKey, value: jsonEncode(keys.toList()));
 }

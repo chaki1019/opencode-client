@@ -153,6 +153,9 @@ void main() {
     await tester.enterText(find.byKey(const Key('password')), 'pw');
     await tester.tap(find.byKey(const Key('connect')));
     await tester.pumpAndSettle();
+    // Keep the server when asked after connecting.
+    await tester.tap(find.byKey(const Key('save')));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('my-app'));
     await tester.pumpAndSettle();
 

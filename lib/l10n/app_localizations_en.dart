@@ -98,9 +98,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'OPENCODE_SERVER_PASSWORD (leave blank if unset)';
 
   @override
-  String get displayNameOptional => 'Name (optional)';
-
-  @override
   String get connect => 'Connect';
 
   @override
@@ -115,9 +112,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get saveServer => 'Save';
 
   @override
-  String serverSaved(String name) {
-    return 'Saved \"$name\"';
-  }
+  String get saveServerTitle => 'Connected. Save this server?';
+
+  @override
+  String get dontSave => 'Don\'t save';
 
   @override
   String get editServer => 'Edit';

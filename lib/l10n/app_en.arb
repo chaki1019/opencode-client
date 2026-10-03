@@ -46,7 +46,6 @@
   "username": "Username",
   "password": "Password",
   "passwordHelper": "OPENCODE_SERVER_PASSWORD (leave blank if unset)",
-  "displayNameOptional": "Name (optional)",
   "connect": "Connect",
   "savedServers": "Saved servers",
   "savedServersLoadFailed": "Couldn't load saved servers: {error}",
@@ -56,14 +55,8 @@
     }
   },
   "saveServer": "Save",
-  "serverSaved": "Saved \"{name}\"",
-  "@serverSaved": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "saveServerTitle": "Connected. Save this server?",
+  "dontSave": "Don't save",
   "editServer": "Edit",
   "editServerTitle": "Edit server",
   "serverName": "Name",

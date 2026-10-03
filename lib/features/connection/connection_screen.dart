@@ -22,7 +22,6 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
   final _url = TextEditingController();
   final _username = TextEditingController(text: 'opencode');
   final _password = TextEditingController();
-  final _label = TextEditingController();
   final _passwordFocus = FocusNode();
   bool _busy = false;
   String? _error;
@@ -32,7 +31,6 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
     _url.dispose();
     _username.dispose();
     _password.dispose();
-    _label.dispose();
     _passwordFocus.dispose();
     super.dispose();
   }
@@ -57,51 +55,58 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
     }
   }
 
-  /// The server described by the form, reusing the id of a saved server
-  /// with the same URL and username. Null when the form is invalid.
-  Future<ServerConfig?> _serverFromForm() async {
-    if (!_formKey.currentState!.validate()) return null;
+  Future<void> _connectNew() async {
+    if (!_formKey.currentState!.validate()) return;
     final baseUrl = ServerConfig.normalizeBaseUrl(_url.text);
     final username = _username.text.trim().isEmpty
         ? 'opencode'
         : _username.text.trim();
-    final existing = await ref
-        .read(savedServersProvider.notifier)
-        .find(baseUrl, username);
-    return ServerConfig(
-      id: existing?.id ?? DateTime.now().microsecondsSinceEpoch.toString(),
-      baseUrl: baseUrl,
-      username: username,
-      label: _label.text.trim().isEmpty ? existing?.label : _label.text.trim(),
-    );
+    final password = _password.text;
+    final saved = ref.read(savedServersProvider.notifier);
+    final existing = await saved.find(baseUrl, username);
+    final server =
+        existing ??
+        ServerConfig(
+          id: DateTime.now().microsecondsSinceEpoch.toString(),
+          baseUrl: baseUrl,
+          username: username,
+        );
+    final connections = ref.read(connectionProvider.notifier);
+    ActiveConnection? connection;
+    await _run(() async {
+      connection = await connections.probe(server, password);
+    });
+    final probed = connection;
+    if (probed == null || !mounted) return;
+    // Asked outside _run so the button is not spinning behind the sheet.
+    if (existing == null && !await saved.isDeclined(baseUrl, username)) {
+      if (!mounted) return;
+      await _offerToSave(server, password);
+    }
+    await connections.open(probed, password);
   }
 
-  Future<void> _connectNew() async {
-    final server = await _serverFromForm();
-    if (server == null) return;
-    await _run(
-      () =>
-          ref.read(connectionProvider.notifier).connect(server, _password.text),
+  /// Asks once, after a successful connect, whether to keep this server.
+  /// Dismissing the sheet decides nothing, so it is asked again next time.
+  Future<void> _offerToSave(ServerConfig server, String password) async {
+    final choice = await showModalBottomSheet<_SaveChoice>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (_) => _SaveServerSheet(server: server),
     );
-  }
-
-  /// Saves the form as a server without connecting to it.
-  Future<void> _saveNew() async {
-    final server = await _serverFromForm();
-    if (server == null || !mounted) return;
-    final messenger = ScaffoldMessenger.of(context);
-    final l10n = context.l10n;
-    await ref
-        .read(savedServersProvider.notifier)
-        .remember(server, _password.text);
-    _url.clear();
-    _password.clear();
-    _label.clear();
-    _username.text = 'opencode';
-    setState(() => _error = null);
-    messenger.showSnackBar(
-      SnackBar(content: Text(l10n.serverSaved(server.displayName))),
-    );
+    final saved = ref.read(savedServersProvider.notifier);
+    switch (choice) {
+      case _Save(:final name):
+        await saved.remember(
+          server.copyWith(label: name.isEmpty ? null : name),
+          password,
+        );
+      case _Decline():
+        await saved.decline(server.baseUrl, server.username);
+      case null:
+        break;
+    }
   }
 
   Future<void> _forget(ServerConfig server) async {
@@ -177,12 +182,6 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
                     ),
                     obscureText: true,
                   ),
-                  TextFormField(
-                    controller: _label,
-                    decoration: InputDecoration(
-                      labelText: context.l10n.displayNameOptional,
-                    ),
-                  ),
                   const SizedBox(height: 4),
                   if (_error != null)
                     Padding(
@@ -194,32 +193,15 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
                         ),
                       ),
                     ),
-                  Row(
-                    spacing: 12,
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          key: const Key('save'),
-                          onPressed: _busy ? null : _saveNew,
-                          child: Text(context.l10n.saveServer),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: FilledButton(
-                          key: const Key('connect'),
-                          onPressed: _busy ? null : _connectNew,
-                          child: _busy
-                              ? const SizedBox.square(
-                                  dimension: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : Text(context.l10n.connect),
-                        ),
-                      ),
-                    ],
+                  FilledButton(
+                    key: const Key('connect'),
+                    onPressed: _busy ? null : _connectNew,
+                    child: _busy
+                        ? const SizedBox.square(
+                            dimension: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : Text(context.l10n.connect),
                   ),
                 ],
               ),
@@ -253,6 +235,7 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
                                 .read(connectionProvider.notifier)
                                 .connectSaved(server),
                           ),
+                    onLongPress: () => _editSaved(server),
                     trailing: PopupMenuButton<_ServerAction>(
                       key: Key('server-menu-${server.id}'),
                       onSelected: (action) => switch (action) {
@@ -288,6 +271,100 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
 }
 
 enum _ServerAction { edit, delete }
+
+sealed class _SaveChoice {
+  const _SaveChoice();
+}
+
+class _Save extends _SaveChoice {
+  const _Save(this.name);
+
+  final String name;
+}
+
+class _Decline extends _SaveChoice {
+  const _Decline();
+}
+
+/// "Save this server?" with a name field that starts as the host.
+class _SaveServerSheet extends StatefulWidget {
+  const _SaveServerSheet({required this.server});
+
+  final ServerConfig server;
+
+  @override
+  State<_SaveServerSheet> createState() => _SaveServerSheetState();
+}
+
+class _SaveServerSheetState extends State<_SaveServerSheet> {
+  late final _name = TextEditingController(text: widget.server.host);
+
+  @override
+  void dispose() {
+    _name.dispose();
+    super.dispose();
+  }
+
+  void _save() => Navigator.of(context).pop(_Save(_name.text.trim()));
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        20,
+        0,
+        20,
+        20 + MediaQuery.viewInsetsOf(context).bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: 12,
+        children: [
+          Text(
+            context.l10n.saveServerTitle,
+            style: theme.textTheme.titleMedium,
+          ),
+          Text(
+            '${widget.server.username} @ ${widget.server.baseUrl}',
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontFamily: AppFonts.mono,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          TextField(
+            key: const Key('save-name'),
+            controller: _name,
+            decoration: InputDecoration(labelText: context.l10n.serverName),
+            textInputAction: TextInputAction.done,
+            onSubmitted: (_) => _save(),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            spacing: 12,
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  key: const Key('dont-save'),
+                  onPressed: () => Navigator.of(context).pop(const _Decline()),
+                  child: Text(context.l10n.dontSave),
+                ),
+              ),
+              Expanded(
+                child: FilledButton(
+                  key: const Key('save'),
+                  onPressed: _save,
+                  child: Text(context.l10n.saveServer),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 /// Servers found on the network (mDNS or a LAN scan) that are not saved
 /// yet. Tapping one fills the form.

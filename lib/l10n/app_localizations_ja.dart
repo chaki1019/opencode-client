@@ -94,9 +94,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get passwordHelper => 'OPENCODE_SERVER_PASSWORD（未設定なら空欄）';
 
   @override
-  String get displayNameOptional => '名前（任意）';
-
-  @override
   String get connect => '接続';
 
   @override
@@ -111,9 +108,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get saveServer => '保存';
 
   @override
-  String serverSaved(String name) {
-    return '「$name」を保存しました';
-  }
+  String get saveServerTitle => '接続できました。この接続先を保存しますか？';
+
+  @override
+  String get dontSave => '保存しない';
 
   @override
   String get editServer => '編集';

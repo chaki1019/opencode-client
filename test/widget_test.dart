@@ -93,6 +93,9 @@ void main() {
     await tester.enterText(find.byKey(const Key('password')), 'pw');
     await tester.tap(find.byKey(const Key('connect')));
     await tester.pumpAndSettle();
+    // Keep the server when asked after connecting.
+    await tester.tap(find.byKey(const Key('save')));
+    await tester.pumpAndSettle();
     expect(find.byType(ProjectsScreen), findsOneWidget);
 
     await tester.tap(find.byTooltip('切断'));
@@ -300,6 +303,9 @@ void main() {
     await tester.enterText(find.byKey(const Key('url')), 'example.test:4096');
     await tester.enterText(find.byKey(const Key('password')), 'pw');
     await tester.tap(find.byKey(const Key('connect')));
+    await tester.pumpAndSettle();
+    // Keep the server when asked after connecting.
+    await tester.tap(find.byKey(const Key('save')));
     await tester.pumpAndSettle();
 
     expect(find.text('my-app'), findsOneWidget);
