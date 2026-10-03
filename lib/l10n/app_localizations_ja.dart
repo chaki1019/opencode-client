@@ -794,4 +794,33 @@ class AppLocalizationsJa extends AppLocalizations {
   String pushOpenFailed(Object error) {
     return 'セッションを開けませんでした: $error';
   }
+
+  @override
+  String get servers => 'サーバー';
+
+  @override
+  String get addServer => 'サーバーを追加';
+
+  @override
+  String serverSwitchFailed(String name, String error) {
+    return '$name に接続できませんでした: $error';
+  }
+
+  @override
+  String get settingsTitle => '設定';
+
+  @override
+  String get settingsAppearance => '外観';
+
+  @override
+  String get settingsLanguage => '言語';
+
+  @override
+  String get settingsFollowSystem => 'システム設定に従う';
+
+  @override
+  String get themeLight => 'ライト';
+
+  @override
+  String get themeDark => 'ダーク';
 }
