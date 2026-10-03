@@ -53,21 +53,4 @@ void main() {
       findsOneWidget,
     );
   });
-
-  testWidgets('asks for an absolute folder path', (tester) async {
-    await pumpScreen(tester);
-
-    await tester.tap(find.byKey(const Key('add-project')));
-    await tester.pumpAndSettle();
-    expect(find.text('プロジェクトを追加'), findsOneWidget);
-
-    await tester.enterText(find.byKey(const Key('project-folder')), 'src/app');
-    await tester.tap(find.byKey(const Key('confirm-add-project')));
-    await tester.pumpAndSettle();
-    expect(find.text('絶対パスを入力してください'), findsOneWidget);
-
-    await tester.tap(find.text('キャンセル'));
-    await tester.pumpAndSettle();
-    expect(find.text('プロジェクトを追加'), findsNothing);
-  });
 }

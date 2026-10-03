@@ -171,6 +171,16 @@ void main() {
     });
   });
 
+  test('serverDirectory reads the location directory', () async {
+    final adapter = FakeAdapter({
+      '/api/location': FakeRoute.json({
+        'directory': '/home/me',
+        'project': {'id': 'global', 'directory': '/'},
+      }),
+    });
+    expect(await clientFor(adapter).serverDirectory(), '/home/me');
+  });
+
   group('openProject', () {
     test('resolves the folder and returns the listed project', () async {
       final adapter = FakeAdapter({

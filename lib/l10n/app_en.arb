@@ -84,7 +84,20 @@
   "projectFolderLabel": "Folder path on the server",
   "projectFolderHint": "/home/me/my-app",
   "projectFolderMustBeAbsolute": "Enter an absolute path",
-  "openProject": "Open",
+  "chooseFolder": "Choose a folder",
+  "openThisFolder": "Open this folder",
+  "noSubfolders": "No folders here",
+  "searchFolders": "Search folders below",
+  "showHiddenFolders": "Show hidden folders",
+  "hideHiddenFolders": "Hide hidden folders",
+  "enterFolderPath": "Enter a path",
+  "goToFolder": "Go",
+  "foldersLoadFailed": "Couldn't load folders: {error}",
+  "@foldersLoadFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "projectOpenFailed": "Couldn't open the folder: {error}",
   "@projectOpenFailed": {
     "placeholders": {

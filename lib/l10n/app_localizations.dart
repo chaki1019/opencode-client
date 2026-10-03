@@ -344,11 +344,59 @@ abstract class AppLocalizations {
   /// **'Enter an absolute path'**
   String get projectFolderMustBeAbsolute;
 
-  /// No description provided for @openProject.
+  /// No description provided for @chooseFolder.
   ///
   /// In en, this message translates to:
-  /// **'Open'**
-  String get openProject;
+  /// **'Choose a folder'**
+  String get chooseFolder;
+
+  /// No description provided for @openThisFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Open this folder'**
+  String get openThisFolder;
+
+  /// No description provided for @noSubfolders.
+  ///
+  /// In en, this message translates to:
+  /// **'No folders here'**
+  String get noSubfolders;
+
+  /// No description provided for @searchFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'Search folders below'**
+  String get searchFolders;
+
+  /// No description provided for @showHiddenFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'Show hidden folders'**
+  String get showHiddenFolders;
+
+  /// No description provided for @hideHiddenFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'Hide hidden folders'**
+  String get hideHiddenFolders;
+
+  /// No description provided for @enterFolderPath.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a path'**
+  String get enterFolderPath;
+
+  /// No description provided for @goToFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Go'**
+  String get goToFolder;
+
+  /// No description provided for @foldersLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load folders: {error}'**
+  String foldersLoadFailed(Object error);
 
   /// No description provided for @projectOpenFailed.
   ///

@@ -141,6 +141,12 @@ class OpenCodeClient {
     );
   }
 
+  /// The server's working directory, where folder browsing starts.
+  Future<String> serverDirectory() async {
+    final location = _map(await _getJson('/api/location'));
+    return location['directory'] as String? ?? '/';
+  }
+
   /// Opens [directory] (absolute) as a project: resolving its location
   /// registers the project on the server. A folder outside any Git
   /// repository resolves to the server's global project; it is returned

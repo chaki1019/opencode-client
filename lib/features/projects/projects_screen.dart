@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/theme.dart';
-import '../../core/api/api_errors.dart';
 import '../../core/models/project.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
@@ -114,10 +113,7 @@ class ProjectsScreen extends ConsumerWidget {
   }
 
   Future<void> _addProject(BuildContext context, WidgetRef ref) async {
-    final project = await showDialog<Project>(
-      context: context,
-      builder: (_) => const _AddProjectDialog(),
-    );
+    final project = await context.push<Project>('/projects/add');
     if (project == null || !context.mounted) return;
     ref.invalidate(projectsProvider);
     context.push(
@@ -229,104 +225,6 @@ class _SectionHeader extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// Asks for a folder on the server and opens it as a project. Pops with
-/// the resolved [Project], or null when cancelled.
-class _AddProjectDialog extends ConsumerStatefulWidget {
-  const _AddProjectDialog();
-
-  @override
-  ConsumerState<_AddProjectDialog> createState() => _AddProjectDialogState();
-}
-
-class _AddProjectDialogState extends ConsumerState<_AddProjectDialog> {
-  final _controller = TextEditingController();
-  bool _busy = false;
-  String? _error;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    final l10n = context.l10n;
-    final path = _normalize(_controller.text);
-    if (!_isAbsolute(path)) {
-      setState(() => _error = l10n.projectFolderMustBeAbsolute);
-      return;
-    }
-    final client = ref.read(connectionProvider)?.client;
-    if (client == null) return;
-    setState(() {
-      _busy = true;
-      _error = null;
-    });
-    try {
-      final project = await client.openProject(path);
-      if (mounted) Navigator.pop(context, project);
-    } on OpenCodeApiException catch (e) {
-      if (mounted) {
-        setState(() {
-          _busy = false;
-          _error = l10n.projectOpenFailed(e.detail);
-        });
-      }
-    }
-  }
-
-  static String _normalize(String input) {
-    final path = input.trim();
-    if (path.length > 1 && (path.endsWith('/') || path.endsWith(r'\'))) {
-      return path.substring(0, path.length - 1);
-    }
-    return path;
-  }
-
-  static bool _isAbsolute(String path) =>
-      path.startsWith('/') || RegExp(r'^[A-Za-z]:[\\/]').hasMatch(path);
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(context.l10n.addProject),
-      content: TextField(
-        key: const Key('project-folder'),
-        controller: _controller,
-        autofocus: true,
-        enabled: !_busy,
-        autocorrect: false,
-        enableSuggestions: false,
-        keyboardType: TextInputType.url,
-        style: const TextStyle(fontFamily: AppFonts.mono),
-        decoration: InputDecoration(
-          labelText: context.l10n.projectFolderLabel,
-          hintText: context.l10n.projectFolderHint,
-          errorText: _error,
-          errorMaxLines: 3,
-        ),
-        onSubmitted: (_) => _submit(),
-      ),
-      actions: [
-        TextButton(
-          onPressed: _busy ? null : () => Navigator.pop(context),
-          child: Text(context.l10n.cancel),
-        ),
-        FilledButton(
-          key: const Key('confirm-add-project'),
-          onPressed: _busy ? null : _submit,
-          child: _busy
-              ? const SizedBox.square(
-                  dimension: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : Text(context.l10n.openProject),
-        ),
-      ],
     );
   }
 }
