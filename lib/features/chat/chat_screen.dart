@@ -13,6 +13,7 @@ import 'composer_providers.dart';
 import 'context_sheet.dart';
 import 'expand_downward.dart';
 import 'prompt_widgets.dart';
+import 'pull_up_to_refresh.dart';
 import 'session_actions.dart';
 import 'timeline_widgets.dart';
 
@@ -59,7 +60,7 @@ class ChatScreen extends ConsumerWidget {
                 // the "older history" control at the top. Pulling past the
                 // newest item refetches the latest page.
                 final count = pending.length + entries.length;
-                return RefreshIndicator(
+                return PullUpToRefresh(
                   onRefresh: () => ref.read(provider.notifier).resync(),
                   child: NotificationListener<ScrollNotification>(
                     onNotification: (n) {
