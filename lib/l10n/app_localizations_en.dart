@@ -199,6 +199,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goToFolder => 'Go';
 
   @override
+  String get parentFolder => 'Parent folder';
+
+  @override
   String foldersLoadFailed(Object error) {
     return 'Couldn\'t load folders: $error';
   }

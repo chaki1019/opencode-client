@@ -5,27 +5,40 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/theme.dart';
 import '../../core/api/api_errors.dart';
+import '../../core/models/project.dart';
 import '../../core/models/project_tools.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 import 'project_providers.dart';
 import 'server_path.dart';
 
-/// Browses the server's folders and opens the chosen one as a project.
-/// Pops with the opened [Project], or nothing when left.
-class FolderPickerScreen extends ConsumerStatefulWidget {
-  const FolderPickerScreen({super.key});
+/// Browses the server's folders in a bottom sheet and opens the chosen one
+/// as a project. Moving between folders swaps the sheet's contents instead
+/// of pushing pages, so dismissing the sheet always returns to where it was
+/// opened.
+class FolderPickerSheet extends ConsumerStatefulWidget {
+  const FolderPickerSheet({super.key});
+
+  /// Resolves to the opened project, or null when the sheet is dismissed.
+  static Future<Project?> show(BuildContext context) =>
+      showModalBottomSheet<Project>(
+        context: context,
+        showDragHandle: true,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (_) => const FractionallySizedBox(
+          heightFactor: 0.94,
+          child: FolderPickerSheet(),
+        ),
+      );
 
   @override
-  ConsumerState<FolderPickerScreen> createState() => _FolderPickerScreenState();
+  ConsumerState<FolderPickerSheet> createState() => _FolderPickerSheetState();
 }
 
-class _FolderPickerScreenState extends ConsumerState<FolderPickerScreen> {
+class _FolderPickerSheetState extends ConsumerState<FolderPickerSheet> {
   /// Folder being shown; null until the server's directory is known.
   String? _directory;
-
-  /// Folders visited before [_directory], for back navigation.
-  final _history = <String>[];
   final _search = TextEditingController();
   String _query = '';
   Timer? _debounce;
@@ -39,26 +52,12 @@ class _FolderPickerScreenState extends ConsumerState<FolderPickerScreen> {
     super.dispose();
   }
 
-  void _go(String directory) {
-    final current = _directory ?? ref.read(serverDirectoryProvider).value;
-    if (current == null || current == directory) return;
-    setState(() {
-      _history.add(current);
-      _directory = directory;
-      _clearSearch();
-    });
-  }
-
-  void _back() => setState(() {
-    _directory = _history.removeLast();
-    _clearSearch();
-  });
-
-  void _clearSearch() {
+  void _go(String directory) => setState(() {
+    _directory = directory;
     _debounce?.cancel();
     _search.clear();
     _query = '';
-  }
+  });
 
   void _onSearch(String value) {
     _debounce?.cancel();
@@ -68,10 +67,10 @@ class _FolderPickerScreenState extends ConsumerState<FolderPickerScreen> {
     );
   }
 
-  Future<void> _enterPath() async {
+  Future<void> _enterPath(String directory) async {
     final path = await showDialog<String>(
       context: context,
-      builder: (_) => _PathDialog(initial: _directory ?? ''),
+      builder: (_) => _PathDialog(initial: directory),
     );
     if (path != null) _go(path);
   }
@@ -98,65 +97,85 @@ class _FolderPickerScreenState extends ConsumerState<FolderPickerScreen> {
   Widget build(BuildContext context) {
     final start = ref.watch(serverDirectoryProvider);
     final directory = _directory ?? start.value;
+    final l10n = context.l10n;
 
-    return PopScope(
-      canPop: _history.isEmpty,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _back();
-      },
+    // Its own messenger keeps snack bars inside the sheet, above the
+    // project list it covers.
+    return ScaffoldMessenger(
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(context.l10n.chooseFolder),
-          actions: [
-            IconButton(
-              key: const Key('toggle-hidden'),
-              tooltip: _showHidden
-                  ? context.l10n.hideHiddenFolders
-                  : context.l10n.showHiddenFolders,
-              icon: Icon(
-                _showHidden
-                    ? Icons.visibility_outlined
-                    : Icons.visibility_off_outlined,
-              ),
-              onPressed: () => setState(() => _showHidden = !_showHidden),
-            ),
-            IconButton(
-              key: const Key('enter-path'),
-              tooltip: context.l10n.enterFolderPath,
-              icon: const Icon(Icons.edit_outlined),
-              onPressed: directory == null ? null : _enterPath,
-            ),
-          ],
-        ),
-        body: directory == null
-            ? start.hasError
-                  ? _Message(
-                      text: context.l10n.foldersLoadFailed(
-                        _detail(start.error),
-                      ),
-                      onRetry: () => ref.invalidate(serverDirectoryProvider),
-                    )
-                  : const Center(child: CircularProgressIndicator())
-            : Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+        backgroundColor: Colors.transparent,
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 4, 0),
+              child: Row(
                 children: [
-                  _Breadcrumbs(path: directory, onTap: _go),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-                    child: TextField(
-                      key: const Key('folder-search'),
-                      controller: _search,
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.search),
-                        hintText: context.l10n.searchFolders,
-                        isDense: true,
-                      ),
-                      onChanged: _onSearch,
+                  Expanded(
+                    child: Text(
+                      l10n.chooseFolder,
+                      style: Theme.of(context).textTheme.titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w600),
                     ),
                   ),
-                  Expanded(child: _folderList(directory)),
+                  IconButton(
+                    key: const Key('toggle-hidden'),
+                    tooltip: _showHidden
+                        ? l10n.hideHiddenFolders
+                        : l10n.showHiddenFolders,
+                    icon: Icon(
+                      _showHidden
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                    ),
+                    onPressed: () => setState(() => _showHidden = !_showHidden),
+                  ),
+                  IconButton(
+                    key: const Key('enter-path'),
+                    tooltip: l10n.enterFolderPath,
+                    icon: const Icon(Icons.edit_outlined),
+                    onPressed: directory == null
+                        ? null
+                        : () => _enterPath(directory),
+                  ),
+                  IconButton(
+                    key: const Key('close-folder-picker'),
+                    tooltip: MaterialLocalizations.of(context)
+                        .closeButtonTooltip,
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.of(context).pop(),
+                  ),
                 ],
               ),
+            ),
+            if (directory == null)
+              Expanded(
+                child: start.hasError
+                    ? _Message(
+                        text: l10n.foldersLoadFailed(_detail(start.error)),
+                        onRetry: () => ref.invalidate(serverDirectoryProvider),
+                      )
+                    : const Center(child: CircularProgressIndicator()),
+              )
+            else ...[
+              _PathBar(path: directory, onGo: _go),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                child: TextField(
+                  key: const Key('folder-search'),
+                  controller: _search,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search),
+                    hintText: l10n.searchFolders,
+                    isDense: true,
+                  ),
+                  onChanged: _onSearch,
+                ),
+              ),
+              Expanded(child: _folderList(directory)),
+            ],
+          ],
+        ),
         bottomNavigationBar: directory == null
             ? null
             : SafeArea(
@@ -171,7 +190,7 @@ class _FolderPickerScreenState extends ConsumerState<FolderPickerScreen> {
                             child: CircularProgressIndicator(strokeWidth: 2),
                           )
                         : const Icon(Icons.check),
-                    label: Text(context.l10n.openThisFolder),
+                    label: Text(l10n.openThisFolder),
                   ),
                 ),
               ),
@@ -184,7 +203,6 @@ class _FolderPickerScreenState extends ConsumerState<FolderPickerScreen> {
     final provider = searching
         ? folderSearchProvider((directory, _query))
         : subfoldersProvider(directory);
-    final parent = ServerPath.parent(directory);
     return ref
         .watch(provider)
         .when(
@@ -193,8 +211,7 @@ class _FolderPickerScreenState extends ConsumerState<FolderPickerScreen> {
               for (final e in entries)
                 if (_showHidden || !_isHidden(e)) e,
             ];
-            final showUp = !searching && parent != null;
-            if (visible.isEmpty && !showUp) {
+            if (visible.isEmpty) {
               return _Message(
                 text: searching
                     ? context.l10n.notFound
@@ -202,17 +219,9 @@ class _FolderPickerScreenState extends ConsumerState<FolderPickerScreen> {
               );
             }
             return ListView.builder(
-              itemCount: visible.length + (showUp ? 1 : 0),
+              itemCount: visible.length,
               itemBuilder: (context, index) {
-                if (showUp && index == 0) {
-                  return ListTile(
-                    key: const Key('folder-up'),
-                    leading: const Icon(Icons.arrow_upward),
-                    title: const Text('..'),
-                    onTap: () => _go(parent),
-                  );
-                }
-                final entry = visible[index - (showUp ? 1 : 0)];
+                final entry = visible[index];
                 return ListTile(
                   leading: const Icon(Icons.folder_outlined),
                   title: Text(ServerPath.name(entry.path)),
@@ -244,13 +253,13 @@ class _FolderPickerScreenState extends ConsumerState<FolderPickerScreen> {
       error is OpenCodeApiException ? error.detail : error ?? '';
 }
 
-/// The current folder as tappable segments from the root, scrolled so the
-/// deepest one stays visible.
-class _Breadcrumbs extends StatelessWidget {
-  const _Breadcrumbs({required this.path, required this.onTap});
+/// The parent-folder button and the current folder as tappable segments
+/// from the root, scrolled so the deepest one stays visible.
+class _PathBar extends StatelessWidget {
+  const _PathBar({required this.path, required this.onGo});
 
   final String path;
-  final ValueChanged<String> onTap;
+  final ValueChanged<String> onGo;
 
   @override
   Widget build(BuildContext context) {
@@ -260,52 +269,70 @@ class _Breadcrumbs extends StatelessWidget {
     final style = theme.textTheme.bodyMedium?.copyWith(
       fontFamily: AppFonts.mono,
     );
+    final parent = ServerPath.parent(path);
     return SizedBox(
       height: 44,
-      child: LayoutBuilder(
-        builder: (context, constraints) => SingleChildScrollView(
-          key: const Key('breadcrumbs'),
-          scrollDirection: Axis.horizontal,
-          reverse: true,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          // Short paths stay left-aligned despite the reversed scroll.
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minWidth: constraints.maxWidth - 24),
-            child: Row(
-              children: [
-                for (final (i, (label, crumbPath)) in crumbs.indexed) ...[
-                  if (i > 0)
-                    Icon(
-                      Icons.chevron_right,
-                      size: 16,
-                      color: scheme.onSurfaceVariant,
-                    ),
-                  InkWell(
-                    borderRadius: BorderRadius.circular(6),
-                    onTap: i == crumbs.length - 1
-                        ? null
-                        : () => onTap(crumbPath),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 4,
-                        vertical: 8,
-                      ),
-                      child: Text(
-                        label,
-                        style: i == crumbs.length - 1
-                            ? style?.copyWith(
-                                color: scheme.primary,
-                                fontWeight: FontWeight.w600,
-                              )
-                            : style?.copyWith(color: scheme.onSurfaceVariant),
-                      ),
-                    ),
+      child: Row(
+        children: [
+          const SizedBox(width: 4),
+          IconButton(
+            key: const Key('folder-up'),
+            tooltip: context.l10n.parentFolder,
+            icon: const Icon(Icons.arrow_upward),
+            onPressed: parent == null ? null : () => onGo(parent),
+          ),
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) => SingleChildScrollView(
+                key: const Key('breadcrumbs'),
+                scrollDirection: Axis.horizontal,
+                reverse: true,
+                padding: const EdgeInsets.only(right: 12),
+                // Short paths stay left-aligned despite the reversed scroll.
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minWidth: constraints.maxWidth - 12,
                   ),
-                ],
-              ],
+                  child: Row(
+                    children: [
+                      for (final (i, (label, crumbPath)) in crumbs.indexed) ...[
+                        if (i > 0)
+                          Icon(
+                            Icons.chevron_right,
+                            size: 16,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        InkWell(
+                          borderRadius: BorderRadius.circular(6),
+                          onTap: i == crumbs.length - 1
+                              ? null
+                              : () => onGo(crumbPath),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 8,
+                            ),
+                            child: Text(
+                              label,
+                              style: i == crumbs.length - 1
+                                  ? style?.copyWith(
+                                      color: scheme.primary,
+                                      fontWeight: FontWeight.w600,
+                                    )
+                                  : style?.copyWith(
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

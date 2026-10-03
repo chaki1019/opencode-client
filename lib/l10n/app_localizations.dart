@@ -404,6 +404,12 @@ abstract class AppLocalizations {
   /// **'Go'**
   String get goToFolder;
 
+  /// No description provided for @parentFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent folder'**
+  String get parentFolder;
+
   /// No description provided for @foldersLoadFailed.
   ///
   /// In en, this message translates to:

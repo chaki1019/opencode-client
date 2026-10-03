@@ -194,6 +194,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get goToFolder => '移動';
 
   @override
+  String get parentFolder => '上の階層へ';
+
+  @override
   String foldersLoadFailed(Object error) {
     return 'フォルダを読み込めませんでした: $error';
   }

@@ -51,6 +51,7 @@
   "hideHiddenFolders": "隠しフォルダを隠す",
   "enterFolderPath": "パスを入力",
   "goToFolder": "移動",
+  "parentFolder": "上の階層へ",
   "foldersLoadFailed": "フォルダを読み込めませんでした: {error}",
   "projectOpenFailed": "フォルダを開けませんでした: {error}",
   "tabSessions": "セッション",
