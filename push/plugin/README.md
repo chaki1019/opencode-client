@@ -2,7 +2,7 @@
 
 An [OpenCode](https://opencode.ai) v2 plugin that notifies your phone when
 the agent finishes, stops on an error, or is waiting for a permission or an
-answer. It works with the opencode-client mobile app.
+answer. It works with the opencode-mobile app.
 
 ## Setup
 
