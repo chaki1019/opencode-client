@@ -15,6 +15,7 @@ import 'expand_downward.dart';
 import 'prompt_widgets.dart';
 import 'pull_up_to_refresh.dart';
 import 'session_actions.dart';
+import 'status_bar_scroll.dart';
 import 'timeline_widgets.dart';
 
 /// A session's transcript, updated live, with the input at the bottom.
@@ -31,108 +32,116 @@ class ChatScreen extends ConsumerWidget {
       activeSessionsProvider.select((ids) => ids.contains(session.id)),
     );
 
-    return Scaffold(
-      appBar: AppBar(
-        title: _ChatTitle(session: session, busy: busy),
-        bottom: const LiveStatusBanner(),
-        actions: [
-          ContextUsageButton(session: session),
-          SessionActionsMenu(session: session),
-        ],
-      ),
-      body: Column(
-        children: [
-          TodoStrip(sessionId: session.id),
-          Expanded(
-            child: timeline.when(
-              data: (paged) {
-                final entries = paged.items;
-                final shownIds = {for (final e in entries) e.id};
-                final pending = ref
-                    .watch(pendingPromptsProvider(session.id))
-                    .where((p) => !shownIds.contains(p.id))
-                    .toList();
-                if (entries.isEmpty && pending.isEmpty) {
-                  return Center(child: Text(context.l10n.messagesEmpty));
-                }
-                // Reversed so the list starts at the newest item. Pending
-                // prompts sit below the transcript; the extra last index is
-                // the "older history" control at the top. Pulling past the
-                // newest item refetches the latest page.
-                final count = pending.length + entries.length;
-                return PullUpToRefresh(
-                  onRefresh: () => ref.read(provider.notifier).resync(),
-                  child: NotificationListener<ScrollNotification>(
-                    onNotification: (n) {
-                      if (n.metrics.extentAfter < 600) {
-                        ref.read(provider.notifier).loadMore();
-                      }
-                      return false;
-                    },
-                    child: ListView.builder(
-                      reverse: true,
-                      // Lets accordions open downward from their header.
-                      physics: AnchoredScrollPhysics(
-                        anchor: ScrollAnchor(),
-                        // Short transcripts can still be pulled to refresh.
-                        parent: const AlwaysScrollableScrollPhysics(),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      itemCount: count + 1,
-                      itemBuilder: (context, index) {
-                        if (index == count) {
-                          return OlderHistoryIndicator(
-                            paged: paged,
-                            onRetry: () =>
-                                ref.read(provider.notifier).loadMore(),
-                          );
-                        }
-                        final Widget child;
-                        if (index < pending.length) {
-                          final prompt = pending[pending.length - 1 - index];
-                          child = PendingPromptBubble(
-                            prompt: prompt,
-                            onDismiss: () => ref
-                                .read(
-                                  pendingPromptsProvider(session.id).notifier,
-                                )
-                                .dismiss(prompt.id),
-                          );
-                        } else {
-                          final i = index - pending.length;
-                          final entry = entries[entries.length - 1 - i];
-                          child = entry is UserEntry
-                              ? GestureDetector(
-                                  onLongPress: () =>
-                                      _userMessageMenu(context, ref, entry),
-                                  child: TimelineEntryView(entry: entry),
-                                )
-                              : TimelineEntryView(entry: entry);
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
+    return StatusBarScrollsToOldest(
+      builder: (context, scrollController) => Scaffold(
+        appBar: AppBar(
+          title: _ChatTitle(session: session, busy: busy),
+          bottom: const LiveStatusBanner(),
+          actions: [
+            ContextUsageButton(session: session),
+            SessionActionsMenu(session: session),
+          ],
+        ),
+        body: PrimaryScrollController.none(
+          child: Column(
+            children: [
+              TodoStrip(sessionId: session.id),
+              Expanded(
+                child: timeline.when(
+                  data: (paged) {
+                    final entries = paged.items;
+                    final shownIds = {for (final e in entries) e.id};
+                    final pending = ref
+                        .watch(pendingPromptsProvider(session.id))
+                        .where((p) => !shownIds.contains(p.id))
+                        .toList();
+                    if (entries.isEmpty && pending.isEmpty) {
+                      return Center(child: Text(context.l10n.messagesEmpty));
+                    }
+                    // Reversed so the list starts at the newest item. Pending
+                    // prompts sit below the transcript; the extra last index is
+                    // the "older history" control at the top. Pulling past the
+                    // newest item refetches the latest page.
+                    final count = pending.length + entries.length;
+                    return PullUpToRefresh(
+                      onRefresh: () => ref.read(provider.notifier).resync(),
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: (n) {
+                          if (n.metrics.extentAfter < 600) {
+                            ref.read(provider.notifier).loadMore();
+                          }
+                          return false;
+                        },
+                        child: ListView.builder(
+                          controller: scrollController,
+                          reverse: true,
+                          // Lets accordions open downward from their header.
+                          physics: AnchoredScrollPhysics(
+                            anchor: ScrollAnchor(),
+                            // Short transcripts can still be pulled to refresh.
+                            parent: const AlwaysScrollableScrollPhysics(),
                           ),
-                          child: child,
-                        );
-                      },
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          itemCount: count + 1,
+                          itemBuilder: (context, index) {
+                            if (index == count) {
+                              return OlderHistoryIndicator(
+                                paged: paged,
+                                onRetry: () =>
+                                    ref.read(provider.notifier).loadMore(),
+                              );
+                            }
+                            final Widget child;
+                            if (index < pending.length) {
+                              final prompt =
+                                  pending[pending.length - 1 - index];
+                              child = PendingPromptBubble(
+                                prompt: prompt,
+                                onDismiss: () => ref
+                                    .read(
+                                      pendingPromptsProvider(session.id)
+                                          .notifier,
+                                    )
+                                    .dismiss(prompt.id),
+                              );
+                            } else {
+                              final i = index - pending.length;
+                              final entry = entries[entries.length - 1 - i];
+                              child = entry is UserEntry
+                                  ? GestureDetector(
+                                      onLongPress: () =>
+                                          _userMessageMenu(context, ref, entry),
+                                      child: TimelineEntryView(entry: entry),
+                                    )
+                                  : TimelineEntryView(entry: entry);
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              child: child,
+                            );
+                          },
+                        ),
+                      ),
+                    );
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (e, _) => Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Text(context.l10n.messagesLoadFailed(e)),
                     ),
                   ),
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (e, _) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(context.l10n.messagesLoadFailed(e)),
                 ),
               ),
-            ),
+              SessionPromptsPanel(session: session),
+              Composer(session: session),
+            ],
           ),
-          SessionPromptsPanel(session: session),
-          Composer(session: session),
-        ],
+        ),
       ),
     );
   }
