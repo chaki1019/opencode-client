@@ -212,3 +212,29 @@ test("sendFcm signs a JWT, exchanges it and posts the message", async () => {
   assert.equal(await sendFcm(env, device, data, { fetch: gone }), "unregistered");
   assert.equal(calls.at(-1).url, "https://fcm.googleapis.com/v1/projects/demo/messages:send");
 });
+
+test("app-version serves the configured minimums", async () => {
+  let res = await handle(req("GET", "/v1/app-version"), {});
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), {
+    ios: { minimum: null, storeUrl: null },
+    android: { minimum: null, storeUrl: null },
+  });
+
+  res = await handle(req("GET", "/v1/app-version"), {
+    MIN_VERSION_IOS: "1.2.0",
+    STORE_URL_IOS: "https://apps.apple.com/app/id123",
+    MIN_VERSION_ANDROID: "1.1.0",
+    STORE_URL_ANDROID: "",
+  });
+  assert.match(res.headers.get("cache-control"), /max-age=/);
+  assert.deepEqual(await res.json(), {
+    ios: { minimum: "1.2.0", storeUrl: "https://apps.apple.com/app/id123" },
+    android: { minimum: "1.1.0", storeUrl: null },
+  });
+
+  // Not rate limited: every app launch asks.
+  const blocked = { limit: async () => ({ success: false }) };
+  res = await handle(req("GET", "/v1/app-version"), { IP_LIMIT: blocked });
+  assert.equal(res.status, 200);
+});

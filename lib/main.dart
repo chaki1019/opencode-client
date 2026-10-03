@@ -7,6 +7,7 @@ import 'app/router.dart';
 import 'app/theme.dart';
 import 'features/push/push_providers.dart';
 import 'features/settings/settings_providers.dart';
+import 'features/update/update_gate.dart';
 import 'l10n/l10n.dart';
 
 void main() {
@@ -41,6 +42,7 @@ class OpenCodeMobileApp extends ConsumerWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: ref.watch(routerProvider),
+      builder: (context, child) => UpdateGate(child: child!),
     );
   }
 }

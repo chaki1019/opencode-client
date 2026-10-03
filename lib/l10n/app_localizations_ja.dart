@@ -844,4 +844,18 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get settingsHapticsHelp => '送信時、AI の返信完了時、AI が回答を待っているときに軽く振動します';
+
+  @override
+  String get updateRequiredTitle => 'アップデートが必要です';
+
+  @override
+  String updateRequiredBody(String installed, String minimum) {
+    return 'このバージョン（$installed）は使えなくなりました。$minimum 以降に更新してください。';
+  }
+
+  @override
+  String get updateOpenStore => 'ストアを開く';
+
+  @override
+  String get updateFromStore => 'App Store または Google Play からアプリを更新してください。';
 }

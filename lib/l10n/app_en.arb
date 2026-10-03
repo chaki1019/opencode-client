@@ -468,5 +468,15 @@
   "themeDark": "Dark",
   "settingsInteraction": "Interaction",
   "settingsHaptics": "Haptic feedback",
-  "settingsHapticsHelp": "Vibrate lightly on send, when a reply finishes, and when the AI needs your answer"
+  "settingsHapticsHelp": "Vibrate lightly on send, when a reply finishes, and when the AI needs your answer",
+  "updateRequiredTitle": "Update required",
+  "updateRequiredBody": "Version {installed} can no longer be used. Please update to version {minimum} or later.",
+  "@updateRequiredBody": {
+    "placeholders": {
+      "installed": {"type": "String"},
+      "minimum": {"type": "String"}
+    }
+  },
+  "updateOpenStore": "Open the store",
+  "updateFromStore": "Update the app from the App Store or Google Play."
 }

@@ -14,11 +14,14 @@
 //   DELETE /v1/devices  {key, token}            unregister
 //   POST   /v1/notify   Authorization: Bearer <key>
 //                       {kind, sessionID, enc}
+//   GET    /v1/app-version                     minimum app version per platform
 //
 // Bindings: D1 database DB (schema in migrations/), rate limiters
 // IP_LIMIT and KEY_LIMIT, secret FCM_SERVICE_ACCOUNT (the Firebase service
 // account JSON). An optional KV namespace DEVICES holds registrations from
-// before D1; they move to D1 the first time their key is used.
+// before D1; they move to D1 the first time their key is used. Vars
+// MIN_VERSION_IOS / MIN_VERSION_ANDROID / STORE_URL_IOS / STORE_URL_ANDROID
+// (all optional) feed /v1/app-version.
 
 const MIN_KEY_LENGTH = 32;
 const MAX_DEVICES_PER_KEY = 10;
@@ -33,6 +36,11 @@ export default {
 export async function handle(request, env, deps = {}) {
   const url = new URL(request.url);
   try {
+    // Public and cacheable, and asked on every app launch: many users can
+    // share one carrier address, so it is not rate limited.
+    if (url.pathname === "/v1/app-version" && request.method === "GET") {
+      return appVersion(env);
+    }
     // Per client address on every route, so neither registrations nor
     // guessed keys can be sprayed from one place.
     await limit(env.IP_LIMIT, request.headers.get("cf-connecting-ip") ?? "unknown");
@@ -60,8 +68,8 @@ class HttpError extends Error {
   }
 }
 
-function json(body, status = 200) {
-  const headers = { "content-type": "application/json" };
+function json(body, status = 200, extraHeaders = {}) {
+  const headers = { "content-type": "application/json", ...extraHeaders };
   if (status === 429) headers["retry-after"] = "60";
   return new Response(JSON.stringify(body), { status, headers });
 }
@@ -71,6 +79,23 @@ async function limit(limiter, key) {
   if (!limiter) return;
   const { success } = await limiter.limit({ key });
   if (!success) throw new HttpError(429, "rate_limited");
+}
+
+// The app refuses to run below `minimum` and sends the user to `storeUrl`.
+// An unset minimum means every version may run.
+function appVersion(env) {
+  const platform = (minimum, storeUrl) => ({
+    minimum: minimum || null,
+    storeUrl: storeUrl || null,
+  });
+  return json(
+    {
+      ios: platform(env.MIN_VERSION_IOS, env.STORE_URL_IOS),
+      android: platform(env.MIN_VERSION_ANDROID, env.STORE_URL_ANDROID),
+    },
+    200,
+    { "cache-control": "public, max-age=300" },
+  );
 }
 
 async function readJson(request) {
