@@ -764,7 +764,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pushWhat =>
-      'Notifies you when the agent finishes, stops on an error, or waits for a permission or an answer. Needs the plugin below in OpenCode on your computer.';
+      'Notifies you when the agent finishes, stops on an error, or waits for a permission or an answer. Needs the plugin below in OpenCode on your computer. Project and session names are encrypted, so the relay server cannot read them.';
 
   @override
   String get pushNotConfigured =>
@@ -803,7 +803,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pushOpen => 'Open';
 
   @override
-  String get pushDefaultTitle => 'OpenCode';
+  String get pushHeadlineCompleted => 'Reply finished';
+
+  @override
+  String get pushHeadlineFailed => 'Stopped with an error';
+
+  @override
+  String get pushHeadlinePermission => 'Waiting for permission';
+
+  @override
+  String get pushHeadlineQuestion => 'Waiting for your answer';
+
+  @override
+  String get pushChannelName => 'Agent updates';
 
   @override
   String pushOpenFailed(Object error) {

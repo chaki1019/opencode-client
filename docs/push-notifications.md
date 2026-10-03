@@ -5,16 +5,19 @@ PC/Mac の OpenCode で Agent の応答が終わったとき（またはエラ�
 ```
 OpenCode（PC/Mac）
   └─ プラグイン push/plugin/opencode-push.js
-       │  POST /v1/notify（ペアリングキーで認証）
+       │  POST /v1/notify（認証キー + 暗号文）
        ▼
 中継サーバー push/relay（Cloudflare Workers + KV）
-       │  FCM HTTP v1
+       │  FCM HTTP v1（中身は暗号文のまま）
        ▼
-FCM ──(iOS は APNs 経由)──▶ アプリ
+FCM ──(iOS は APNs 経由)──▶ アプリが復号して表示
 ```
 
-- **ペアリングキー**: アプリがサーバーごとに作る 43 文字のランダムな鍵です。アプリはこの鍵で端末を中継に登録し、プラグインは同じ鍵で通知を送ります。中継は鍵を SHA-256 のハッシュでしか保存しません。
+- **ペアリングキー**: アプリがサーバーごとに作る 43 文字のランダムな鍵です。プラグインの設定に貼るのはこの鍵だけです。
+- **暗号化**: ペアリングキーから HKDF-SHA256 で 2 つの鍵を作ります。「認証キー」は中継への端末登録と通知の送信に使い、中継は SHA-256 のハッシュでしか保存しません。「暗号鍵」は中継に渡さず、プロジェクト名とセッションのタイトルを AES-256-GCM で暗号化します。中継が知るのは通知の種類（完了・エラー・許可待ち・質問）とセッション ID だけです。暗号文は種類とセッション ID に結び付けてあるので、中継が組み替えると復号に失敗します。
+- **表示**: Android は本文なしのデータ通知を受けてアプリが復号し、ローカル通知を出します。iOS は「OpenCode」という仮の通知を受け、Notification Service Extension が表示の直前に復号して書き換えます。復号できないときは「応答が完了しました」などの見出しだけを出します。
 - **通知の内容**: タイトルは「プロジェクト名: 応答が完了しました」などで、本文はセッションのタイトルです。プラグインの `includeTitle: false` で本文を空にできます。
+- 暗号化の仕様は `push/test-vector.json` の値で、プラグイン（JavaScript）とアプリ（Dart）のテストが同じ結果になることを確かめています。
 - **タップ時**: 通知を送ったサーバーに接続し（必要なら保存済みの認証情報で再接続し）、そのセッションのチャットを開きます。アプリが前面にあるときは画面下部に表示します。
 - サブエージェントのセッションは通知しません。同じ種類の通知は 15 秒以内に重複して送りません。
 
@@ -55,7 +58,18 @@ flutter run --dart-define-from-file=push.env.json
 
 これらの値が無いビルドでは通知画面に「設定が含まれていません」と表示され、通知機能は動きません。
 
-iOS は `ios/Runner/Runner.entitlements` に `aps-environment` を入れてあります。初回は Xcode の Signing & Capabilities で Push Notifications が有効になっているか確認してください。
+Android は同じ `push.env.json` を Gradle が読み、FCM がアプリの起動前でも通知を受けられるように Firebase の設定をリソースに入れます。
+
+### iOS の追加設定（Xcode で一度だけ）
+
+`ios/Runner/Runner.entitlements` には Push Notifications（`aps-environment`）と App Group（`group.dev.opencodemobile.opencodeMobile`）を入れてあります。Notification Service Extension のソースは `ios/NotificationService/` にありますが、Xcode のターゲットの追加は手作業が必要です。
+
+1. `ios/Runner.xcworkspace` を開き、File → New → Target → Notification Service Extension を選ぶ。Product Name は `NotificationService`、言語は Swift。「Activate scheme」は Cancel でかまいません。
+2. Xcode が作った `NotificationService.swift` と `Info.plist` を削除し、`ios/NotificationService/` の同名ファイルをターゲットに追加する。
+3. NotificationService ターゲットの Build Settings で `CODE_SIGN_ENTITLEMENTS` を `NotificationService/NotificationService.entitlements` にし、Deployment Target を Runner と同じ 15.0 にする。
+4. Runner と NotificationService の両方で Signing & Capabilities を開き、Push Notifications（Runner のみ）と App Groups（`group.dev.opencodemobile.opencodeMobile`）が有効になっていることを確認する。Bundle ID を変えたときは App Group 名も `ios/Runner/AppDelegate.swift` と `NotificationService.swift` で合わせて変える。
+
+この設定をしなくても通知は届きますが、iOS では中身が「OpenCode」だけになります。
 
 ## 4. アプリと PC/Mac の設定
 

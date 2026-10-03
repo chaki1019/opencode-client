@@ -1,14 +1,19 @@
 // Push relay for opencode-client (Cloudflare Worker).
 //
-// The app registers its FCM token under a random pairing key; the OpenCode
-// plugin posts events with the same key as a bearer token, and the relay
-// forwards them to every device registered for that key. Keys are stored
-// only as SHA-256 hashes, and notification text is never persisted.
+// The app registers its FCM token under an auth key derived from its
+// pairing key; the OpenCode plugin posts events with the same auth key as a
+// bearer token, and the relay forwards them to every device registered for
+// it. Auth keys are stored only as SHA-256 hashes.
+//
+// The relay cannot read notifications: what they say (project, session
+// title) arrives as `enc`, AES-GCM ciphertext under a key that is derived
+// from the pairing key and never sent here. The phone decrypts it before
+// showing anything; until then the relay only knows the kind of event.
 //
 //   POST   /v1/devices  {key, token, platform}  register (idempotent)
 //   DELETE /v1/devices  {key, token}            unregister
 //   POST   /v1/notify   Authorization: Bearer <key>
-//                       {kind, title, body, sessionID, directory}
+//                       {kind, sessionID, enc}
 //
 // Bindings: KV namespace DEVICES, secret FCM_SERVICE_ACCOUNT (the Firebase
 // service account JSON).
@@ -16,6 +21,8 @@
 const MIN_KEY_LENGTH = 32;
 const MAX_DEVICES_PER_KEY = 10;
 const KINDS = new Set(["completed", "failed", "permission", "question"]);
+// FCM data payloads are capped at 4 KB.
+const MAX_ENC_LENGTH = 3000;
 
 export default {
   fetch: (request, env) => handle(request, env),
@@ -133,20 +140,18 @@ async function notify(request, env, deps) {
   if (devices.length === 0) return json({ ok: true, delivered: 0 }, 202);
 
   const body = await readJson(request);
-  const kind = KINDS.has(body.kind) ? body.kind : "completed";
-  const message = {
-    title: text(body.title, 120) || "OpenCode",
-    body: text(body.body, 240),
-    data: {
-      kind,
-      keyId: id,
-      sessionID: text(body.sessionID, 200),
-      directory: text(body.directory, 1024),
-    },
+  if (typeof body.enc === "string" && body.enc.length > MAX_ENC_LENGTH) {
+    throw new HttpError(413, "payload_too_large");
+  }
+  const data = {
+    kind: KINDS.has(body.kind) ? body.kind : "completed",
+    keyId: id,
+    sessionID: text(body.sessionID, 200),
+    enc: typeof body.enc === "string" ? body.enc : "",
   };
 
   const send = deps.sendFcm ?? sendFcm;
-  const results = await Promise.all(devices.map((d) => send(env, d.token, message, deps)));
+  const results = await Promise.all(devices.map((d) => send(env, d, data, deps)));
   const stale = devices.filter((_, i) => results[i] === "unregistered");
   if (stale.length > 0) {
     await saveDevices(env, id, devices.filter((d) => !stale.includes(d)));
@@ -159,8 +164,29 @@ async function notify(request, env, deps) {
 
 let cachedToken;
 
+/**
+ * The FCM message for one device. Android gets data only and builds the
+ * notification itself after decrypting. iOS gets a placeholder alert marked
+ * mutable, which the app's Notification Service Extension rewrites.
+ */
+export function fcmMessage(device, data) {
+  if (device.platform === "ios") {
+    return {
+      token: device.token,
+      data,
+      apns: {
+        headers: { "apns-priority": "10" },
+        payload: {
+          aps: { alert: { title: "OpenCode" }, sound: "default", "mutable-content": 1 },
+        },
+      },
+    };
+  }
+  return { token: device.token, data, android: { priority: "high" } };
+}
+
 /** Sends one message; returns "ok", "unregistered" or "error". */
-export async function sendFcm(env, token, message, deps = {}) {
+export async function sendFcm(env, device, data, deps = {}) {
   const account = JSON.parse(env.FCM_SERVICE_ACCOUNT);
   const fetchFn = deps.fetch ?? fetch;
   const accessToken = await googleAccessToken(account, fetchFn);
@@ -172,15 +198,7 @@ export async function sendFcm(env, token, message, deps = {}) {
         authorization: `Bearer ${accessToken}`,
         "content-type": "application/json",
       },
-      body: JSON.stringify({
-        message: {
-          token,
-          notification: { title: message.title, body: message.body },
-          data: message.data,
-          android: { priority: "high" },
-          apns: { payload: { aps: { sound: "default" } } },
-        },
-      }),
+      body: JSON.stringify({ message: fcmMessage(device, data) }),
     },
   );
   if (response.ok) return "ok";

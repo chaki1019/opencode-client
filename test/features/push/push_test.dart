@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/core/api/opencode_client.dart';
 import 'package:opencode_mobile/core/events/event_stream.dart';
 import 'package:opencode_mobile/core/push/push_config.dart';
+import 'package:opencode_mobile/core/push/push_crypto.dart';
+import 'package:opencode_mobile/core/push/push_inbox.dart';
 import 'package:opencode_mobile/core/push/push_message.dart';
 import 'package:opencode_mobile/core/push/push_messaging.dart';
 import 'package:opencode_mobile/core/push/push_store.dart';
@@ -19,6 +22,7 @@ import 'package:opencode_mobile/features/chat/chat_screen.dart';
 import 'package:opencode_mobile/features/connection/connection_providers.dart';
 import 'package:opencode_mobile/features/live/live_providers.dart';
 import 'package:opencode_mobile/features/push/push_providers.dart';
+import 'package:opencode_mobile/l10n/app_localizations.dart';
 import 'package:opencode_mobile/main.dart';
 
 import '../../support/fake_adapter.dart';
@@ -57,7 +61,27 @@ class _FakeMessaging implements PushMessaging {
 
   @override
   Future<PushMessage?> initialTap() async => null;
+
+  final shared = <String>{};
+
+  @override
+  Future<void> shareKeys(PushKeys keys) async => shared.add(keys.keyId);
+
+  @override
+  Future<void> unshareKeys(String keyId) async => shared.remove(keyId);
 }
+
+Future<String> _seal(
+  String pairingKey,
+  PushKind kind,
+  String session,
+  PushContent content,
+) async => sealPushContent(
+  encKey: (await PushKeys.derive(pairingKey)).encKey,
+  kind: kind.name,
+  sessionId: session,
+  content: content,
+);
 
 void main() {
   late _FakeMessaging messaging;
@@ -176,20 +200,28 @@ void main() {
     final register = relay.requests.single;
     expect(register.method, 'POST');
     expect(register.path, '/v1/devices');
-    final key = body(register)['key']! as String;
-    expect(key, hasLength(43));
     expect(body(register)['token'], 'fcm-token');
 
     final snippet = tester
         .widget<SelectableText>(find.byKey(const Key('push-snippet')))
         .data!;
     final entry = jsonDecode('{$snippet}') as Map<String, Object?>;
+    final key =
+        (((entry['plugins']! as List).single as Map)['options'] as Map)['key']
+            as String;
+    expect(key, hasLength(43));
     expect(entry['plugins'], [
       {
         'package': './plugins/opencode-push.js',
         'options': {'relay': 'https://relay.test', 'key': key},
       },
     ]);
+    // The relay only ever gets the derived auth key, and the iOS extension
+    // gets the decryption key.
+    final keys = await tester.runAsync(() => PushKeys.derive(key));
+    expect(body(register)['key'], keys!.auth);
+    expect(body(register)['key'], isNot(key));
+    expect(messaging.shared, {keys.keyId});
     await tester.tap(find.byKey(const Key('push-copy')));
     await tester.pumpAndSettle();
     expect(clipboard.single, snippet);
@@ -198,7 +230,17 @@ void main() {
     await tester.pumpAndSettle();
     final test = relay.requests.last;
     expect(test.path, '/v1/notify');
-    expect(test.headers['Authorization'], 'Bearer $key');
+    expect(test.headers['Authorization'], 'Bearer ${keys.auth}');
+    expect(body(test).keys, unorderedEquals(['kind', 'sessionID', 'enc']));
+    final opened = await tester.runAsync(
+      () => openPushContent(
+        encKey: keys.encKey,
+        kind: 'completed',
+        sessionId: '',
+        enc: body(test)['enc']! as String,
+      ),
+    );
+    expect(opened?.title, 'OpenCode からのテスト通知');
     expect(find.text('送信しました。数秒で届きます。'), findsOneWidget);
 
     // Turning it off unregisters the same token.
@@ -206,7 +248,8 @@ void main() {
     await tester.pumpAndSettle();
     final unregister = relay.requests.last;
     expect(unregister.method, 'DELETE');
-    expect(body(unregister), {'key': key, 'token': 'fcm-token'});
+    expect(body(unregister), {'key': keys.auth, 'token': 'fcm-token'});
+    expect(messaging.shared, isEmpty);
     expect(find.byKey(const Key('push-snippet')), findsNothing);
   });
 
@@ -234,26 +277,35 @@ void main() {
     final pairing = PushPairing(key: PushPairing.newKey(), enabled: true);
     await PushStore().save(saved.id, pairing);
 
+    final ids = await tester.runAsync(
+      () async => (
+        mine: (await PushKeys.derive(pairing.key)).keyId,
+        other: (await PushKeys.derive('someone-else')).keyId,
+      ),
+    );
+
     // Another server's notification is ignored.
     messaging.tapController.add(
       PushMessage(
         kind: PushKind.completed,
-        keyId: pairingKeyId('someone-else'),
+        keyId: ids!.other,
         sessionId: 'ses_1',
-        directory: '',
+        enc: '',
       ),
     );
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     await tester.pumpAndSettle();
     expect(find.byType(ChatScreen), findsNothing);
 
     messaging.tapController.add(
       PushMessage(
         kind: PushKind.completed,
-        keyId: pairingKeyId(pairing.key),
+        keyId: ids.mine,
         sessionId: 'ses_1',
-        directory: '/home/me/my-app',
+        enc: '',
       ),
     );
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     await tester.pumpAndSettle();
     expect(find.byType(ChatScreen), findsOneWidget);
     expect(server.requests.map((r) => r.path), contains('/api/session/ses_1'));
@@ -263,37 +315,91 @@ void main() {
     tester,
   ) async {
     await pumpConnected(tester);
+    final saved = (await ServerStore().loadServers()).single;
+    final pairing = PushPairing(key: PushPairing.newKey(), enabled: true);
+    await PushStore().save(saved.id, pairing);
+    final sealed = await tester.runAsync(
+      () async => (
+        keyId: (await PushKeys.derive(pairing.key)).keyId,
+        enc: await _seal(
+          pairing.key,
+          PushKind.permission,
+          'ses_1',
+          const PushContent(project: 'my-app', title: 'Fix login'),
+        ),
+      ),
+    );
     messaging.foregroundController.add(
       PushMessage(
         kind: PushKind.permission,
-        keyId: 'x',
+        keyId: sealed!.keyId,
         sessionId: 'ses_1',
-        directory: '',
-        title: 'my-app: 許可を待っています',
-        body: 'Fix login',
+        enc: sealed.enc,
       ),
     );
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
     await tester.pumpAndSettle();
     expect(find.text('my-app: 許可を待っています\nFix login'), findsOneWidget);
     expect(find.text('開く'), findsOneWidget);
   });
 
-  test('message data and key ids match the relay', () {
-    // Same input as the relay's keyId(): hex SHA-256.
-    expect(
-      pairingKeyId('abc'),
-      'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+  test('decrypts the payload shared with the plugin', () async {
+    final vector = jsonDecode(
+      File('push/test-vector.json').readAsStringSync(),
+    ) as Map<String, dynamic>;
+    final keys = await PushKeys.derive(vector['key'] as String);
+    expect(keys.auth, vector['auth']);
+    // The relay's keyId() is hex SHA-256 of the auth key.
+    expect(keys.keyId, vector['keyId']);
+    final content = await openPushContent(
+      encKey: keys.encKey,
+      kind: vector['kind'] as String,
+      sessionId: vector['sessionID'] as String,
+      enc: vector['enc'] as String,
     );
+    expect(content?.toJson(), vector['content']);
+    // Bound to its kind and session.
+    expect(
+      await openPushContent(
+        encKey: keys.encKey,
+        kind: 'failed',
+        sessionId: vector['sessionID'] as String,
+        enc: vector['enc'] as String,
+      ),
+      isNull,
+    );
+  });
+
+  test('notification text and message data', () async {
+    final l10n = lookupAppLocalizations(const Locale('ja'));
+    expect(
+      pushText(
+        l10n,
+        PushKind.completed,
+        const PushContent(project: 'my-app', title: 'Fix login'),
+      ),
+      (title: 'my-app: 応答が完了しました', body: 'Fix login'),
+    );
+    // Undecryptable content still says what happened.
+    expect(pushText(l10n, PushKind.question, null), (
+      title: '質問に回答を待っています',
+      body: '',
+    ));
+
     final message = PushMessage.fromData({
       'kind': 'question',
       'keyId': 'k',
       'sessionID': 'ses_9',
-      'directory': '/w',
-    }, title: 't');
+      'enc': 'e',
+    });
     expect(message?.kind, PushKind.question);
-    expect(message?.sessionId, 'ses_9');
-    expect(PushMessage.fromData({'keyId': 'k', 'sessionID': ''}), isNull);
-    final key = PushPairing.newKey();
-    expect(key, matches(RegExp(r'^[A-Za-z0-9_-]{43}$')));
+    expect(message?.toData(), {
+      'kind': 'question',
+      'keyId': 'k',
+      'sessionID': 'ses_9',
+      'enc': 'e',
+    });
+    expect(PushMessage.fromData({'kind': 'completed'}), isNull);
+    expect(PushPairing.newKey(), matches(RegExp(r'^[A-Za-z0-9_-]{43}$')));
   });
 }

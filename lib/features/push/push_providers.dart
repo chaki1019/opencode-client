@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/router.dart';
 import '../../core/push/push_config.dart';
+import '../../core/push/push_crypto.dart';
+import '../../core/push/push_inbox.dart';
 import '../../core/push/push_message.dart';
 import '../../core/push/push_messaging.dart';
 import '../../core/push/push_store.dart';
@@ -18,12 +20,9 @@ final pushConfigProvider = Provider<PushConfig>(
 );
 
 /// Null when this build has push turned off.
-final pushMessagingProvider = Provider<PushMessaging?>((ref) {
-  final config = ref.watch(pushConfigProvider);
-  final options = config.firebaseOptions;
-  if (!config.isConfigured || options == null) return null;
-  return FirebasePushMessaging(options);
-});
+final pushMessagingProvider = Provider<PushMessaging?>(
+  (ref) => pushMessagingFor(ref.watch(pushConfigProvider)),
+);
 
 final relayClientProvider = Provider<RelayClient>(
   (ref) => RelayClient(ref.watch(pushConfigProvider).relayUrl),
@@ -76,10 +75,12 @@ class PushPairingNotifier extends AsyncNotifier<PushPairing> {
     final token = await messaging.token();
     if (token == null) throw const PushSetupException(PushSetupError.noToken);
     final pairing = await future;
+    final keys = await PushKeys.derive(pairing.key);
+    await messaging.shareKeys(keys);
     await ref
         .read(relayClientProvider)
         .register(
-          key: pairing.key,
+          key: keys.auth,
           token: token,
           platform: ref.read(pushConfigProvider).platform,
         );
@@ -92,28 +93,43 @@ class PushPairingNotifier extends AsyncNotifier<PushPairing> {
   /// effort basis; the local switch turns off either way.
   Future<void> disable() async {
     final pairing = await future;
-    await _unregister(ref.read(relayClientProvider), pairing);
+    await _unregister(
+      relay: ref.read(relayClientProvider),
+      messaging: ref.read(pushMessagingProvider),
+      pairing: pairing,
+    );
     final updated = PushPairing(key: pairing.key);
     await _store.save(serverId, updated);
     state = AsyncData(updated);
   }
 
+  /// Sends [title] through the relay, encrypted like the plugin does.
   Future<void> sendTest(String title) async {
-    final pairing = await future;
-    await ref
-        .read(relayClientProvider)
-        .sendTest(key: pairing.key, title: title);
+    final keys = await PushKeys.derive((await future).key);
+    final enc = await sealPushContent(
+      encKey: keys.encKey,
+      kind: PushKind.completed.name,
+      sessionId: '',
+      content: PushContent(project: '', title: title),
+    );
+    await ref.read(relayClientProvider).sendTest(auth: keys.auth, enc: enc);
   }
 }
 
 final pushPairingProvider = AsyncNotifierProvider.autoDispose
     .family<PushPairingNotifier, PushPairing, String>(PushPairingNotifier.new);
 
-Future<void> _unregister(RelayClient relay, PushPairing pairing) async {
+Future<void> _unregister({
+  required RelayClient relay,
+  required PushMessaging? messaging,
+  required PushPairing pairing,
+}) async {
   final token = pairing.token;
   if (!pairing.enabled || token == null) return;
+  final keys = await PushKeys.derive(pairing.key);
   try {
-    await relay.unregister(key: pairing.key, token: token);
+    await messaging?.unshareKeys(keys.keyId);
+    await relay.unregister(key: keys.auth, token: token);
   } on Object {
     // Offline or relay gone; the relay drops the token when FCM reports
     // it unregistered.
@@ -125,7 +141,11 @@ Future<void> forgetPush(WidgetRef ref, String serverId) async {
   final store = ref.read(pushStoreProvider);
   final pairing = await store.load(serverId);
   if (pairing != null) {
-    await _unregister(ref.read(relayClientProvider), pairing);
+    await _unregister(
+      relay: ref.read(relayClientProvider),
+      messaging: ref.read(pushMessagingProvider),
+      pairing: pairing,
+    );
   }
   await store.delete(serverId);
 }
@@ -163,9 +183,10 @@ Future<void> _reregister(Ref ref, String token) async {
       continue;
     }
     try {
+      final keys = await PushKeys.derive(pairing.key);
       await ref
           .read(relayClientProvider)
-          .register(key: pairing.key, token: token, platform: config.platform);
+          .register(key: keys.auth, token: token, platform: config.platform);
       await store.save(server.id, pairing.copyWith(token: token));
     } on Object {
       // Retried on the next refresh or when the user toggles the switch.
@@ -173,18 +194,18 @@ Future<void> _reregister(Ref ref, String token) async {
   }
 }
 
+Future<ResolvedPush?> _resolve(Ref ref, PushMessage message) async =>
+    resolvePush(
+      message,
+      servers: await ref.read(savedServersProvider.future),
+      store: ref.read(pushStoreProvider),
+    );
+
 /// Connects to the server the notification came from (if needed) and opens
 /// its session.
 Future<void> openPushMessage(Ref ref, PushMessage message) async {
-  final store = ref.read(pushStoreProvider);
-  final servers = await ref.read(savedServersProvider.future);
-  final matches = [
-    for (final server in servers)
-      if ((await store.load(server.id)) case final pairing?
-          when pairingKeyId(pairing.key) == message.keyId)
-        server,
-  ];
-  final server = matches.firstOrNull;
+  if (!message.hasSession) return;
+  final server = (await _resolve(ref, message))?.server;
   if (server == null) return;
   try {
     final connection = ref.read(connectionProvider.notifier);
@@ -207,22 +228,25 @@ Future<void> openPushMessage(Ref ref, PushMessage message) async {
   }
 }
 
-void _showInApp(Ref ref, PushMessage message) {
+Future<void> _showInApp(Ref ref, PushMessage message) async {
+  final resolved = await _resolve(ref, message);
+  if (resolved == null) return;
   final messenger = ref.read(scaffoldMessengerKeyProvider).currentState;
   final context = messenger?.context;
   if (messenger == null || context == null || !context.mounted) return;
-  final text = [
-    message.title,
-    message.body,
-  ].whereType<String>().where((s) => s.isNotEmpty).join('\n');
+  final text = pushText(context.l10n, message.kind, resolved.content);
   messenger.hideCurrentSnackBar();
   messenger.showSnackBar(
     SnackBar(
-      content: Text(text.isEmpty ? context.l10n.pushDefaultTitle : text),
-      action: SnackBarAction(
-        label: context.l10n.pushOpen,
-        onPressed: () => openPushMessage(ref, message),
+      content: Text(
+        [text.title, text.body].where((s) => s.isNotEmpty).join('\n'),
       ),
+      action: message.hasSession
+          ? SnackBarAction(
+              label: context.l10n.pushOpen,
+              onPressed: () => openPushMessage(ref, message),
+            )
+          : null,
     ),
   );
 }

@@ -1,0 +1,13 @@
+{
+  "comment": "Shared by the plugin, app and iOS extension tests; generated with WebCrypto.",
+  "key": "vZ3q0rM8k4cJp2xYt7WnQe1sLbA9uHgD5fRiKoE6mCw",
+  "auth": "pEE1IHUZGNZnJ_Qp-Rh8TR804WeVpMxZwuJFD_DOt8g",
+  "keyId": "d60ac31920f873ad900eef5e2a2ee4303d8757eb937e5a75e6083a6abdaf160e",
+  "kind": "completed",
+  "sessionID": "ses_0123",
+  "content": {
+    "project": "my-app",
+    "title": "ログイン修正"
+  },
+  "enc": "AQIDBAUGBwgJCgsM6TpGzK_2sSzUfZMukTRUaQGSKlulLaF73n8ssw8p-cyfvL81WmvuYiSFYaa-xkoiA2celEmI3UxXRsN0NNrZvSs"
+}
