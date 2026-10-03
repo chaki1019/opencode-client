@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -375,6 +375,35 @@ void main() {
       find.textContaining('The bug is', findRichText: true),
       findsOneWidget,
     );
+
+    // Long-pressing the text of a sent message opens its menu, not a
+    // text selection.
+    String? clipboard;
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'Clipboard.setData') {
+          clipboard = (call.arguments as Map)['text'] as String?;
+        }
+        return null;
+      },
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+    await tester.longPress(find.text('Please fix login'));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('fork-here')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('copy-message')));
+    await tester.pumpAndSettle();
+    expect(clipboard, 'Please fix login');
+    expect(find.text('コピーしました'), findsOneWidget);
+    ScaffoldMessenger.of(tester.element(find.text('Please fix login')))
+        .removeCurrentSnackBar();
+    await tester.pumpAndSettle();
 
     // The todo list and a pending permission show around the transcript.
     expect(find.text('Todo 1/2'), findsOneWidget);

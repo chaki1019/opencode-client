@@ -61,8 +61,10 @@ class UserMessageBubble extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // Plain text so a long-press opens the message menu instead
+                // of starting a selection.
                 if (entry.text.isNotEmpty)
-                  SelectableText(
+                  Text(
                     entry.text,
                     style: TextStyle(color: scheme.onPrimaryContainer),
                   ),

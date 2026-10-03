@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models/session.dart';
@@ -167,24 +168,45 @@ class ChatScreen extends ConsumerWidget {
     WidgetRef ref,
     UserEntry entry,
   ) async {
-    final fork = await showModalBottomSheet<bool>(
+    final action = await showModalBottomSheet<_MessageAction>(
       context: context,
       showDragHandle: true,
       builder: (context) => SafeArea(
-        child: ListTile(
-          key: const Key('fork-here'),
-          leading: const Icon(Icons.fork_right),
-          title: Text(context.l10n.forkFromHere),
-          subtitle: Text(context.l10n.forkFromHereHelp),
-          onTap: () => Navigator.pop(context, true),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (entry.text.isNotEmpty)
+              ListTile(
+                key: const Key('copy-message'),
+                leading: const Icon(Icons.copy),
+                title: Text(context.l10n.copy),
+                onTap: () => Navigator.pop(context, _MessageAction.copy),
+              ),
+            ListTile(
+              key: const Key('fork-here'),
+              leading: const Icon(Icons.fork_right),
+              title: Text(context.l10n.forkFromHere),
+              subtitle: Text(context.l10n.forkFromHereHelp),
+              onTap: () => Navigator.pop(context, _MessageAction.fork),
+            ),
+          ],
         ),
       ),
     );
-    if (fork == true && context.mounted) {
-      await forkSession(context, ref, session, beforeMessageId: entry.id);
+    if (action == null || !context.mounted) return;
+    switch (action) {
+      case _MessageAction.copy:
+        final messenger = ScaffoldMessenger.of(context);
+        final copied = context.l10n.copied;
+        await Clipboard.setData(ClipboardData(text: entry.text));
+        messenger.showSnackBar(SnackBar(content: Text(copied)));
+      case _MessageAction.fork:
+        await forkSession(context, ref, session, beforeMessageId: entry.id);
     }
   }
 }
+
+enum _MessageAction { copy, fork }
 
 /// Session title over a monospace line with the agent and model, led by a
 /// pulsing dot while the session is running.
