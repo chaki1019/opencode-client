@@ -23,9 +23,17 @@ answer. It works with the opencode-mobile app.
 ]
 ```
 
-To pin a version, use `"opencode-mobile-push@0.1.0"`. Without npm, copy
-`opencode-mobile-push.js` to `~/.config/opencode/plugins/` and use
-`"package": "./plugins/opencode-mobile-push.js"` instead.
+To pin a version, use `"opencode-mobile-push@0.2.0"`.
+
+Without npm, copy `opencode-mobile-push.js` to `~/.config/opencode/plugins/`
+(OpenCode loads that folder by itself) and put the relay and key in
+`~/.config/opencode/opencode-mobile-push.json`:
+
+```json
+{ "relay": "<relay URL shown in the app>", "key": "<pairing key shown in the app>" }
+```
+
+Options given in `opencode.json` take precedence over this file.
 
 ### Options
 

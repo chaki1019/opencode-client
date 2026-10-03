@@ -10,6 +10,7 @@ import '../models/project_tools.dart';
 import '../models/prompts.dart';
 import '../models/session.dart';
 import '../models/timeline.dart';
+import '../push/computer_plugin.dart';
 import 'api_errors.dart';
 
 class ProjectBootstrap {
@@ -401,6 +402,21 @@ class OpenCodeClient {
     '${connected ? 'connect' : 'disconnect'}',
     query: _location(directory),
   );
+
+  /// Plugins the server has loaded (or failed to load).
+  Future<List<ServerPlugin>> listPlugins() async {
+    final body = _map(await _getJson('/api/plugin'));
+    return [
+      for (final item in body['data'] as List? ?? const [])
+        ?ServerPlugin.tryParse(item),
+    ];
+  }
+
+  /// The server's configuration documents, lowest priority first.
+  Future<ComputerConfig> readConfig() async {
+    final body = await _getJson('/api/config');
+    return ComputerConfig.fromEntries(body is List ? body : const []);
+  }
 
   /// Entries of the folder [path] (relative; empty for the project root).
   Future<List<FsEntry>> listFiles({

@@ -141,9 +141,48 @@ test("includeTitle: false keeps session content out of the payload", async () =>
   assert.deepEqual(await open(KEY, out[0].body), { project: "app" });
 });
 
+/** Points the settings-file lookup at [dir] for one test. */
+async function withSettingsDir(fn) {
+  const { mkdtemp, rm } = await import("node:fs/promises");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const dir = await mkdtemp(join(tmpdir(), "ocmp-"));
+  const saved = { ...process.env };
+  process.env.XDG_CONFIG_HOME = dir;
+  process.env.HOME = dir;
+  delete process.env.OPENCODE_MOBILE_PUSH_SETTINGS;
+  try {
+    return await fn(dir);
+  } finally {
+    process.env = saved;
+    await rm(dir, { recursive: true, force: true });
+  }
+}
+
 test("missing options disable the plugin", async () => {
-  const out = await run([ev("session.execution.succeeded", { sessionID: "ses_7" })], { options: {} });
-  assert.equal(out.length, 0);
+  await withSettingsDir(async () => {
+    const out = await run([ev("session.execution.succeeded", { sessionID: "ses_7" })], { options: {} });
+    assert.equal(out.length, 0);
+  });
+});
+
+test("without options, relay and key come from the settings file", async () => {
+  await withSettingsDir(async (dir) => {
+    const { mkdir, writeFile } = await import("node:fs/promises");
+    await mkdir(`${dir}/opencode`, { recursive: true });
+    await writeFile(
+      `${dir}/opencode/opencode-mobile-push.json`,
+      JSON.stringify({ relay: "https://file-relay.example", key: KEY }),
+    );
+    // Options from the config still win (here: includeTitle).
+    const out = await run([ev("session.execution.succeeded", { sessionID: "ses_8" })], {
+      options: { includeTitle: false },
+      sessions: { ses_8: { title: "secret" } },
+    });
+    assert.equal(out.length, 1);
+    assert.equal(out[0].url, "https://file-relay.example/v1/notify");
+    assert.deepEqual(await open(KEY, out[0].body), { project: "app" });
+  });
 });
 
 test("matches the shared test vector", async () => {
