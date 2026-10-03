@@ -12,6 +12,18 @@ typedef EventStreamOpener = Future<Stream<List<int>>> Function(
   CancelToken cancelToken,
 );
 
+/// Drops the "request cancelled" [DioException] that dio emits right before
+/// closing a response stream whose request was cancelled, so the stream just
+/// ends. Letting it reach the async* SSE parser would rethrow it there, and
+/// debuggers that pause on uncaught exceptions would stop on every
+/// disconnect. Other errors pass through.
+Stream<List<int>> dropCancellation(Stream<List<int>> bytes) =>
+    bytes.handleError(
+      (Object _) {},
+      test: (error) =>
+          error is DioException && error.type == DioExceptionType.cancel,
+    );
+
 /// Keeps one v2 event stream open for the whole app and fans events out.
 ///
 /// The connection is retried with exponential backoff (250 ms doubling up
@@ -109,8 +121,10 @@ class EventStream {
     }
 
     armWatchdog();
+    // Cancelling the request (stop() or the watchdog) is an intended end.
+    final live = dropCancellation(bytes);
     // Any received bytes, including SSE comments, count as liveness.
-    final tapped = bytes.map((chunk) {
+    final tapped = live.map((chunk) {
       armWatchdog();
       return chunk;
     });
@@ -126,10 +140,9 @@ class EventStream {
     await done.future;
     watchdog?.cancel();
     // The parser is an async* generator, so an error that reaches it after
-    // cancellation surfaces through the cancel() future instead of onError.
-    // Typically that is the CancelToken's own "request cancelled"
-    // DioException from stop() or the watchdog. The connection is being
-    // dropped on purpose here, so any such error is an expected end.
+    // cancellation surfaces through the cancel() future instead of onError
+    // (for example the socket abort that follows a cancel). The connection
+    // is being dropped on purpose here, so any such error is an expected end.
     unawaited(subscription.cancel().catchError((Object _) {}));
   }
 
