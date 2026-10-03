@@ -53,6 +53,21 @@ class SavedServersNotifier extends AsyncNotifier<List<ServerConfig>> {
     state = AsyncData(updated);
   }
 
+  static String _declineKey(String baseUrl, String username) =>
+      '$username@$baseUrl';
+
+  /// Whether the user already answered "don't save" for this server.
+  Future<bool> isDeclined(String baseUrl, String username) async =>
+      (await _store.loadDeclined()).contains(_declineKey(baseUrl, username));
+
+  /// Remembers not to offer saving this server again.
+  Future<void> decline(String baseUrl, String username) async {
+    final declined = await _store.loadDeclined();
+    if (declined.add(_declineKey(baseUrl, username))) {
+      await _store.saveDeclined(declined);
+    }
+  }
+
   /// Returns the saved server matching URL and username, so reconnecting
   /// with the same details does not create duplicates.
   Future<ServerConfig?> find(String baseUrl, String username) async =>
@@ -100,14 +115,39 @@ class ConnectionNotifier extends Notifier<ActiveConnection?> {
   @override
   ActiveConnection? build() => null;
 
-  /// Probes the server; on success remembers it and becomes the active
-  /// connection. Throws [OpenCodeApiException] on failure.
-  Future<void> connect(ServerConfig server, String password) async {
+  /// Checks that [server] answers with [password] without switching to
+  /// it, so the caller can ask about saving first. Throws
+  /// [OpenCodeApiException] on failure.
+  Future<ActiveConnection> probe(ServerConfig server, String password) async {
     final client = ref.read(clientFactoryProvider)(server, password);
     final health = await client.connect();
-    await ref.read(savedServersProvider.notifier).remember(server, password);
-    state = ActiveConnection(server: server, client: client, health: health);
+    return ActiveConnection(server: server, client: client, health: health);
   }
+
+  /// Switches to a probed [connection]. A server that is already saved
+  /// moves to the top of the list with the password that just worked;
+  /// unsaved servers stay unsaved.
+  Future<void> open(ActiveConnection connection, String password) async {
+    final id = connection.server.id;
+    final saved = (await ref.read(savedServersProvider.future))
+        .where((s) => s.id == id)
+        .firstOrNull;
+    // The saved entry, not the probed one, keeps the name just given.
+    if (saved != null) {
+      await ref.read(savedServersProvider.notifier).remember(saved, password);
+    }
+    state = saved == null
+        ? connection
+        : ActiveConnection(
+            server: saved,
+            client: connection.client,
+            health: connection.health,
+          );
+  }
+
+  /// Probes and opens in one step.
+  Future<void> connect(ServerConfig server, String password) async =>
+      open(await probe(server, password), password);
 
   Future<void> connectSaved(ServerConfig server) async {
     final password = await ref

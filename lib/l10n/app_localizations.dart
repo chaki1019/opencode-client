@@ -218,12 +218,6 @@ abstract class AppLocalizations {
   /// **'OPENCODE_SERVER_PASSWORD (leave blank if unset)'**
   String get passwordHelper;
 
-  /// No description provided for @displayNameOptional.
-  ///
-  /// In en, this message translates to:
-  /// **'Name (optional)'**
-  String get displayNameOptional;
-
   /// No description provided for @connect.
   ///
   /// In en, this message translates to:
@@ -248,11 +242,17 @@ abstract class AppLocalizations {
   /// **'Save'**
   String get saveServer;
 
-  /// No description provided for @serverSaved.
+  /// No description provided for @saveServerTitle.
   ///
   /// In en, this message translates to:
-  /// **'Saved \"{name}\"'**
-  String serverSaved(String name);
+  /// **'Connected. Save this server?'**
+  String get saveServerTitle;
+
+  /// No description provided for @dontSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t save'**
+  String get dontSave;
 
   /// No description provided for @editServer.
   ///
