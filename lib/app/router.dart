@@ -7,7 +7,6 @@ import '../core/models/session.dart';
 import '../features/chat/chat_screen.dart';
 import '../features/connection/connection_providers.dart';
 import '../features/connection/connection_screen.dart';
-import '../features/projects/folder_picker_screen.dart';
 import '../features/projects/project_screen.dart';
 import '../features/projects/projects_screen.dart';
 import '../features/push/push_settings_screen.dart';
@@ -47,14 +46,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             pageBuilder: (context, state) =>
                 _page(state, const ProjectsScreen()),
             routes: [
-              // Pops with the opened project, so the page is typed for it.
-              GoRoute(
-                path: 'add',
-                pageBuilder: (context, state) => MaterialPage<Project>(
-                  key: state.pageKey,
-                  child: const FolderPickerScreen(),
-                ),
-              ),
               // Screens receive their model through `extra`; deep links without
               // it fall back to the project list.
               GoRoute(

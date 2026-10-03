@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/app/theme.dart';
 import 'package:opencode_mobile/core/models/project_tools.dart';
-import 'package:opencode_mobile/features/projects/folder_picker_screen.dart';
+import 'package:opencode_mobile/features/projects/folder_picker_sheet.dart';
 import 'package:opencode_mobile/features/projects/project_providers.dart';
 import 'package:opencode_mobile/l10n/app_localizations.dart';
 
@@ -14,7 +14,9 @@ void main() {
     '/home': ['me/'],
   };
 
-  Future<void> pumpPicker(WidgetTester tester) async {
+  final breadcrumbs = find.byKey(const Key('breadcrumbs'));
+
+  Future<void> openSheet(WidgetTester tester) async {
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     tester.platformDispatcher.localesTestValue = const [Locale('ja')];
     await tester.pumpWidget(
@@ -32,59 +34,73 @@ void main() {
           theme: AppTheme.dark,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const FolderPickerScreen(),
+          home: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => FolderPickerSheet.show(context),
+                child: const Text('add'),
+              ),
+            ),
+          ),
         ),
       ),
     );
+    await tester.tap(find.text('add'));
     await tester.pumpAndSettle();
   }
 
   testWidgets('starts at the server directory and hides dot folders', (
     tester,
   ) async {
-    await pumpPicker(tester);
+    await openSheet(tester);
 
     expect(find.text('dev'), findsOneWidget);
     expect(find.text('.config'), findsNothing);
+    expect(find.text('..'), findsNothing);
 
     await tester.tap(find.byKey(const Key('toggle-hidden')));
     await tester.pumpAndSettle();
     expect(find.text('.config'), findsOneWidget);
   });
 
-  testWidgets('opens folders and goes back up', (tester) async {
-    await pumpPicker(tester);
+  testWidgets('moves between folders inside the sheet', (tester) async {
+    await openSheet(tester);
 
     await tester.tap(find.text('dev'));
     await tester.pumpAndSettle();
     expect(find.text('opencode-client'), findsOneWidget);
     expect(
-      find.descendant(
-        of: find.byKey(const Key('breadcrumbs')),
-        matching: find.text('dev'),
-      ),
+      find.descendant(of: breadcrumbs, matching: find.text('dev')),
       findsOneWidget,
     );
 
-    // Back returns to the previous folder instead of leaving the picker.
-    await tester.binding.handlePopRoute();
+    await tester.tap(find.byKey(const Key('folder-up')));
     await tester.pumpAndSettle();
     expect(find.text('notes'), findsOneWidget);
 
-    // A breadcrumb jumps up the tree.
     await tester.tap(
-      find.descendant(
-        of: find.byKey(const Key('breadcrumbs')),
-        matching: find.text('home'),
-      ),
+      find.descendant(of: breadcrumbs, matching: find.text('home')),
     );
     await tester.pumpAndSettle();
-    expect(find.text('me'), findsWidgets);
     expect(find.text('notes'), findsNothing);
+
+    // However deep the browsing went, back closes the sheet.
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byType(FolderPickerSheet), findsNothing);
+    expect(find.text('add'), findsOneWidget);
+  });
+
+  testWidgets('closes with the close button', (tester) async {
+    await openSheet(tester);
+
+    await tester.tap(find.byKey(const Key('close-folder-picker')));
+    await tester.pumpAndSettle();
+    expect(find.byType(FolderPickerSheet), findsNothing);
   });
 
   testWidgets('jumps to a typed absolute path', (tester) async {
-    await pumpPicker(tester);
+    await openSheet(tester);
 
     await tester.tap(find.byKey(const Key('enter-path')));
     await tester.pumpAndSettle();

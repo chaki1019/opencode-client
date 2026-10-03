@@ -8,6 +8,7 @@ import '../../core/models/project.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_widgets.dart';
+import 'folder_picker_sheet.dart';
 import 'project_providers.dart';
 
 class ProjectsScreen extends ConsumerWidget {
@@ -133,7 +134,7 @@ class ProjectsScreen extends ConsumerWidget {
   }
 
   Future<void> _addProject(BuildContext context, WidgetRef ref) async {
-    final project = await context.push<Project>('/projects/add');
+    final project = await FolderPickerSheet.show(context);
     if (project == null || !context.mounted) return;
     ref.invalidate(projectsProvider);
     context.push(
