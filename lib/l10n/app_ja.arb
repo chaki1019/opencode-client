@@ -252,5 +252,13 @@
   "restorePurchases": "購入を復元",
   "restoreStarted": "購入履歴を確認しています…",
   "purchaseFailed": "購入を完了できませんでした。",
-  "adPrivacy": "広告のプライバシー設定"
+  "adPrivacy": "広告のプライバシー設定",
+  "settingsSupport": "サポートとプライバシー",
+  "contactUs": "お問い合わせ",
+  "contactSubject": "OpenCode Mobile へのお問い合わせ",
+  "contactBodyPrompt": "（お問い合わせ内容や、起きた問題をここにお書きください）",
+  "privacyPolicy": "プライバシーポリシー",
+  "crashReports": "クラッシュレポートを送信",
+  "crashReportsHelp": "アプリが異常終了したとき、修正のためにエラーの情報を送ります（チャットの内容は送りません）",
+  "linkOpenFailed": "開けませんでした:"
 }

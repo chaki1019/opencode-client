@@ -9,6 +9,7 @@ class AppSettings {
     this.themeMode = ThemeMode.system,
     this.languageCode,
     this.haptics = true,
+    this.crashReports = true,
   });
 
   final ThemeMode themeMode;
@@ -19,16 +20,21 @@ class AppSettings {
   /// Whether the app gives haptic feedback at key moments.
   final bool haptics;
 
+  /// Whether crash reports may be sent.
+  final bool crashReports;
+
   Locale? get locale => languageCode == null ? null : Locale(languageCode!);
 
   AppSettings copyWith({
     ThemeMode? themeMode,
     String? Function()? language,
     bool? haptics,
+    bool? crashReports,
   }) => AppSettings(
     themeMode: themeMode ?? this.themeMode,
     languageCode: language == null ? languageCode : language(),
     haptics: haptics ?? this.haptics,
+    crashReports: crashReports ?? this.crashReports,
   );
 }
 
@@ -52,6 +58,7 @@ class SettingsStore {
           ThemeMode.system,
       languageCode: json['language'] as String?,
       haptics: json['haptics'] as bool? ?? true,
+      crashReports: json['crashReports'] as bool? ?? true,
     );
   }
 
@@ -61,6 +68,7 @@ class SettingsStore {
       'theme': settings.themeMode.name,
       'language': ?settings.languageCode,
       'haptics': settings.haptics,
+      'crashReports': settings.crashReports,
     }),
   );
 }

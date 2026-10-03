@@ -58,6 +58,12 @@ android {
         if (firebase.values.all { !it?.toString().isNullOrEmpty() }) {
             firebase.forEach { (name, value) -> resValue("string", name, value.toString()) }
         }
+
+        // Crashlytics reports Dart errors without its Gradle plugin, which
+        // would only add R8 mapping uploads for Java/Kotlin stack traces.
+        // Without the plugin there is no build ID, so tell Crashlytics not
+        // to insist on one (see docs/support.md).
+        resValue("bool", "com.crashlytics.RequireBuildId", "false")
     }
 
     buildTypes {

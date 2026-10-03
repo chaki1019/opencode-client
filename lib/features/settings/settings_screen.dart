@@ -5,12 +5,13 @@ import '../../app/layout.dart';
 import '../../l10n/l10n.dart';
 import '../ads/ads_settings_section.dart';
 import 'settings_providers.dart';
+import 'support_section.dart';
 
 /// Language names are shown in their own language, so they read the same
 /// whichever language the app is in.
 const _languages = {'ja': '日本語', 'en': 'English'};
 
-/// App-wide settings: appearance, language, haptics and ads.
+/// App-wide settings: appearance, language, haptics, ads and support.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -82,6 +83,7 @@ class SettingsScreen extends ConsumerWidget {
             subtitle: Text(l10n.settingsHapticsHelp),
           ),
           AdsSettingsSection(header: _SectionHeader.new),
+          SupportSection(header: _SectionHeader.new),
         ],
       ),
     );

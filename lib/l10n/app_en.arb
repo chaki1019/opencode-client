@@ -495,5 +495,13 @@
   "restorePurchases": "Restore purchase",
   "restoreStarted": "Checking your purchases…",
   "purchaseFailed": "The purchase didn't go through.",
-  "adPrivacy": "Ad privacy choices"
+  "adPrivacy": "Ad privacy choices",
+  "settingsSupport": "Support and privacy",
+  "contactUs": "Contact us",
+  "contactSubject": "OpenCode Mobile feedback",
+  "contactBodyPrompt": "(Please write your question or the problem you ran into here.)",
+  "privacyPolicy": "Privacy policy",
+  "crashReports": "Send crash reports",
+  "crashReportsHelp": "When the app crashes, send the error details (no chat content) to help fix it",
+  "linkOpenFailed": "Couldn't open this:"
 }

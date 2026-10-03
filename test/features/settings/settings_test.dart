@@ -3,21 +3,39 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:opencode_mobile/app/router.dart';
+import 'package:opencode_mobile/core/crash/crash_reporter.dart';
 import 'package:opencode_mobile/core/storage/settings_store.dart';
+import 'package:opencode_mobile/core/support/support_config.dart';
+import 'package:opencode_mobile/features/settings/settings_providers.dart';
+import 'package:opencode_mobile/features/settings/support_section.dart';
 import 'package:opencode_mobile/main.dart';
 
 import '../../support/fake_discovery.dart';
 
+class _FakeCrashReporter implements CrashReporter {
+  final calls = <bool>[];
+
+  @override
+  bool get available => true;
+
+  @override
+  Future<void> setEnabled(bool on) async => calls.add(on);
+}
+
 void main() {
   setUp(() => FlutterSecureStorage.setMockInitialValues({}));
 
-  Future<ProviderContainer> pumpSettings(WidgetTester tester) async {
+  Future<ProviderContainer> pumpSettings(
+    WidgetTester tester, {
+    List<Override> overrides = const [],
+  }) async {
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     tester.platformDispatcher.localesTestValue = const [Locale('ja')];
     await tester.pumpWidget(
       ProviderScope(
-        overrides: noDiscoveryOverrides,
+        overrides: [...noDiscoveryOverrides, ...overrides],
         child: const OpenCodeMobileApp(),
       ),
     );
@@ -72,6 +90,45 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
     expect((await SettingsStore().load()).haptics, isFalse);
+  });
+
+  testWidgets('support rows are hidden when the build has none', (
+    tester,
+  ) async {
+    await pumpSettings(tester);
+    expect(find.text('サポートとプライバシー'), findsNothing);
+  });
+
+  testWidgets('support rows show and crash reports can be turned off', (
+    tester,
+  ) async {
+    final reporter = _FakeCrashReporter();
+    await pumpSettings(
+      tester,
+      overrides: [
+        crashReporterProvider.overrideWithValue(reporter),
+        supportConfigProvider.overrideWithValue(
+          const SupportConfig(
+            email: 'help@example.com',
+            siteUrl: 'https://example.pages.dev',
+          ),
+        ),
+      ],
+    );
+    final toggle = find.byKey(const Key('crash-reports'));
+    await tester.scrollUntilVisible(toggle, 100);
+    await tester.ensureVisible(toggle);
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('contact')), findsOneWidget);
+    expect(find.text('help@example.com'), findsOneWidget);
+    expect(find.byKey(const Key('privacy-policy')), findsOneWidget);
+    expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
+
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
+    expect(reporter.calls, [false]);
+    expect((await SettingsStore().load()).crashReports, isFalse);
   });
 
   testWidgets('stored settings are applied on start', (tester) async {
