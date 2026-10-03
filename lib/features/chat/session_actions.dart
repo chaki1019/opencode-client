@@ -6,6 +6,7 @@ import '../../core/api/api_errors.dart';
 import '../../core/models/session.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
+import '../home/pane_selection.dart';
 import 'composer_providers.dart';
 
 /// Runs [action] and shows [failure] with the server's reason if it throws.
@@ -55,14 +56,13 @@ Future<void> forkSession(
   final client = ref.read(connectionProvider)?.client;
   if (client == null) return;
   final router = GoRouter.of(context);
+  final panes = ref.read(paneSelectionProvider.notifier);
   final fork = await _guard(
     context,
     context.l10n.forkFailed,
     () => client.forkSession(session.id, beforeMessageId: beforeMessageId),
   );
-  if (fork != null) {
-    router.push('/sessions/${Uri.encodeComponent(fork.id)}', extra: fork);
-  }
+  if (fork != null) openSession(router, panes, fork);
 }
 
 Future<void> compactSession(

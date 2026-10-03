@@ -465,5 +465,6 @@
   "settingsLanguage": "Language",
   "settingsFollowSystem": "Use system setting",
   "themeLight": "Light",
-  "themeDark": "Dark"
+  "themeDark": "Dark",
+  "chatPaneEmpty": "Pick a session to show its chat here"
 }

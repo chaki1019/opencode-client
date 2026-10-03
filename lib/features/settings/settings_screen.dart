@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../app/layout.dart';
 import '../../l10n/l10n.dart';
 import 'settings_providers.dart';
 
@@ -20,7 +21,12 @@ class SettingsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsTitle)),
       body: ListView(
-        padding: const EdgeInsets.only(bottom: 24),
+        padding: EdgeInsets.fromLTRB(
+          readableSide(context),
+          0,
+          readableSide(context),
+          24,
+        ),
         children: [
           _SectionHeader(l10n.settingsAppearance),
           RadioGroup<ThemeMode>(

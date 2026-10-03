@@ -230,5 +230,6 @@
   "settingsLanguage": "言語",
   "settingsFollowSystem": "システム設定に従う",
   "themeLight": "ライト",
-  "themeDark": "ダーク"
+  "themeDark": "ダーク",
+  "chatPaneEmpty": "セッションを選ぶと\nここにチャットが表示されます"
 }

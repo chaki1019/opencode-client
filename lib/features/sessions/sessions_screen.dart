@@ -11,23 +11,30 @@ import '../../core/api/api_errors.dart';
 import '../../l10n/l10n.dart';
 import '../chat/session_actions.dart';
 import '../connection/connection_providers.dart';
+import '../home/pane_selection.dart';
 import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
 import '../projects/project_tools.dart';
 import 'session_providers.dart';
 
 class SessionsScreen extends ConsumerWidget {
-  const SessionsScreen({super.key, required this.project});
+  const SessionsScreen({super.key, required this.project, this.pane = false});
 
   final Project project;
+
+  /// Shown as the left of two panes rather than as its own page: back
+  /// returns the pane to the project list, and the open session is marked.
+  final bool pane;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final provider = sessionListProvider(project);
     final sessions = ref.watch(provider);
+    final panes = ref.read(paneSelectionProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
+        leading: pane ? BackButton(onPressed: panes.showProjects) : null,
         title: Text(project.displayName),
         bottom: const LiveStatusBanner(),
         actions: [ProjectToolsButton(project: project)],
@@ -62,6 +69,7 @@ class SessionsScreen extends ConsumerWidget {
                         ? _SessionTile(
                             project: project,
                             session: paged.items[index],
+                            pane: pane,
                           )
                         : _PagingFooter(
                             paged: paged,
@@ -86,12 +94,10 @@ class SessionsScreen extends ConsumerWidget {
     final messenger = ScaffoldMessenger.of(context);
     final l10n = context.l10n;
     final router = GoRouter.of(context);
+    final panes = ref.read(paneSelectionProvider.notifier);
     try {
       final session = await client.createSession(directory: project.directory);
-      router.push(
-        '/sessions/${Uri.encodeComponent(session.id)}',
-        extra: session,
-      );
+      openSession(router, panes, session);
     } on OpenCodeApiException catch (e) {
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.sessionCreateFailed(e))),
@@ -103,19 +109,31 @@ class SessionsScreen extends ConsumerWidget {
 /// A session row. Swipe right to rename, left to delete; long-press offers
 /// both.
 class _SessionTile extends ConsumerWidget {
-  const _SessionTile({required this.project, required this.session});
+  const _SessionTile({
+    required this.project,
+    required this.session,
+    required this.pane,
+  });
 
   final Project project;
   final Session session;
+  final bool pane;
 
   Future<void> _rename(BuildContext context, WidgetRef ref) async {
     final list = ref.read(sessionListProvider(project).notifier);
+    final panes = ref.read(paneSelectionProvider.notifier);
     final updated = await renameSession(context, ref, session);
-    if (updated != null) list.replace(updated);
+    if (updated == null) return;
+    list.replace(updated);
+    panes.updated(updated);
   }
 
-  Future<bool> _delete(BuildContext context, WidgetRef ref) =>
-      deleteSession(context, ref, session);
+  Future<bool> _delete(BuildContext context, WidgetRef ref) async {
+    final panes = ref.read(paneSelectionProvider.notifier);
+    final deleted = await deleteSession(context, ref, session);
+    if (deleted) panes.removed(session.id);
+    return deleted;
+  }
 
   Future<void> _menu(BuildContext context, WidgetRef ref) async {
     final action = await showModalBottomSheet<_TileAction>(
@@ -173,6 +191,10 @@ class _SessionTile extends ConsumerWidget {
     final theme = Theme.of(context);
     final style = theme.textTheme.labelSmall;
     final scheme = theme.colorScheme;
+    final open =
+        pane &&
+        ref.watch(paneSelectionProvider.select((s) => s.session?.id)) ==
+            session.id;
     return Dismissible(
       key: ValueKey(session.id),
       background: _SwipeBackground(
@@ -200,6 +222,9 @@ class _SessionTile extends ConsumerWidget {
       onDismissed: (_) =>
           ref.read(sessionListProvider(project).notifier).remove(session.id),
       child: ListTile(
+        selected: open,
+        selectedTileColor: scheme.primaryContainer,
+        selectedColor: scheme.onPrimaryContainer,
         title: Text(
           session.displayTitle ?? context.l10n.untitledSession,
           maxLines: 2,
@@ -223,9 +248,10 @@ class _SessionTile extends ConsumerWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        onTap: () => context.push(
-          '/sessions/${Uri.encodeComponent(session.id)}',
-          extra: session,
+        onTap: () => openSession(
+          GoRouter.of(context),
+          ref.read(paneSelectionProvider.notifier),
+          session,
         ),
         onLongPress: () => _menu(context, ref),
       ),

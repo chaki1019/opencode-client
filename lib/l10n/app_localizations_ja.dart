@@ -835,4 +835,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get themeDark => 'ダーク';
+
+  @override
+  String get chatPaneEmpty => 'セッションを選ぶと\nここにチャットが表示されます';
 }
