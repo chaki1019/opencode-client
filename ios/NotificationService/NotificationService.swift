@@ -2,7 +2,7 @@ import CryptoKit
 import UserNotifications
 
 /// Rewrites the relay's placeholder alert ("OpenCode") with the real text.
-/// The text arrives encrypted (see push/plugin/opencode-push.js); the key was
+/// The text arrives encrypted (see push/plugin/opencode-mobile-push.js); the key was
 /// put in the shared keychain by the app when notifications were turned on.
 class NotificationService: UNNotificationServiceExtension {
   private var contentHandler: ((UNNotificationContent) -> Void)?

@@ -211,7 +211,7 @@
   "pushNoToken": "端末のプッシュトークンを取得できませんでした。時間をおいて試してください。",
   "pushFailed": "通知の設定を変更できませんでした: {error}",
   "pushSetupTitle": "PC/Mac の OpenCode の設定",
-  "pushSetupSteps": "1. ~/.config/opencode/opencode.json に下の項目を追加\n2. OpenCode を再起動（プラグイン opencode-push は npm から自動で入ります）",
+  "pushSetupSteps": "1. ~/.config/opencode/opencode.json に下の項目を追加\n2. OpenCode を再起動（プラグイン opencode-mobile-push は npm から自動で入ります）",
   "pushSendTest": "テスト通知を送る",
   "pushTestTitle": "OpenCode からのテスト通知",
   "pushTestSent": "送信しました。数秒で届きます。",

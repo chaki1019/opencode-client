@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart' show sha256;
 import 'package:cryptography/cryptography.dart';
 
-/// Keys derived from a pairing key, matching push/plugin/opencode-push.js.
+/// Keys derived from a pairing key, matching push/plugin/opencode-mobile-push.js.
 /// [auth] is what the relay sees; [encKey] never leaves the phone and the
 /// computer.
 class PushKeys {

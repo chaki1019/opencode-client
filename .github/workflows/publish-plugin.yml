@@ -1,0 +1,31 @@
+# Publishes push/plugin to npm as opencode-mobile-push.
+#
+# Uses npm Trusted Publishing (OIDC), so no npm token is stored anywhere.
+# One-time setup on npmjs.com: package settings → Trusted Publisher →
+# GitHub Actions, repository chaki1019/opencode-client, workflow
+# publish-plugin.yml. Bump "version" in push/plugin/package.json first.
+name: Publish plugin
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: push/plugin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      # Trusted Publishing needs npm 11.5.1 or later.
+      - run: npm install -g npm@latest
+      - run: npm test
+      - run: npm publish --access public
