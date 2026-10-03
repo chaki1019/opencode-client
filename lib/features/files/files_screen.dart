@@ -72,86 +72,80 @@ class _FilesScreenState extends ConsumerState<FilesScreen> {
         : folderProvider((_directory, _path));
     final entries = ref.watch(provider);
 
-    return PopScope(
-      canPop: _path.isEmpty || searching,
-      onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _up();
-      },
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        appBar: toolSheetAppBar(
-          title: context.l10n.files,
-          actions: [
-            IconButton(
-              tooltip: context.l10n.reload,
-              icon: const Icon(Icons.refresh),
-              onPressed: () => ref.invalidate(provider),
-            ),
-          ],
-        ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-              child: TextField(
-                key: const Key('file-search'),
-                decoration: InputDecoration(
-                  prefixIcon: Icon(Icons.search),
-                  hintText: context.l10n.searchFiles,
-                  isDense: true,
-                  border: OutlineInputBorder(),
-                ),
-                onChanged: _search,
+    return Scaffold(
+      backgroundColor: Colors.transparent,
+      appBar: toolSheetAppBar(
+        title: context.l10n.files,
+        actions: [
+          IconButton(
+            tooltip: context.l10n.reload,
+            icon: const Icon(Icons.refresh),
+            onPressed: () => ref.invalidate(provider),
+          ),
+        ],
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            child: TextField(
+              key: const Key('file-search'),
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                hintText: context.l10n.searchFiles,
+                isDense: true,
+                border: OutlineInputBorder(),
               ),
+              onChanged: _search,
             ),
-            if (!searching && _path.isNotEmpty)
-              ListTile(
-                dense: true,
-                leading: const Icon(Icons.arrow_upward),
-                title: Text(_path, overflow: TextOverflow.ellipsis),
-                onTap: _up,
-              ),
-            Expanded(
-              child: entries.when(
-                data: (list) => list.isEmpty
-                    ? Center(
-                        child: Text(
-                          searching
-                              ? context.l10n.notFound
-                              : context.l10n.emptyFolder,
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: list.length,
-                        itemBuilder: (context, index) {
-                          final entry = list[index];
-                          return ListTile(
-                            leading: Icon(
-                              entry.isDirectory
-                                  ? Icons.folder_outlined
-                                  : Icons.description_outlined,
-                            ),
-                            title: Text(entry.name),
-                            subtitle: searching
-                                ? Text(
-                                    entry.path,
-                                    overflow: TextOverflow.ellipsis,
-                                  )
-                                : null,
-                            onTap: () => _open(entry),
-                          );
-                        },
+          ),
+          if (!searching && _path.isNotEmpty)
+            ListTile(
+              dense: true,
+              leading: const Icon(Icons.arrow_upward),
+              title: Text(_path, overflow: TextOverflow.ellipsis),
+              onTap: _up,
+            ),
+          Expanded(
+            child: entries.when(
+              data: (list) => list.isEmpty
+                  ? Center(
+                      child: Text(
+                        searching
+                            ? context.l10n.notFound
+                            : context.l10n.emptyFolder,
                       ),
-                loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, _) => Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Text(context.l10n.filesLoadFailed(e)),
-                ),
+                    )
+                  : ListView.builder(
+                      itemCount: list.length,
+                      itemBuilder: (context, index) {
+                        final entry = list[index];
+                        return ListTile(
+                          leading: Icon(
+                            entry.isDirectory
+                                ? Icons.folder_outlined
+                                : Icons.description_outlined,
+                          ),
+                          title: Text(entry.name),
+                          subtitle: searching
+                              ? Text(
+                                  entry.path,
+                                  overflow: TextOverflow.ellipsis,
+                                )
+                              : null,
+                          onTap: () => _open(entry),
+                        );
+                      },
+                    ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(context.l10n.filesLoadFailed(e)),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
