@@ -1,0 +1,32 @@
+{
+  "name": "opencode-push",
+  "version": "0.1.0",
+  "description": "OpenCode plugin that sends end-to-end encrypted push notifications to your phone when the agent finishes or needs you.",
+  "type": "module",
+  "main": "opencode-push.js",
+  "exports": "./opencode-push.js",
+  "files": [
+    "opencode-push.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "push-notifications"
+  ],
+  "author": "chaki1019",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chaki1019/opencode-client.git",
+    "directory": "push/plugin"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test opencode-push.test.js",
+    "prepublishOnly": "node --test opencode-push.test.js"
+  }
+}

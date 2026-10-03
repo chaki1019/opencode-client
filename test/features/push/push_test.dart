@@ -212,7 +212,7 @@ void main() {
     expect(key, hasLength(43));
     expect(entry['plugins'], [
       {
-        'package': './plugins/opencode-push.js',
+        'package': 'opencode-push',
         'options': {'relay': 'https://relay.test', 'key': key},
       },
     ]);

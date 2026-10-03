@@ -4,18 +4,9 @@ import { generateKeyPairSync } from "node:crypto";
 import { test } from "node:test";
 
 import { fcmMessage, handle, keyId, sendFcm } from "../src/index.js";
+import { memoryD1, rows } from "./d1.js";
 
 const KEY = "a".repeat(43);
-
-function memoryKv() {
-  const store = new Map();
-  return {
-    store,
-    get: async (k) => store.get(k) ?? null,
-    put: async (k, v) => void store.set(k, v),
-    delete: async (k) => void store.delete(k),
-  };
-}
 
 const req = (method, path, body, headers = {}) =>
   new Request(`https://relay.test${path}`, {
@@ -28,7 +19,7 @@ const notifyReq = (body, key = KEY) =>
   req("POST", "/v1/notify", body, { authorization: `Bearer ${key}` });
 
 test("register, notify and unregister", async () => {
-  const env = { DEVICES: memoryKv() };
+  const env = { DB: memoryD1() };
   const sent = [];
   const deps = {
     sendFcm: async (_env, device, data) => {
@@ -55,14 +46,14 @@ test("register, notify and unregister", async () => {
   assert.deepEqual(sent[0].data, { kind: "completed", keyId: await keyId(KEY), sessionID: "ses_1", enc: "abc" });
 
   // The raw key is never stored.
-  assert.ok(![...env.DEVICES.store.keys()].some((k) => k.includes(KEY)));
+  assert.deepEqual(rows(env.DB).map((r) => r.key_id), [await keyId(KEY)]);
 
   await handle(req("DELETE", "/v1/devices", { key: KEY, token: "tok1" }), env);
-  assert.equal(env.DEVICES.store.size, 0);
+  assert.equal(rows(env.DB).length, 0);
 });
 
 test("oversized ciphertext is refused", async () => {
-  const env = { DEVICES: memoryKv() };
+  const env = { DB: memoryD1() };
   await handle(req("POST", "/v1/devices", { key: KEY, token: "t" }), env);
   const res = await handle(notifyReq({ kind: "completed", sessionID: "s", enc: "x".repeat(3001) }), env, {
     sendFcm: async () => "ok",
@@ -85,7 +76,7 @@ test("iOS gets a mutable placeholder alert, Android data only", () => {
 });
 
 test("notify rejects short keys and ignores unknown ones", async () => {
-  const env = { DEVICES: memoryKv() };
+  const env = { DB: memoryD1() };
   let res = await handle(notifyReq({ kind: "completed" }, "short"), env);
   assert.equal(res.status, 401);
   res = await handle(notifyReq({ kind: "completed" }, "b".repeat(43)), env);
@@ -94,17 +85,95 @@ test("notify rejects short keys and ignores unknown ones", async () => {
 });
 
 test("unregistered tokens are dropped after a send", async () => {
-  const env = { DEVICES: memoryKv() };
+  const env = { DB: memoryD1() };
   await handle(req("POST", "/v1/devices", { key: KEY, token: "old" }), env);
   await handle(req("POST", "/v1/devices", { key: KEY, token: "new" }), env);
   const deps = { sendFcm: async (_e, device) => (device.token === "old" ? "unregistered" : "ok") };
   await handle(notifyReq({ kind: "question", title: "t" }), env, deps);
-  const stored = JSON.parse(env.DEVICES.store.get(`key:${await keyId(KEY)}`));
-  assert.deepEqual(stored.map((d) => d.token), ["new"]);
+  assert.deepEqual(rows(env.DB).map((d) => d.token), ["new"]);
+});
+
+test("only the newest devices per key are kept", async () => {
+  const env = { DB: memoryD1() };
+  for (let i = 0; i < 12; i++) {
+    await handle(req("POST", "/v1/devices", { key: KEY, token: `t${i}` }), env);
+    await new Promise((r) => setTimeout(r, 2));
+  }
+  // Re-registering moves a device back to the front.
+  await handle(req("POST", "/v1/devices", { key: KEY, token: "t3" }), env);
+  const tokens = rows(env.DB).map((d) => d.token);
+  assert.equal(tokens.length, 10);
+  assert.equal(tokens[0], "t3");
+  assert.ok(!tokens.includes("t0") && !tokens.includes("t1"));
+});
+
+test("rate limits answer 429 per address and per key", async () => {
+  const limiter = (max) => {
+    const counts = new Map();
+    return {
+      seen: counts,
+      limit: async ({ key }) => {
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+        return { success: counts.get(key) <= max };
+      },
+    };
+  };
+  const env = { DB: memoryD1(), IP_LIMIT: limiter(100), KEY_LIMIT: limiter(2) };
+  const deps = { sendFcm: async () => "ok" };
+  const from = (ip) => ({ "cf-connecting-ip": ip });
+  await handle(req("POST", "/v1/devices", { key: KEY, token: "t" }, from("1.1.1.1")), env);
+  const statuses = [];
+  for (let i = 0; i < 3; i++) {
+    const res = await handle(notifyReq({ kind: "completed", sessionID: "s", enc: "e" }), env, deps);
+    statuses.push(res.status);
+    if (res.status === 429) assert.equal(res.headers.get("retry-after"), "60");
+  }
+  assert.deepEqual(statuses, [202, 202, 429]);
+  // The relay limits by key hash, never by the key itself.
+  assert.ok(env.KEY_LIMIT.seen.has(await keyId(KEY)));
+  assert.equal(env.IP_LIMIT.seen.get("1.1.1.1"), 1);
+
+  env.IP_LIMIT = limiter(0);
+  const res = await handle(req("POST", "/v1/devices", { key: KEY, token: "t" }), env);
+  assert.equal(res.status, 429);
+});
+
+test("devices registered before D1 move over on first notify", async () => {
+  const kv = new Map();
+  const env = {
+    DB: memoryD1(),
+    DEVICES: {
+      get: async (k) => kv.get(k) ?? null,
+      delete: async (k) => void kv.delete(k),
+    },
+  };
+  const id = await keyId(KEY);
+  kv.set(`key:${id}`, JSON.stringify([{ token: "a", platform: "ios" }, { token: "b", platform: "android" }]));
+  const sent = [];
+  const res = await handle(notifyReq({ kind: "completed", sessionID: "s", enc: "e" }), env, {
+    sendFcm: async (_e, device) => (sent.push(device.token), "ok"),
+  });
+  assert.deepEqual(await res.json(), { ok: true, delivered: 2 });
+  assert.deepEqual(sent, ["a", "b"]);
+  assert.equal(kv.size, 0);
+  assert.deepEqual(rows(env.DB).map((d) => [d.token, d.platform]), [["a", "ios"], ["b", "android"]]);
+
+  // Unregistering a device that is still only in KV removes it for good.
+  kv.set(`key:${id}`, JSON.stringify([{ token: "c", platform: "ios" }]));
+  const other = { ...env, DB: memoryD1() };
+  await handle(req("DELETE", "/v1/devices", { key: KEY, token: "c" }), other);
+  assert.equal(rows(other.DB).length, 0);
+  assert.equal(kv.size, 0);
+
+  // Registering a new device keeps the ones still in KV.
+  kv.set(`key:${id}`, JSON.stringify([{ token: "d", platform: "ios" }]));
+  const third = { ...env, DB: memoryD1() };
+  await handle(req("POST", "/v1/devices", { key: KEY, token: "e" }), third);
+  assert.deepEqual(rows(third.DB).map((d) => d.token).sort(), ["d", "e"]);
 });
 
 test("register validates input", async () => {
-  const env = { DEVICES: memoryKv() };
+  const env = { DB: memoryD1() };
   assert.equal((await handle(req("POST", "/v1/devices", { key: "short", token: "t" }), env)).status, 400);
   assert.equal((await handle(req("POST", "/v1/devices", { key: KEY }), env)).status, 400);
   assert.equal((await handle(req("GET", "/nope"), env)).status, 404);
