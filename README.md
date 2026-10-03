@@ -5,6 +5,11 @@
 - 対象サーバー: **OpenCode v2 HttpAPI (`/api/...`) のみ**。`/api/health` か `/api/info` を持たない古いサーバーには接続しません。
 - 認証: OpenCode サーバーの HTTP Basic 認証（`OPENCODE_SERVER_USERNAME` / `OPENCODE_SERVER_PASSWORD`）。パスワードは Keychain / Keystore に保存します。
 
+> [!NOTE]
+> このアプリは OpenCode チームが作ったものではなく、OpenCode とは一切関係のない非公式クライアントです。
+> This project is not built by the OpenCode team and is not affiliated with OpenCode in any way.
+> OpenCode のロゴは [OpenCode Brand guidelines](https://opencode.ai/brand) で公開されている素材をもとにしています。
+
 ## 開発
 
 ```bash

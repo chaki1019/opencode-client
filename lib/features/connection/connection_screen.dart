@@ -8,6 +8,7 @@ import '../../core/models/server_config.dart';
 import '../../l10n/l10n.dart';
 import '../push/push_providers.dart';
 import 'connection_providers.dart';
+import 'opencode_logo.dart';
 
 class ConnectionScreen extends ConsumerStatefulWidget {
   const ConnectionScreen({super.key});
@@ -477,25 +478,7 @@ class _Brand extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          width: 48,
-          height: 48,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: scheme.primaryContainer,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: scheme.primary.withValues(alpha: 0.35)),
-          ),
-          child: Text(
-            '>_',
-            style: TextStyle(
-              fontFamily: AppFonts.mono,
-              fontWeight: FontWeight.w600,
-              fontSize: 18,
-              color: scheme.primary,
-            ),
-          ),
-        ),
+        const OpenCodeLogo(height: 44),
         const SizedBox(height: 20),
         Text(
           'OpenCode Mobile',
