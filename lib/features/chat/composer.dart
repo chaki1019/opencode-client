@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,6 +8,8 @@ import '../../core/models/attachment.dart';
 import '../../core/models/catalog.dart';
 import '../../core/models/session.dart';
 import '../../l10n/l10n.dart';
+import '../ads/ad_widgets.dart';
+import '../ads/ads_providers.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
 import 'agent_labels.dart';
@@ -44,11 +48,14 @@ class _ComposerState extends ConsumerState<Composer> {
     final text = _controller.text.trim();
     final files = _files;
     if (text.isEmpty && files.isEmpty) return;
+    if (!await admitMessage(context, ref) || !mounted) return;
     _controller.clear();
     setState(() => _files = const []);
+    final quota = ref.read(messageQuotaProvider.notifier);
     final ok = await ref
         .read(pendingPromptsProvider(widget.session.id).notifier)
         .send(text, files: files);
+    if (ok) unawaited(quota.recordSent());
     if (!ok && mounted) {
       // Rejected: put the text and attachments back so nothing is lost.
       if (_controller.text.isEmpty) _controller.text = text;

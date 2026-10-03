@@ -13,6 +13,12 @@ val pushEnv: Map<*, *> = rootProject.file("../push.env.json").let {
     if (it.exists()) JsonSlurper().parse(it) as Map<*, *> else emptyMap<Any, Any>()
 }
 
+// AdMob app ID (see docs/ads.md). Without ads.env.json the build uses
+// Google's sample app ID, which only serves test ads.
+val adsEnv: Map<*, *> = rootProject.file("../ads.env.json").let {
+    if (it.exists()) JsonSlurper().parse(it) as Map<*, *> else emptyMap<Any, Any>()
+}
+
 android {
     namespace = "dev.opencodemobile.opencode_mobile"
     compileSdk = flutter.compileSdkVersion
@@ -38,6 +44,10 @@ android {
         // flag during build.
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        manifestPlaceholders["admobAppId"] =
+            adsEnv["ADMOB_ANDROID_APP_ID"]?.toString()?.takeIf { it.isNotEmpty() }
+                ?: "ca-app-pub-3940256099942544~3347511713"
 
         val firebase = mapOf(
             "google_app_id" to pushEnv["FIREBASE_ANDROID_APP_ID"],

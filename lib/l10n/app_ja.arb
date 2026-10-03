@@ -230,5 +230,19 @@
   "settingsLanguage": "言語",
   "settingsFollowSystem": "システム設定に従う",
   "themeLight": "ライト",
-  "themeDark": "ダーク"
+  "themeDark": "ダーク",
+  "rewardTitle": "今日の無料送信回数を使い切りました",
+  "rewardBody": "広告なしで送れるのは1日{free}回までです。短い広告を見ると、今日はさらに{more}回送れます。",
+  "rewardWatch": "広告を見る",
+  "rewardSkipped": "広告を最後まで見ると送信できます。",
+  "settingsAds": "広告",
+  "adsFreeLeft": "今日の広告なし送信",
+  "adsFreeLeftValue": "残り{left}回",
+  "removeAds": "広告を外す",
+  "removeAdsSubtitle": "買い切りです。バナーと送信前の広告が出なくなります。",
+  "removeAdsDone": "広告を外しました。ご支援ありがとうございます！",
+  "restorePurchases": "購入を復元",
+  "restoreStarted": "購入履歴を確認しています…",
+  "purchaseFailed": "購入を完了できませんでした。",
+  "adPrivacy": "広告のプライバシー設定"
 }

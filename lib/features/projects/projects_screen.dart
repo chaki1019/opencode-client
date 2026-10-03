@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../app/theme.dart';
 import '../../core/models/project.dart';
 import '../../l10n/l10n.dart';
+import '../ads/ad_widgets.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_widgets.dart';
 import 'app_drawer.dart';
@@ -40,6 +41,7 @@ class ProjectsScreen extends ConsumerWidget {
         // Only this root screen has the drawer, so its edge swipe never
         // competes with the iOS swipe back on the screens above it.
         drawer: const AppDrawer(),
+        bottomNavigationBar: const AdBanner(),
         appBar: AppBar(
           // The connect screen sits underneath, so AppBar would otherwise
           // add a back button that the PopScope below swallows.

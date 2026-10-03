@@ -9,6 +9,7 @@ import '../../core/models/session.dart';
 import '../../core/paging.dart';
 import '../../core/api/api_errors.dart';
 import '../../l10n/l10n.dart';
+import '../ads/ad_widgets.dart';
 import '../chat/session_actions.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
@@ -32,6 +33,7 @@ class SessionsScreen extends ConsumerWidget {
         bottom: const LiveStatusBanner(),
         actions: [ProjectToolsButton(project: project)],
       ),
+      bottomNavigationBar: const AdBanner(),
       floatingActionButton: FloatingActionButton(
         key: const Key('new-session'),
         // The terminal list opens over this page with a FAB of its own;

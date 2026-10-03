@@ -835,4 +835,50 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get themeDark => 'ダーク';
+
+  @override
+  String get rewardTitle => '今日の無料送信回数を使い切りました';
+
+  @override
+  String rewardBody(int free, int more) {
+    return '広告なしで送れるのは1日$free回までです。短い広告を見ると、今日はさらに$more回送れます。';
+  }
+
+  @override
+  String get rewardWatch => '広告を見る';
+
+  @override
+  String get rewardSkipped => '広告を最後まで見ると送信できます。';
+
+  @override
+  String get settingsAds => '広告';
+
+  @override
+  String get adsFreeLeft => '今日の広告なし送信';
+
+  @override
+  String adsFreeLeftValue(int left) {
+    return '残り$left回';
+  }
+
+  @override
+  String get removeAds => '広告を外す';
+
+  @override
+  String get removeAdsSubtitle => '買い切りです。バナーと送信前の広告が出なくなります。';
+
+  @override
+  String get removeAdsDone => '広告を外しました。ご支援ありがとうございます！';
+
+  @override
+  String get restorePurchases => '購入を復元';
+
+  @override
+  String get restoreStarted => '購入履歴を確認しています…';
+
+  @override
+  String get purchaseFailed => '購入を完了できませんでした。';
+
+  @override
+  String get adPrivacy => '広告のプライバシー設定';
 }
