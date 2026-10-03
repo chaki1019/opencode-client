@@ -284,10 +284,22 @@ abstract class AppLocalizations {
   /// **'Searching the network for OpenCode servers…'**
   String get discoveringServers;
 
+  /// No description provided for @discoveryNoneFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No servers found'**
+  String get discoveryNoneFound;
+
+  /// No description provided for @rescanNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Search again'**
+  String get rescanNetwork;
+
   /// No description provided for @discoveryHint.
   ///
   /// In en, this message translates to:
-  /// **'Servers started with opencode serve --mdns show up here'**
+  /// **'Looks for servers on port 4096 that accept connections from the network (opencode serve --hostname 0.0.0.0), and for servers announced over mDNS'**
   String get discoveryHint;
 
   /// No description provided for @reconnecting.

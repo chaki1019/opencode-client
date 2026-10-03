@@ -285,8 +285,8 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
 
 enum _ServerAction { edit, delete }
 
-/// Servers announced over mDNS that are not saved yet. Tapping one fills
-/// the form.
+/// Servers found on the network (mDNS or a LAN scan) that are not saved
+/// yet. Tapping one fills the form.
 class _DiscoveredServers extends ConsumerWidget {
   const _DiscoveredServers({required this.saved, required this.onPick});
 
@@ -297,33 +297,47 @@ class _DiscoveredServers extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final muted = theme.colorScheme.onSurfaceVariant;
+    final snapshot = ref.watch(discoveredServersProvider).value;
+    final scanning = snapshot?.scanning ?? true;
     final savedUrls = {for (final s in saved) s.baseUrl};
     final found = [
-      for (final server in ref.watch(discoveredServersProvider).value ?? [])
+      for (final server in snapshot?.servers ?? const <DiscoveredServer>[])
         if (!savedUrls.contains(server.baseUrl)) server,
     ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          context.l10n.discoveredServers,
-          style: theme.textTheme.labelLarge?.copyWith(color: muted),
+        Row(
+          children: [
+            Expanded(
+              child: Text(
+                context.l10n.discoveredServers,
+                style: theme.textTheme.labelLarge?.copyWith(color: muted),
+              ),
+            ),
+            if (scanning)
+              const Padding(
+                padding: EdgeInsets.all(14),
+                child: SizedBox.square(
+                  dimension: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            else
+              IconButton(
+                key: const Key('rescan'),
+                tooltip: context.l10n.rescanNetwork,
+                icon: const Icon(Icons.refresh),
+                onPressed: () => ref.invalidate(discoveredServersProvider),
+              ),
+          ],
         ),
         if (found.isEmpty) ...[
-          const SizedBox(height: 12),
-          Row(
-            spacing: 10,
-            children: [
-              // Static on purpose: browsing never finishes, and a spinner
-              // that never stops reads as stuck.
-              Icon(Icons.wifi_find, size: 16, color: muted),
-              Expanded(
-                child: Text(
-                  context.l10n.discoveringServers,
-                  style: theme.textTheme.bodySmall?.copyWith(color: muted),
-                ),
-              ),
-            ],
+          Text(
+            scanning
+                ? context.l10n.discoveringServers
+                : context.l10n.discoveryNoneFound,
+            style: theme.textTheme.bodySmall?.copyWith(color: muted),
           ),
           const SizedBox(height: 6),
           Text(

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -9,19 +7,14 @@ import 'package:opencode_mobile/core/storage/server_store.dart';
 import 'package:opencode_mobile/features/connection/connection_providers.dart';
 import 'package:opencode_mobile/main.dart';
 
-class _FakeDiscovery implements ServerDiscovery {
-  final controller = StreamController<List<DiscoveredServer>>.broadcast();
-
-  @override
-  Stream<List<DiscoveredServer>> watch() => controller.stream;
-}
+import '../../support/fake_discovery.dart';
 
 void main() {
-  late _FakeDiscovery discovery;
+  late FakeDiscovery discovery;
 
   setUp(() {
     FlutterSecureStorage.setMockInitialValues({});
-    discovery = _FakeDiscovery();
+    discovery = FakeDiscovery();
   });
 
   Future<void> pumpApp(WidgetTester tester) async {
@@ -33,7 +26,10 @@ void main() {
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [serverDiscoveryProvider.overrideWithValue(discovery)],
+        overrides: [
+          serverDiscoveryProvider.overrideWithValue(discovery),
+          lanScanProvider.overrideWithValue(FakeDiscovery(finished: const [])),
+        ],
         child: const OpenCodeMobileApp(),
       ),
     );
@@ -87,7 +83,7 @@ void main() {
 
   testWidgets('a server found on the network fills the URL', (tester) async {
     await pumpApp(tester);
-    expect(find.text('ネットワーク上の OpenCode サーバーを探しています…'), findsOneWidget);
+    expect(find.text('見つかりませんでした'), findsOneWidget);
 
     discovery.controller.add(const [
       DiscoveredServer(

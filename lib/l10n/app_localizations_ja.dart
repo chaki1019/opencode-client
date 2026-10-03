@@ -131,7 +131,14 @@ class AppLocalizationsJa extends AppLocalizations {
   String get discoveringServers => 'ネットワーク上の OpenCode サーバーを探しています…';
 
   @override
-  String get discoveryHint => 'opencode serve --mdns で起動したサーバーがここに表示されます';
+  String get discoveryNoneFound => '見つかりませんでした';
+
+  @override
+  String get rescanNetwork => 'もう一度探す';
+
+  @override
+  String get discoveryHint =>
+      'ポート 4096 でネットワークからの接続を受け付けているサーバー（opencode serve --hostname 0.0.0.0）と、mDNS で知らせているサーバーを探します';
 
   @override
   String get reconnecting => 'サーバーに再接続しています…';

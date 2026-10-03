@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_errors.dart';
 import '../../core/api/opencode_client.dart';
+import '../../core/discovery/lan_scan.dart';
 import '../../core/discovery/server_discovery.dart';
 import '../../core/models/server_config.dart';
 import '../../core/storage/server_store.dart';
@@ -65,12 +66,18 @@ final serverDiscoveryProvider = Provider<ServerDiscovery>(
   (ref) => NsdServerDiscovery(),
 );
 
-/// OpenCode servers announced on the local network. Browsing runs only
-/// while something (the connect screen) is listening.
-final discoveredServersProvider =
-    StreamProvider.autoDispose<List<DiscoveredServer>>(
-      (ref) => ref.watch(serverDiscoveryProvider).watch(),
-    );
+/// Probes the local network for servers that do not announce themselves.
+final lanScanProvider = Provider<ServerDiscovery>((ref) => LanScanDiscovery());
+
+/// OpenCode servers found on the local network, by mDNS and by scanning.
+/// Both run only while something (the connect screen) is listening;
+/// invalidate to scan again.
+final discoveredServersProvider = StreamProvider.autoDispose<DiscoverySnapshot>(
+  (ref) => mergeDiscoveries(
+    browse: ref.watch(serverDiscoveryProvider).watch(),
+    scan: ref.watch(lanScanProvider).watch(),
+  ),
+);
 
 final savedServersProvider =
     AsyncNotifierProvider<SavedServersNotifier, List<ServerConfig>>(

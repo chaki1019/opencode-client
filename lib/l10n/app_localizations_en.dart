@@ -136,8 +136,14 @@ class AppLocalizationsEn extends AppLocalizations {
       'Searching the network for OpenCode servers…';
 
   @override
+  String get discoveryNoneFound => 'No servers found';
+
+  @override
+  String get rescanNetwork => 'Search again';
+
+  @override
   String get discoveryHint =>
-      'Servers started with opencode serve --mdns show up here';
+      'Looks for servers on port 4096 that accept connections from the network (opencode serve --hostname 0.0.0.0), and for servers announced over mDNS';
 
   @override
   String get reconnecting => 'Reconnecting to the server…';
