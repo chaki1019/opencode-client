@@ -163,6 +163,8 @@ void main() {
     );
     await pumpConnected(tester);
 
+    await tester.tap(find.byKey(const Key('open-drawer')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('push-settings')));
     await tester.pumpAndSettle();
     expect(find.text('このサーバーの通知を受け取る'), findsOneWidget);
@@ -211,6 +213,8 @@ void main() {
   testWidgets('a denied permission leaves notifications off', (tester) async {
     messaging.allow = false;
     await pumpConnected(tester);
+    await tester.tap(find.byKey(const Key('open-drawer')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('push-settings')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('push-switch')));

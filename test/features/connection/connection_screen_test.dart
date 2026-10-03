@@ -132,6 +132,96 @@ void main() {
     expect(find.byType(ProjectsScreen), findsOneWidget);
   });
 
+  group('drawer', () {
+    Future<void> saveServers(List<ServerConfig> servers) async {
+      final store = ServerStore();
+      await store.saveServers(servers);
+      for (final s in servers) {
+        await store.writePassword(s.id, 'secret');
+      }
+    }
+
+    Future<void> openDrawer(WidgetTester tester) async {
+      await tester.tap(find.byKey(const Key('open-drawer')));
+      await tester.pumpAndSettle();
+    }
+
+    String title(WidgetTester tester) =>
+        (tester.widget<AppBar>(find.byType(AppBar)).title! as Text).data!;
+
+    const home = ServerConfig(
+      id: 'home',
+      baseUrl: 'http://home.test:4096',
+      label: '自宅',
+    );
+    const work = ServerConfig(
+      id: 'work',
+      baseUrl: 'http://work.test:4096',
+      label: '職場',
+    );
+    const down = ServerConfig(
+      id: 'down',
+      baseUrl: 'http://down.test:4096',
+      label: '停止中',
+    );
+
+    testWidgets('switches to another saved server', (tester) async {
+      await saveServers([home, work, down]);
+      await pumpApp(tester);
+      await tester.tap(find.text('自宅'));
+      await tester.pumpAndSettle();
+      expect(title(tester), '自宅');
+
+      await openDrawer(tester);
+      expect(find.byKey(const Key('drawer-server-work')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('drawer-server-work')));
+      await tester.pumpAndSettle();
+      expect(find.byType(Drawer), findsNothing);
+      expect(title(tester), '職場');
+    });
+
+    testWidgets('stays on the current server when switching fails', (
+      tester,
+    ) async {
+      await saveServers([home, down]);
+      await pumpApp(tester);
+      await tester.tap(find.text('自宅'));
+      await tester.pumpAndSettle();
+
+      await openDrawer(tester);
+      await tester.tap(find.byKey(const Key('drawer-server-down')));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('停止中 に接続できませんでした'), findsOneWidget);
+      expect(title(tester), '自宅');
+    });
+
+    testWidgets('adds a server and comes back to its projects', (tester) async {
+      await saveServers([home]);
+      await pumpApp(tester);
+      await tester.tap(find.text('自宅'));
+      await tester.pumpAndSettle();
+
+      await openDrawer(tester);
+      await tester.tap(find.byKey(const Key('add-server')));
+      await tester.pumpAndSettle();
+      expect(find.byType(BackButton), findsOneWidget);
+
+      await connectTo(tester, '10.0.0.7:4096');
+      await tester.enterText(find.byKey(const Key('save-name')), '新しい');
+      await tester.tap(find.byKey(const Key('save')));
+      await tester.pumpAndSettle();
+      expect(find.byType(ProjectsScreen), findsOneWidget);
+      expect(find.byType(BackButton), findsNothing);
+      expect(title(tester), '新しい');
+
+      await openDrawer(tester);
+      Finder inDrawer(String text) =>
+          find.descendant(of: find.byType(Drawer), matching: find.text(text));
+      expect(inDrawer('自宅'), findsOneWidget);
+      expect(inDrawer('新しい'), findsOneWidget);
+    });
+  });
+
   testWidgets('rejects a malformed URL before connecting', (tester) async {
     await pumpApp(tester);
     final before = adapter.requests.length;
