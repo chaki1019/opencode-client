@@ -103,9 +103,9 @@
       "error": {}
     }
   },
-  "tabSessions": "Sessions",
-  "tabFiles": "Files",
-  "tabTerminal": "Terminal",
+  "files": "Files",
+  "terminal": "Terminal",
+  "projectTools": "Project tools",
   "newSession": "New session",
   "sessionsEmpty": "No sessions yet",
   "sessionsLoadFailed": "Couldn't load sessions: {error}",

@@ -222,13 +222,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get tabSessions => 'Sessions';
+  String get files => 'Files';
 
   @override
-  String get tabFiles => 'Files';
+  String get terminal => 'Terminal';
 
   @override
-  String get tabTerminal => 'Terminal';
+  String get projectTools => 'Project tools';
 
   @override
   String get newSession => 'New session';

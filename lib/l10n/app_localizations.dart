@@ -440,23 +440,23 @@ abstract class AppLocalizations {
   /// **'Couldn\'t open the folder: {error}'**
   String projectOpenFailed(Object error);
 
-  /// No description provided for @tabSessions.
-  ///
-  /// In en, this message translates to:
-  /// **'Sessions'**
-  String get tabSessions;
-
-  /// No description provided for @tabFiles.
+  /// No description provided for @files.
   ///
   /// In en, this message translates to:
   /// **'Files'**
-  String get tabFiles;
+  String get files;
 
-  /// No description provided for @tabTerminal.
+  /// No description provided for @terminal.
   ///
   /// In en, this message translates to:
   /// **'Terminal'**
-  String get tabTerminal;
+  String get terminal;
+
+  /// No description provided for @projectTools.
+  ///
+  /// In en, this message translates to:
+  /// **'Project tools'**
+  String get projectTools;
 
   /// No description provided for @newSession.
   ///

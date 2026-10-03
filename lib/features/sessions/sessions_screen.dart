@@ -12,6 +12,7 @@ import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
+import '../projects/project_tools.dart';
 import '../worktrees/worktrees_screen.dart';
 import 'session_providers.dart';
 
@@ -41,15 +42,17 @@ class SessionsScreen extends ConsumerWidget {
                 ),
               ),
             ),
+          ProjectToolsButton(project: project),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         key: const Key('new-session'),
-        // Tabs share one route, so the default tag would clash.
+        // The terminal list opens over this page with a FAB of its own;
+        // without a tag they don't fly between the pages.
         heroTag: null,
+        tooltip: context.l10n.newSession,
         onPressed: () => _createSession(context, ref),
-        icon: const Icon(Icons.add),
-        label: Text(context.l10n.newSession),
+        child: const Icon(Icons.add),
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(provider.future),

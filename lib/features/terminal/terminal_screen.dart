@@ -26,12 +26,12 @@ class TerminalsScreen extends ConsumerWidget {
     final ptys = ref.watch(provider);
     return Scaffold(
       appBar: AppBar(
-        title: Text(project.displayName),
+        title: Text(context.l10n.terminal),
         bottom: const LiveStatusBanner(),
       ),
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('new-terminal'),
-        // Tabs share one route, so the default tag would clash.
+        // Opens over the session list's FAB; keep them from flying across.
         heroTag: null,
         onPressed: () => _create(context, ref),
         icon: const Icon(Icons.add),

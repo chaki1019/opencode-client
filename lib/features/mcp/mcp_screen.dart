@@ -6,7 +6,7 @@ import '../../core/api/api_errors.dart';
 import '../../core/models/project.dart';
 import '../../core/models/project_tools.dart';
 import '../../l10n/l10n.dart';
-import '../live/live_widgets.dart';
+import '../projects/project_tools.dart';
 import 'mcp_providers.dart';
 
 /// The project's MCP servers with a switch to connect or disconnect each.
@@ -20,9 +20,9 @@ class McpScreen extends ConsumerWidget {
     final provider = mcpServersProvider(project.directory);
     final servers = ref.watch(provider);
     return Scaffold(
-      appBar: AppBar(
-        title: Text(project.displayName),
-        bottom: const LiveStatusBanner(),
+      backgroundColor: Colors.transparent,
+      appBar: toolSheetAppBar(
+        title: 'MCP',
         actions: [
           IconButton(
             tooltip: context.l10n.reload,

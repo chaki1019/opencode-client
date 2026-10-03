@@ -217,13 +217,13 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get tabSessions => 'セッション';
+  String get files => 'ファイル';
 
   @override
-  String get tabFiles => 'ファイル';
+  String get terminal => 'ターミナル';
 
   @override
-  String get tabTerminal => 'ターミナル';
+  String get projectTools => 'プロジェクトのツール';
 
   @override
   String get newSession => '新しいセッション';
