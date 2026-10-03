@@ -22,6 +22,7 @@ import 'package:opencode_mobile/features/push/push_providers.dart';
 import 'package:opencode_mobile/main.dart';
 
 import '../../support/fake_adapter.dart';
+import '../../support/fake_discovery.dart';
 
 const _config = PushConfig(
   relayUrl: 'https://relay.test',
@@ -108,6 +109,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          ...noDiscoveryOverrides,
           serverStoreProvider.overrideWithValue(ServerStore()),
           eventStreamProvider.overrideWith((ref) {
             if (ref.watch(connectionProvider) == null) return null;
