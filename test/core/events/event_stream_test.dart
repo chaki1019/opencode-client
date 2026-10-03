@@ -150,4 +150,31 @@ void main() {
     await Future<void>.delayed(const Duration(milliseconds: 100));
     expect(stream.status, EventStreamStatus.stopped);
   });
+
+  test('dropCancellation ends the stream on a cancel error only', () async {
+    final cancelled = StreamController<List<int>>();
+    final received = <Object>[];
+    final done = Completer<void>();
+    dropCancellation(cancelled.stream)
+        .listen((_) {}, onError: received.add, onDone: done.complete);
+    cancelled
+      ..addError(
+        DioException.requestCancelled(
+          requestOptions: RequestOptions(),
+          reason: null,
+        ),
+      )
+      ..close();
+    await done.future;
+    expect(received, isEmpty);
+
+    final failed = StreamController<List<int>>();
+    final errors = <Object>[];
+    final sub = dropCancellation(failed.stream)
+        .listen((_) {}, onError: errors.add);
+    failed.addError(const SocketException('reset'));
+    await pumpEventQueue();
+    expect(errors.single, isA<SocketException>());
+    await sub.cancel();
+  });
 }
