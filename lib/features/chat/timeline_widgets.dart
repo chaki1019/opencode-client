@@ -13,6 +13,7 @@ import '../live/live_widgets.dart';
 import 'agent_labels.dart';
 import 'composer_providers.dart';
 import 'expand_downward.dart';
+import 'history_skeleton.dart';
 import 'prompt_widgets.dart';
 
 class TimelineEntryView extends StatelessWidget {
@@ -577,9 +578,6 @@ class OlderHistoryIndicator extends StatelessWidget {
       );
     }
     if (!paged.hasMore) return const SizedBox(height: 8);
-    return const Padding(
-      padding: EdgeInsets.all(16),
-      child: Center(child: CircularProgressIndicator()),
-    );
+    return const HistorySkeleton();
   }
 }
