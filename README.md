@@ -1,4 +1,4 @@
-# opencode-client
+# opencode-mobile
 
 自前でホストしている [OpenCode](https://opencode.ai) サーバーにつなぐ、iOS / Android 向けの Flutter クライアントです。
 

@@ -111,5 +111,5 @@ Android は同じ `push.env.json` を Gradle が読み、FCM がアプリの起�
 公開は GitHub Actions の「Publish plugin」ワークフロー（`.github/workflows/publish-plugin.yml`）で行います。npm の Trusted Publishing を使うので、npm のトークンは要りません。
 
 1. 最初の 1 回だけ手元で公開する（Trusted Publishing はパッケージが存在しないと設定できないため）: `cd push/plugin && npm login && npm publish --access public`
-2. npmjs.com のパッケージ設定 → Trusted Publisher で GitHub Actions を選び、リポジトリ `chaki1019/opencode-client`、ワークフロー `publish-plugin.yml` を登録する。
+2. npmjs.com のパッケージ設定 → Trusted Publisher で GitHub Actions を選び、リポジトリ `chaki1019/opencode-mobile`、ワークフロー `publish-plugin.yml` を登録する。
 3. 以降は `package.json` の `version` を上げてからワークフローを実行する。

@@ -1,4 +1,4 @@
-// Push relay for opencode-client (Cloudflare Worker).
+// Push relay for opencode-mobile (Cloudflare Worker).
 //
 // The app registers its FCM token under an auth key derived from its
 // pairing key; the OpenCode plugin posts events with the same auth key as a

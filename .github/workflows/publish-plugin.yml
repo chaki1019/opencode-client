@@ -2,7 +2,7 @@
 #
 # Uses npm Trusted Publishing (OIDC), so no npm token is stored anywhere.
 # One-time setup on npmjs.com: package settings → Trusted Publisher →
-# GitHub Actions, repository chaki1019/opencode-client, workflow
+# GitHub Actions, repository chaki1019/opencode-mobile, workflow
 # publish-plugin.yml. Bump "version" in push/plugin/package.json first.
 name: Publish plugin
 
