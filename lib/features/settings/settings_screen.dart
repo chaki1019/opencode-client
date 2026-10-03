@@ -9,7 +9,7 @@ import 'settings_providers.dart';
 /// whichever language the app is in.
 const _languages = {'ja': '日本語', 'en': 'English'};
 
-/// App-wide settings: appearance, language and ads.
+/// App-wide settings: appearance, language, haptics and ads.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -66,6 +66,14 @@ class SettingsScreen extends ConsumerWidget {
                   ),
               ],
             ),
+          ),
+          _SectionHeader(l10n.settingsInteraction),
+          SwitchListTile(
+            key: const Key('haptics'),
+            value: settings.haptics,
+            onChanged: notifier.setHaptics,
+            title: Text(l10n.settingsHaptics),
+            subtitle: Text(l10n.settingsHapticsHelp),
           ),
           AdsSettingsSection(header: _SectionHeader.new),
         ],

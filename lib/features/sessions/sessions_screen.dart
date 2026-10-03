@@ -15,6 +15,7 @@ import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
 import '../projects/project_tools.dart';
+import '../settings/haptics.dart';
 import 'session_providers.dart';
 
 class SessionsScreen extends ConsumerWidget {
@@ -120,6 +121,7 @@ class _SessionTile extends ConsumerWidget {
       deleteSession(context, ref, session);
 
   Future<void> _menu(BuildContext context, WidgetRef ref) async {
+    ref.read(hapticsProvider).play(HapticCue.longPress);
     final action = await showModalBottomSheet<_TileAction>(
       context: context,
       showDragHandle: true,
@@ -191,6 +193,11 @@ class _SessionTile extends ConsumerWidget {
         icon: Icons.delete_outline,
         label: context.l10n.delete,
       ),
+      onUpdate: (details) {
+        if (details.reached && !details.previousReached) {
+          ref.read(hapticsProvider).play(HapticCue.swipeThreshold);
+        }
+      },
       confirmDismiss: (direction) async {
         if (direction == DismissDirection.endToStart) {
           return _delete(context, ref);

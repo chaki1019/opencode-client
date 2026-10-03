@@ -837,6 +837,15 @@ class AppLocalizationsJa extends AppLocalizations {
   String get themeDark => 'ダーク';
 
   @override
+  String get settingsInteraction => '操作';
+
+  @override
+  String get settingsHaptics => '触覚フィードバック';
+
+  @override
+  String get settingsHapticsHelp => '送信時、AI の返信完了時、AI が回答を待っているときに軽く振動します';
+
+  @override
   String get rewardTitle => '今日の無料送信回数を使い切りました';
 
   @override
