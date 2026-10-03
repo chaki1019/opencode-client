@@ -22,11 +22,15 @@ class GitScreen extends ConsumerStatefulWidget {
 class _GitScreenState extends ConsumerState<GitScreen> {
   DiffMode _mode = DiffMode.working;
 
+  /// Last branch seen, so the header and the mode labels don't blank out
+  /// while the other mode loads.
+  VcsBranch? _branch;
+
   @override
   Widget build(BuildContext context) {
     final provider = gitProvider((widget.project.directory, _mode));
     final git = ref.watch(provider);
-    final branch = git.value?.branch;
+    final branch = _branch = git.value?.branch ?? _branch;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
