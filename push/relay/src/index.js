@@ -15,8 +15,10 @@
 //   POST   /v1/notify   Authorization: Bearer <key>
 //                       {kind, sessionID, enc}
 //
-// Bindings: KV namespace DEVICES, secret FCM_SERVICE_ACCOUNT (the Firebase
-// service account JSON).
+// Bindings: D1 database DB (schema in migrations/), rate limiters
+// IP_LIMIT and KEY_LIMIT, secret FCM_SERVICE_ACCOUNT (the Firebase service
+// account JSON). An optional KV namespace DEVICES holds registrations from
+// before D1; they move to D1 the first time their key is used.
 
 const MIN_KEY_LENGTH = 32;
 const MAX_DEVICES_PER_KEY = 10;
@@ -31,6 +33,9 @@ export default {
 export async function handle(request, env, deps = {}) {
   const url = new URL(request.url);
   try {
+    // Per client address on every route, so neither registrations nor
+    // guessed keys can be sprayed from one place.
+    await limit(env.IP_LIMIT, request.headers.get("cf-connecting-ip") ?? "unknown");
     if (url.pathname === "/v1/devices" && request.method === "POST") {
       return await register(request, env);
     }
@@ -56,10 +61,16 @@ class HttpError extends Error {
 }
 
 function json(body, status = 200) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json" },
-  });
+  const headers = { "content-type": "application/json" };
+  if (status === 429) headers["retry-after"] = "60";
+  return new Response(JSON.stringify(body), { status, headers });
+}
+
+/** Throws 429 when [limiter] (a Workers rate limiting binding) says so. */
+async function limit(limiter, key) {
+  if (!limiter) return;
+  const { success } = await limiter.limit({ key });
+  if (!success) throw new HttpError(429, "rate_limited");
 }
 
 async function readJson(request) {
@@ -93,16 +104,37 @@ export async function keyId(key) {
 }
 
 async function loadDevices(env, id) {
-  const raw = await env.DEVICES.get(`key:${id}`);
-  return raw ? JSON.parse(raw) : [];
+  const { results } = await env.DB.prepare(
+    "SELECT token, platform FROM devices WHERE key_id = ? ORDER BY updated_at DESC",
+  )
+    .bind(id)
+    .all();
+  if (results.length > 0 || !env.DEVICES) return results;
+  return migrateFromKv(env, id);
 }
 
-async function saveDevices(env, id, devices) {
-  if (devices.length === 0) {
-    await env.DEVICES.delete(`key:${id}`);
-  } else {
-    await env.DEVICES.put(`key:${id}`, JSON.stringify(devices));
-  }
+/** Moves a key's devices from the pre-D1 KV store, keeping their order. */
+async function migrateFromKv(env, id) {
+  const raw = await env.DEVICES.get(`key:${id}`);
+  if (!raw) return [];
+  const devices = JSON.parse(raw).slice(0, MAX_DEVICES_PER_KEY);
+  const now = Date.now();
+  await env.DB.batch(
+    devices.map((d, i) => upsert(env, id, d.token, d.platform, now - i)),
+  );
+  await env.DEVICES.delete(`key:${id}`);
+  return devices.map((d) => ({ token: d.token, platform: d.platform }));
+}
+
+function upsert(env, id, token, platform, at) {
+  return env.DB.prepare(
+    `INSERT INTO devices (key_id, token, platform, updated_at) VALUES (?, ?, ?, ?)
+     ON CONFLICT (key_id, token) DO UPDATE SET platform = excluded.platform, updated_at = excluded.updated_at`,
+  ).bind(id, token, platform, at);
+}
+
+function removeDevice(env, id, token) {
+  return env.DB.prepare("DELETE FROM devices WHERE key_id = ? AND token = ?").bind(id, token);
 }
 
 async function register(request, env) {
@@ -110,9 +142,16 @@ async function register(request, env) {
   const id = await keyId(requireKey(body.key));
   const token = requireToken(body.token);
   const platform = body.platform === "ios" ? "ios" : "android";
-  const devices = (await loadDevices(env, id)).filter((d) => d.token !== token);
-  devices.unshift({ token, platform });
-  await saveDevices(env, id, devices.slice(0, MAX_DEVICES_PER_KEY));
+  // Pull in pre-D1 devices first so they are not stranded in KV.
+  if (env.DEVICES) await loadDevices(env, id);
+  await env.DB.batch([
+    upsert(env, id, token, platform, Date.now()),
+    // Keep the newest few; a key shared by many devices is a leaked key.
+    env.DB.prepare(
+      `DELETE FROM devices WHERE key_id = ? AND token NOT IN
+       (SELECT token FROM devices WHERE key_id = ? ORDER BY updated_at DESC LIMIT ?)`,
+    ).bind(id, id, MAX_DEVICES_PER_KEY),
+  ]);
   return json({ ok: true });
 }
 
@@ -120,8 +159,9 @@ async function unregister(request, env) {
   const body = await readJson(request);
   const id = await keyId(requireKey(body.key));
   const token = requireToken(body.token);
-  const devices = await loadDevices(env, id);
-  await saveDevices(env, id, devices.filter((d) => d.token !== token));
+  // Pull in pre-D1 devices first so the removed one does not come back.
+  if (env.DEVICES) await loadDevices(env, id);
+  await removeDevice(env, id, token).run();
   return json({ ok: true });
 }
 
@@ -134,6 +174,7 @@ async function notify(request, env, deps) {
   const key = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
   if (key.length < MIN_KEY_LENGTH) throw new HttpError(401, "unauthorized");
   const id = await keyId(key);
+  await limit(env.KEY_LIMIT, id);
   const devices = await loadDevices(env, id);
   // Unknown keys answer like known ones so the endpoint does not reveal
   // which keys exist.
@@ -154,7 +195,7 @@ async function notify(request, env, deps) {
   const results = await Promise.all(devices.map((d) => send(env, d, data, deps)));
   const stale = devices.filter((_, i) => results[i] === "unregistered");
   if (stale.length > 0) {
-    await saveDevices(env, id, devices.filter((d) => !stale.includes(d)));
+    await env.DB.batch(stale.map((d) => removeDevice(env, id, d.token)));
   }
   const delivered = results.filter((r) => r === "ok").length;
   return json({ ok: true, delivered }, 202);

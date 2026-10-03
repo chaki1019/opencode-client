@@ -7,7 +7,7 @@ OpenCode（PC/Mac）
   └─ プラグイン push/plugin/opencode-push.js
        │  POST /v1/notify（認証キー + 暗号文）
        ▼
-中継サーバー push/relay（Cloudflare Workers + KV）
+中継サーバー push/relay（Cloudflare Workers + D1）
        │  FCM HTTP v1（中身は暗号文のまま）
        ▼
 FCM ──(iOS は APNs 経由)──▶ アプリが復号して表示
@@ -20,6 +20,7 @@ FCM ──(iOS は APNs 経由)──▶ アプリが復号して表示
 - 暗号化の仕様は `push/test-vector.json` の値で、プラグイン（JavaScript）とアプリ（Dart）のテストが同じ結果になることを確かめています。
 - **タップ時**: 通知を送ったサーバーに接続し（必要なら保存済みの認証情報で再接続し）、そのセッションのチャットを開きます。アプリが前面にあるときは画面下部に表示します。
 - サブエージェントのセッションは通知しません。同じ種類の通知は 15 秒以内に重複して送りません。
+- **乱用対策**: 中継は接続元 IP ごとに 1 分 60 リクエスト、ペアリングキーごとに 1 分 30 通知までに制限し、超えると 429 を返します。1 つのキーに登録できる端末は新しい順に 10 台までです。値は `push/relay/wrangler.toml` で変えられます。
 
 ## 1. Firebase（無料）
 
@@ -33,12 +34,17 @@ FCM ──(iOS は APNs 経由)──▶ アプリが復号して表示
 ```bash
 cd push/relay
 npx wrangler login
-npx wrangler kv namespace create DEVICES   # 出力された id を wrangler.toml に貼る
+npx wrangler d1 create opencode-push       # 出力された database_id を wrangler.toml に貼る
+npx wrangler d1 migrations apply opencode-push --remote
 npx wrangler secret put FCM_SERVICE_ACCOUNT < /path/to/service-account.json
 npx wrangler deploy                        # https://opencode-push-relay.<account>.workers.dev
 ```
 
 テスト: `node --test push/relay/test/*.test.js`
+
+### KV 版から移行するとき
+
+以前の版は端末の登録を KV（`DEVICES`）に保存していました。上の手順で D1 を用意したうえで、`wrangler.toml` の末尾にあるコメントを外して古い KV の id を書いてからデプロイします。各ペアリングキーの登録は、そのキーで最初に通知や登録があったときに D1 へ移って KV から消えます。全員の移行が済んだら（`npx wrangler kv key list --binding DEVICES` が空になったら）、この設定を消してかまいません。
 
 ## 3. アプリのビルド
 
@@ -74,13 +80,12 @@ Android は同じ `push.env.json` を Gradle が読み、FCM がアプリの起�
 ## 4. アプリと PC/Mac の設定
 
 1. アプリでサーバーに接続し、プロジェクト一覧右上のベルから「このサーバーの通知を受け取る」をオンにする。
-2. `push/plugin/opencode-push.js` を PC/Mac の `~/.config/opencode/plugins/` にコピーする。
-3. アプリに表示される項目（コピーボタンあり）を `~/.config/opencode/opencode.json` に追加し、OpenCode を再起動する。
+2. アプリに表示される項目（コピーボタンあり）を `~/.config/opencode/opencode.json` に追加し、OpenCode を再起動する。プラグインは npm の `opencode-push` から入ります。npm を使わない場合は `push/plugin/opencode-push.js` を `~/.config/opencode/plugins/` にコピーし、`"package"` を `"./plugins/opencode-push.js"` にします。
 
 ```jsonc
 "plugins": [
   {
-    "package": "./plugins/opencode-push.js",
+    "package": "opencode-push",
     "options": {
       "relay": "https://opencode-push-relay.<account>.workers.dev",
       "key": "<アプリが表示するペアリングキー>",
@@ -98,6 +103,19 @@ Android は同じ `push.env.json` を Gradle が読み、FCM がアプリの起�
 アプリの「テスト通知を送る」は、プラグインと同じ経路（中継 → FCM → 端末）で通知を送ります。PC 側の設定前に中継と Firebase の確認ができます。
 
 テスト: `node --test push/plugin/*.test.js`
+
+### プラグインを npm に公開する
+
+`push/plugin` がそのまま npm パッケージ `opencode-push` になります（MIT ライセンス）。公開されるのは `opencode-push.js`、`README.md`、`LICENSE` だけです。
+
+```bash
+cd push/plugin
+npm pack --dry-run          # 含まれるファイルを確認
+npm login
+npm publish                 # 公開前にテストが走ります
+```
+
+版を上げるときは `package.json` の `version` を変えてから公開します。
 
 ## 対象のイベント
 

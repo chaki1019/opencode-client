@@ -788,7 +788,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pushSetupSteps =>
-      '1. Copy push/plugin/opencode-push.js from this app\'s repository to ~/.config/opencode/plugins/\n2. Add the entry below to ~/.config/opencode/opencode.json\n3. Restart OpenCode';
+      '1. Add the entry below to ~/.config/opencode/opencode.json\n2. Restart OpenCode (it installs the opencode-push plugin from npm)';
 
   @override
   String get pushSendTest => 'Send a test notification';
