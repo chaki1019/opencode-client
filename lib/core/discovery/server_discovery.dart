@@ -113,3 +113,73 @@ class NsdServerDiscovery implements ServerDiscovery {
     return controller.stream;
   }
 }
+
+/// What the connect screen shows: every server found so far, and whether a
+/// one-off scan is still running. mDNS browsing never finishes, so only
+/// the scan decides [scanning].
+@immutable
+class DiscoverySnapshot {
+  const DiscoverySnapshot({required this.servers, required this.scanning});
+
+  final List<DiscoveredServer> servers;
+  final bool scanning;
+}
+
+/// Combines a continuous [browse] (mDNS) with a finite [scan] (LAN probe),
+/// listing each URL once. A failing source counts as finding nothing.
+Stream<DiscoverySnapshot> mergeDiscoveries({
+  required Stream<List<DiscoveredServer>> browse,
+  required Stream<List<DiscoveredServer>> scan,
+}) {
+  var browsed = const <DiscoveredServer>[];
+  var scanned = const <DiscoveredServer>[];
+  var scanning = true;
+  final subscriptions = <StreamSubscription<void>>[];
+  late final StreamController<DiscoverySnapshot> controller;
+
+  void emit() {
+    final byUrl = <String, DiscoveredServer>{};
+    for (final server in [...browsed, ...scanned]) {
+      byUrl.putIfAbsent(server.baseUrl, () => server);
+    }
+    controller.add(
+      DiscoverySnapshot(
+        servers: byUrl.values.toList()
+          ..sort((a, b) => a.baseUrl.compareTo(b.baseUrl)),
+        scanning: scanning,
+      ),
+    );
+  }
+
+  controller = StreamController(
+    onListen: () {
+      emit();
+      subscriptions
+        ..add(
+          browse.listen((servers) {
+            browsed = servers;
+            emit();
+          }, onError: (Object e) => debugPrint('Server discovery failed: $e')),
+        )
+        ..add(
+          scan.listen(
+            (servers) {
+              scanned = servers;
+              emit();
+            },
+            onError: (Object e) => debugPrint('LAN scan failed: $e'),
+            onDone: () {
+              scanning = false;
+              emit();
+            },
+          ),
+        );
+    },
+    onCancel: () async {
+      for (final subscription in subscriptions) {
+        await subscription.cancel();
+      }
+    },
+  );
+  return controller.stream;
+}

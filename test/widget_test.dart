@@ -17,6 +17,7 @@ import 'package:opencode_mobile/features/live/live_providers.dart';
 import 'package:opencode_mobile/main.dart';
 
 import 'support/fake_adapter.dart';
+import 'support/fake_discovery.dart';
 
 void main() {
   setUp(() {
@@ -36,7 +37,12 @@ void main() {
   testWidgets('the connect screen follows the device language', (tester) async {
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     tester.platformDispatcher.localesTestValue = const [Locale('en', 'US')];
-    await tester.pumpWidget(const ProviderScope(child: OpenCodeMobileApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: noDiscoveryOverrides,
+        child: const OpenCodeMobileApp(),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.text('Connect to an OpenCode server'), findsOneWidget);
 
@@ -203,6 +209,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          ...noDiscoveryOverrides,
           serverStoreProvider.overrideWithValue(store),
           pickImagesProvider.overrideWithValue(
             ({bool camera = false}) async => [
