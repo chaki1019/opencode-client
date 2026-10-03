@@ -1615,6 +1615,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Ad privacy choices'**
   String get adPrivacy;
+
+  /// No description provided for @pushComputerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'On the computer'**
+  String get pushComputerTitle;
+
+  /// No description provided for @pushComputerActive.
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin is running'**
+  String get pushComputerActive;
+
+  /// No description provided for @pushComputerFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin failed to load: {error}'**
+  String pushComputerFailed(Object error);
+
+  /// No description provided for @pushComputerOtherKey.
+  ///
+  /// In en, this message translates to:
+  /// **'It is set up with a different key. Replace the entry in opencode.json with the one below.'**
+  String get pushComputerOtherKey;
+
+  /// No description provided for @pushComputerNotLoaded.
+  ///
+  /// In en, this message translates to:
+  /// **'It is configured but not loaded yet. Restart OpenCode.'**
+  String get pushComputerNotLoaded;
+
+  /// No description provided for @pushComputerMissing.
+  ///
+  /// In en, this message translates to:
+  /// **'Not set up yet. Add it with the steps below.'**
+  String get pushComputerMissing;
+
+  /// No description provided for @pushComputerUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t check'**
+  String get pushComputerUnknown;
+
+  /// No description provided for @pushComputerRefresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get pushComputerRefresh;
 }
 
 class _AppLocalizationsDelegate

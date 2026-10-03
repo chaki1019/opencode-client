@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/router.dart';
+import '../../core/push/computer_plugin.dart';
 import '../../core/push/push_config.dart';
 import '../../core/push/push_crypto.dart';
 import '../../core/push/push_inbox.dart';
@@ -119,6 +120,30 @@ class PushPairingNotifier extends AsyncNotifier<PushPairing> {
 
 final pushPairingProvider = AsyncNotifierProvider.autoDispose
     .family<PushPairingNotifier, PushPairing, String>(PushPairingNotifier.new);
+
+/// Whether OpenCode on the connected computer runs the push plugin with
+/// this server's pairing. Null when the server can't tell (an older
+/// version, or the request failed).
+final computerPluginProvider = FutureProvider.autoDispose
+    .family<ComputerPluginCheck?, String>((ref, serverId) async {
+      final client = ref.watch(connectionProvider)?.client;
+      if (client == null) return null;
+      final pairing = await ref.watch(pushPairingProvider(serverId).future);
+      try {
+        final (plugins, config) = await (
+          client.listPlugins(),
+          client.readConfig(),
+        ).wait;
+        return checkComputerPlugin(
+          plugins: plugins,
+          config: config,
+          relayUrl: ref.watch(pushConfigProvider).relayUrl,
+          key: pairing.key,
+        );
+      } on Object {
+        return null;
+      }
+    });
 
 Future<void> _unregister({
   required RelayClient relay,

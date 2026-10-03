@@ -907,4 +907,32 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get adPrivacy => '広告のプライバシー設定';
+
+  @override
+  String get pushComputerTitle => 'PC/Mac 側の状態';
+
+  @override
+  String get pushComputerActive => 'プラグインが動いています';
+
+  @override
+  String pushComputerFailed(Object error) {
+    return 'プラグインの読み込みに失敗しました: $error';
+  }
+
+  @override
+  String get pushComputerOtherKey =>
+      '別のキーで設定されています。opencode.json の項目を下の内容に置き換えてください。';
+
+  @override
+  String get pushComputerNotLoaded =>
+      '設定はありますが、まだ読み込まれていません。OpenCode を再起動してください。';
+
+  @override
+  String get pushComputerMissing => 'まだ設定されていません。下の手順で追加してください。';
+
+  @override
+  String get pushComputerUnknown => '状態を確認できませんでした';
+
+  @override
+  String get pushComputerRefresh => 'もう一度確認';
 }

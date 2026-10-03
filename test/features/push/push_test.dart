@@ -104,6 +104,8 @@ void main() {
       '/api/project': FakeRoute.json([
         {'id': 'abc', 'canonical': '/home/me/my-app', 'sandboxes': []},
       ]),
+      '/api/plugin': FakeRoute.json({'location': {}, 'data': []}),
+      '/api/config': FakeRoute.json([]),
       '/api/session/ses_1': FakeRoute.json({
         'data': {
           'id': 'ses_1',
@@ -210,6 +212,37 @@ void main() {
         (((entry['plugins']! as List).single as Map)['options'] as Map)['key']
             as String;
     expect(key, hasLength(43));
+    expect(find.text('まだ設定されていません。下の手順で追加してください。'), findsOneWidget);
+
+    // Once OpenCode runs the plugin with this key, the screen says so.
+    server.routes['/api/plugin'] = FakeRoute.json({
+      'location': {'directory': '/home/me'},
+      'data': [
+        {
+          'id': 'opencode-mobile-push',
+          'source': {'type': 'package', 'target': 'opencode-mobile-push'},
+          'features': {'server': true},
+          'state': {'status': 'active'},
+        },
+      ],
+    });
+    server.routes['/api/config'] = FakeRoute.json([
+      {
+        'type': 'document',
+        'path': '/home/me/.config/opencode/opencode.json',
+        'info': {
+          'plugins': [
+            {
+              'package': 'opencode-mobile-push',
+              'options': {'relay': 'https://relay.test', 'key': key},
+            },
+          ],
+        },
+      },
+    ]);
+    await tester.tap(find.byKey(const Key('push-computer-refresh')));
+    await tester.pumpAndSettle();
+    expect(find.text('プラグインが動いています'), findsOneWidget);
     expect(entry['plugins'], [
       {
         'package': 'opencode-mobile-push',

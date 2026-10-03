@@ -925,4 +925,33 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adPrivacy => 'Ad privacy choices';
+
+  @override
+  String get pushComputerTitle => 'On the computer';
+
+  @override
+  String get pushComputerActive => 'The plugin is running';
+
+  @override
+  String pushComputerFailed(Object error) {
+    return 'The plugin failed to load: $error';
+  }
+
+  @override
+  String get pushComputerOtherKey =>
+      'It is set up with a different key. Replace the entry in opencode.json with the one below.';
+
+  @override
+  String get pushComputerNotLoaded =>
+      'It is configured but not loaded yet. Restart OpenCode.';
+
+  @override
+  String get pushComputerMissing =>
+      'Not set up yet. Add it with the steps below.';
+
+  @override
+  String get pushComputerUnknown => 'Couldn\'t check';
+
+  @override
+  String get pushComputerRefresh => 'Check again';
 }
