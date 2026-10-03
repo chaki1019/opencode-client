@@ -17,11 +17,6 @@
   ],
   "author": "chaki1019",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/chaki1019/opencode-client.git",
-    "directory": "push/plugin"
-  },
   "engines": {
     "node": ">=20"
   },
