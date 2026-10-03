@@ -49,3 +49,7 @@ app.*.map.json
 
 # Push notification build settings (see docs/push-notifications.md)
 push.env.json
+
+# Ad build settings (see docs/ads.md)
+ads.env.json
+/ios/Flutter/Ads.xcconfig

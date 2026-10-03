@@ -875,4 +875,51 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get updateFromStore =>
       'Update the app from the App Store or Google Play.';
+
+  @override
+  String get rewardTitle => 'Today\'s free messages are used up';
+
+  @override
+  String rewardBody(int free, int more) {
+    return 'You can send $free messages a day without ads. Watch a short ad to send $more more today.';
+  }
+
+  @override
+  String get rewardWatch => 'Watch ad';
+
+  @override
+  String get rewardSkipped => 'Watch the ad to the end to send this message.';
+
+  @override
+  String get settingsAds => 'Ads';
+
+  @override
+  String get adsFreeLeft => 'Messages without ads today';
+
+  @override
+  String adsFreeLeftValue(int left) {
+    return '$left left';
+  }
+
+  @override
+  String get removeAds => 'Remove ads';
+
+  @override
+  String get removeAdsSubtitle =>
+      'One-time purchase. Hides banners and the ad before sending.';
+
+  @override
+  String get removeAdsDone => 'Ads are removed. Thank you for your support!';
+
+  @override
+  String get restorePurchases => 'Restore purchase';
+
+  @override
+  String get restoreStarted => 'Checking your purchases…';
+
+  @override
+  String get purchaseFailed => 'The purchase didn\'t go through.';
+
+  @override
+  String get adPrivacy => 'Ad privacy choices';
 }
