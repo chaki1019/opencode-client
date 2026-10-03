@@ -94,6 +94,7 @@ void main() {
     await tester.tap(find.byKey(const Key('connect')));
     await tester.pumpAndSettle();
     expect(find.byType(ProjectsScreen), findsOneWidget);
+    expect(find.byType(BackButton), findsNothing);
 
     await tester.tap(find.byTooltip('切断'));
     await tester.pump();
