@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/app/theme.dart';
 import 'package:opencode_mobile/core/models/project.dart';
+import 'package:opencode_mobile/core/models/project_tools.dart';
+import 'package:opencode_mobile/features/files/files_providers.dart';
 import 'package:opencode_mobile/features/projects/project_tools.dart';
 import 'package:opencode_mobile/l10n/app_localizations.dart';
 
 void main() {
   const project = Project(id: 'p1', directory: '/home/me/dev/app');
 
-  Future<void> pickTool(WidgetTester tester, String label) async {
+  Future<void> pickTool(
+    WidgetTester tester,
+    String label, {
+    List<Override> overrides = const [],
+  }) async {
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     tester.platformDispatcher.localesTestValue = const [Locale('ja')];
     await tester.pumpWidget(
       ProviderScope(
+        overrides: overrides,
         child: MaterialApp(
           theme: AppTheme.dark,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -60,5 +68,28 @@ void main() {
     expect(find.byType(BottomSheet), findsNothing);
     expect(find.text('ターミナル'), findsOneWidget);
     expect(find.text('sessions'), findsNothing);
+  });
+
+  testWidgets('tapping outside closes files from inside a folder', (
+    tester,
+  ) async {
+    await pickTool(
+      tester,
+      'ファイル',
+      overrides: [
+        folderProvider.overrideWith(
+          (ref, key) async => [
+            if (key.$2.isEmpty) const FsEntry(path: 'lib/', isDirectory: true),
+          ],
+        ),
+      ],
+    );
+    await tester.tap(find.text('lib'));
+    await tester.pumpAndSettle();
+    expect(find.text('空のフォルダです'), findsOneWidget);
+
+    await tester.tapAt(const Offset(400, 10));
+    await tester.pumpAndSettle();
+    expect(find.byType(BottomSheet), findsNothing);
   });
 }
