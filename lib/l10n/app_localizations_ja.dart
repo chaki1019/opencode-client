@@ -773,7 +773,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pushSetupSteps =>
-      '1. このアプリのリポジトリの push/plugin/opencode-push.js を ~/.config/opencode/plugins/ にコピー\n2. ~/.config/opencode/opencode.json に下の項目を追加\n3. OpenCode を再起動';
+      '1. ~/.config/opencode/opencode.json に下の項目を追加\n2. OpenCode を再起動（プラグイン opencode-push は npm から自動で入ります）';
 
   @override
   String get pushSendTest => 'テスト通知を送る';
@@ -838,4 +838,27 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get chatPaneEmpty => 'セッションを選ぶと\nここにチャットが表示されます';
+
+  @override
+  String get settingsInteraction => '操作';
+
+  @override
+  String get settingsHaptics => '触覚フィードバック';
+
+  @override
+  String get settingsHapticsHelp => '送信時、AI の返信完了時、AI が回答を待っているときに軽く振動します';
+
+  @override
+  String get updateRequiredTitle => 'アップデートが必要です';
+
+  @override
+  String updateRequiredBody(String installed, String minimum) {
+    return 'このバージョン（$installed）は使えなくなりました。$minimum 以降に更新してください。';
+  }
+
+  @override
+  String get updateOpenStore => 'ストアを開く';
+
+  @override
+  String get updateFromStore => 'App Store または Google Play からアプリを更新してください。';
 }

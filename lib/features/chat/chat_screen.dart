@@ -8,6 +8,7 @@ import '../../core/models/timeline.dart';
 import '../../l10n/l10n.dart';
 import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
+import '../settings/haptics.dart';
 import 'agent_labels.dart';
 import 'chat_providers.dart';
 import 'composer.dart';
@@ -38,6 +39,7 @@ class ChatScreen extends ConsumerWidget {
     final busy = ref.watch(
       activeSessionsProvider.select((ids) => ids.contains(session.id)),
     );
+    ref.watch(sessionHapticsProvider(session.id));
 
     return StatusBarScrollsToOldest(
       onArrived: () => ref.read(provider.notifier).loadMore(),
@@ -120,11 +122,17 @@ class ChatScreen extends ConsumerWidget {
                                   final entry = entries[entries.length - 1 - i];
                                   child = entry is UserEntry
                                       ? GestureDetector(
-                                          onLongPress: () => _userMessageMenu(
-                                            context,
-                                            ref,
-                                            entry,
-                                          ),
+                                          onLongPress: () {
+                                            Feedback.forLongPress(context);
+                                            ref
+                                                .read(hapticsProvider)
+                                                .play(HapticCue.longPress);
+                                            _userMessageMenu(
+                                              context,
+                                              ref,
+                                              entry,
+                                            );
+                                          },
                                           child: TimelineEntryView(
                                             entry: entry,
                                           ),
