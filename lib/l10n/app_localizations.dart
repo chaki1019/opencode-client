@@ -794,6 +794,12 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{1 line omitted} other{{count} lines omitted}}'**
   String linesOmitted(int count);
 
+  /// No description provided for @scrollToNewest.
+  ///
+  /// In en, this message translates to:
+  /// **'Jump to latest'**
+  String get scrollToNewest;
+
   /// No description provided for @reloadOlderMessages.
   ///
   /// In en, this message translates to:

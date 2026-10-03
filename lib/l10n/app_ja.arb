@@ -116,6 +116,7 @@
   "contextLocation": "場所: {path}",
   "contextSkill": "スキル: {name}",
   "linesOmitted": "{count, plural, other{{count} 行省略}}",
+  "scrollToNewest": "最新のメッセージへ",
   "reloadOlderMessages": "過去のメッセージを再読み込み",
   "replyFailed": "返答できませんでした: {error}",
   "permissionNeeded": "「{action}」の許可が必要です",

@@ -447,6 +447,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get scrollToNewest => 'Jump to latest';
+
+  @override
   String get reloadOlderMessages => 'Reload earlier messages';
 
   @override

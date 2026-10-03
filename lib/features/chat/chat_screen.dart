@@ -14,6 +14,7 @@ import 'context_sheet.dart';
 import 'expand_downward.dart';
 import 'prompt_widgets.dart';
 import 'pull_up_to_refresh.dart';
+import 'scroll_to_newest.dart';
 import 'session_actions.dart';
 import 'status_bar_scroll.dart';
 import 'timeline_widgets.dart';
@@ -64,69 +65,85 @@ class ChatScreen extends ConsumerWidget {
                     // the "older history" control at the top. Pulling past the
                     // newest item refetches the latest page.
                     final count = pending.length + entries.length;
-                    return PullUpToRefresh(
-                      onRefresh: () => ref.read(provider.notifier).resync(),
-                      child: NotificationListener<ScrollNotification>(
-                        onNotification: (n) {
-                          if (n.metrics.extentAfter < 600 &&
-                              !scrollController.scrollingToOldest) {
-                            ref.read(provider.notifier).loadMore();
-                          }
-                          return false;
-                        },
-                        child: ListView.builder(
-                          controller: scrollController,
-                          reverse: true,
-                          // Lets accordions open downward from their header.
-                          physics: AnchoredScrollPhysics(
-                            anchor: ScrollAnchor(),
-                            // Short transcripts can still be pulled to refresh.
-                            parent: const AlwaysScrollableScrollPhysics(),
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                          itemCount: count + 1,
-                          itemBuilder: (context, index) {
-                            if (index == count) {
-                              return OlderHistoryIndicator(
-                                paged: paged,
-                                onRetry: () =>
-                                    ref.read(provider.notifier).loadMore(),
-                              );
-                            }
-                            final Widget child;
-                            if (index < pending.length) {
-                              final prompt =
-                                  pending[pending.length - 1 - index];
-                              child = PendingPromptBubble(
-                                prompt: prompt,
-                                onDismiss: () => ref
-                                    .read(
-                                      pendingPromptsProvider(session.id)
-                                          .notifier,
-                                    )
-                                    .dismiss(prompt.id),
-                              );
-                            } else {
-                              final i = index - pending.length;
-                              final entry = entries[entries.length - 1 - i];
-                              child = entry is UserEntry
-                                  ? GestureDetector(
-                                      onLongPress: () =>
-                                          _userMessageMenu(context, ref, entry),
-                                      child: TimelineEntryView(entry: entry),
-                                    )
-                                  : TimelineEntryView(entry: entry);
-                            }
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
+                    return Stack(
+                      children: [
+                        PullUpToRefresh(
+                          onRefresh: () => ref.read(provider.notifier).resync(),
+                          child: NotificationListener<ScrollNotification>(
+                            onNotification: (n) {
+                              if (n.metrics.extentAfter < 600 &&
+                                  !scrollController.scrollingToOldest) {
+                                ref.read(provider.notifier).loadMore();
+                              }
+                              return false;
+                            },
+                            child: ListView.builder(
+                              controller: scrollController,
+                              reverse: true,
+                              // Lets accordions open downward from their header.
+                              physics: AnchoredScrollPhysics(
+                                anchor: ScrollAnchor(),
+                                // Short transcripts can still be pulled to refresh.
+                                parent: const AlwaysScrollableScrollPhysics(),
                               ),
-                              child: child,
-                            );
-                          },
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              itemCount: count + 1,
+                              itemBuilder: (context, index) {
+                                if (index == count) {
+                                  return OlderHistoryIndicator(
+                                    paged: paged,
+                                    onRetry: () =>
+                                        ref.read(provider.notifier).loadMore(),
+                                  );
+                                }
+                                final Widget child;
+                                if (index < pending.length) {
+                                  final prompt =
+                                      pending[pending.length - 1 - index];
+                                  child = PendingPromptBubble(
+                                    prompt: prompt,
+                                    onDismiss: () => ref
+                                        .read(
+                                          pendingPromptsProvider(session.id)
+                                              .notifier,
+                                        )
+                                        .dismiss(prompt.id),
+                                  );
+                                } else {
+                                  final i = index - pending.length;
+                                  final entry = entries[entries.length - 1 - i];
+                                  child = entry is UserEntry
+                                      ? GestureDetector(
+                                          onLongPress: () => _userMessageMenu(
+                                            context,
+                                            ref,
+                                            entry,
+                                          ),
+                                          child: TimelineEntryView(
+                                            entry: entry,
+                                          ),
+                                        )
+                                      : TimelineEntryView(entry: entry);
+                                }
+                                return Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 6,
+                                  ),
+                                  child: child,
+                                );
+                              },
+                            ),
+                          ),
                         ),
-                      ),
+                        Positioned(
+                          right: 12,
+                          bottom: 12,
+                          child: ScrollToNewestButton(
+                            controller: scrollController,
+                          ),
+                        ),
+                      ],
                     );
                   },
                   loading: () =>
