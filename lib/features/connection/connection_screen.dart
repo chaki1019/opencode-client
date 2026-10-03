@@ -8,6 +8,7 @@ import '../../core/models/server_config.dart';
 import '../../l10n/l10n.dart';
 import '../push/push_providers.dart';
 import 'connection_providers.dart';
+import 'opencode_logo.dart';
 
 class ConnectionScreen extends ConsumerStatefulWidget {
   const ConnectionScreen({super.key});
@@ -474,41 +475,29 @@ class _Brand extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Container(
-          width: 48,
-          height: 48,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: scheme.primaryContainer,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: scheme.primary.withValues(alpha: 0.35)),
-          ),
-          child: Text(
-            '>_',
-            style: TextStyle(
-              fontFamily: AppFonts.mono,
-              fontWeight: FontWeight.w600,
-              fontSize: 18,
-              color: scheme.primary,
-            ),
-          ),
-        ),
-        const SizedBox(height: 20),
-        Text(
-          'OpenCode Mobile',
-          style: theme.textTheme.headlineSmall?.copyWith(
-            fontWeight: FontWeight.w700,
-            letterSpacing: -0.4,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          context.l10n.connectTitle,
-          style: theme.textTheme.bodyMedium?.copyWith(
-            color: scheme.onSurfaceVariant,
+        const OpenCodeLogo(height: 52),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'OpenCode Mobile',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.4,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                context.l10n.connectTitle,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
           ),
         ),
       ],
