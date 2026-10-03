@@ -12,7 +12,6 @@
 // Or drop this file into ~/.config/opencode/plugins/, which OpenCode loads
 // without options; relay and key then come from
 // ~/.config/opencode/opencode-mobile-push.json ({"relay": ..., "key": ...}).
-// The app can write both files for you.
 //
 // The file has no package imports on purpose: plugins load from a folder
 // without node_modules, and a failed import makes OpenCode skip the plugin
