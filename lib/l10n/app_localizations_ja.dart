@@ -773,7 +773,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pushSetupSteps =>
-      '1. ~/.config/opencode/opencode.json に下の項目を追加\n2. OpenCode を再起動（プラグイン opencode-push は npm から自動で入ります）';
+      '1. ~/.config/opencode/opencode.json に下の項目を追加\n2. OpenCode を再起動（プラグイン opencode-mobile-push は npm から自動で入ります）';
 
   @override
   String get pushSendTest => 'テスト通知を送る';

@@ -1367,7 +1367,7 @@ abstract class AppLocalizations {
   /// No description provided for @pushSetupSteps.
   ///
   /// In en, this message translates to:
-  /// **'1. Add the entry below to ~/.config/opencode/opencode.json\n2. Restart OpenCode (it installs the opencode-push plugin from npm)'**
+  /// **'1. Add the entry below to ~/.config/opencode/opencode.json\n2. Restart OpenCode (it installs the opencode-mobile-push plugin from npm)'**
   String get pushSetupSteps;
 
   /// No description provided for @pushSendTest.

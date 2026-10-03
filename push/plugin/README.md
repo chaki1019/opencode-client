@@ -1,4 +1,4 @@
-# opencode-push
+# opencode-mobile-push
 
 An [OpenCode](https://opencode.ai) v2 plugin that notifies your phone when
 the agent finishes, stops on an error, or is waiting for a permission or an
@@ -14,7 +14,7 @@ answer. It works with the opencode-client mobile app.
 ```jsonc
 "plugins": [
   {
-    "package": "opencode-push",
+    "package": "opencode-mobile-push",
     "options": {
       "relay": "<relay URL shown in the app>",
       "key": "<pairing key shown in the app>"
@@ -23,9 +23,9 @@ answer. It works with the opencode-client mobile app.
 ]
 ```
 
-To pin a version, use `"opencode-push@0.1.0"`. Without npm, copy
-`opencode-push.js` to `~/.config/opencode/plugins/` and use
-`"package": "./plugins/opencode-push.js"` instead.
+To pin a version, use `"opencode-mobile-push@0.1.0"`. Without npm, copy
+`opencode-mobile-push.js` to `~/.config/opencode/plugins/` and use
+`"package": "./plugins/opencode-mobile-push.js"` instead.
 
 ### Options
 
