@@ -8,6 +8,7 @@ import '../../core/models/session.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
+import '../settings/haptics.dart';
 import 'agent_labels.dart';
 import 'composer_providers.dart';
 import 'model_picker.dart';
@@ -46,6 +47,8 @@ class _ComposerState extends ConsumerState<Composer> {
     if (text.isEmpty && files.isEmpty) return;
     _controller.clear();
     setState(() => _files = const []);
+    final haptics = ref.read(hapticsProvider);
+    haptics.play(HapticCue.send);
     final ok = await ref
         .read(pendingPromptsProvider(widget.session.id).notifier)
         .send(text, files: files);
@@ -53,6 +56,7 @@ class _ComposerState extends ConsumerState<Composer> {
       // Rejected: put the text and attachments back so nothing is lost.
       if (_controller.text.isEmpty) _controller.text = text;
       if (_files.isEmpty) setState(() => _files = files);
+      haptics.play(HapticCue.failure);
       _showError(context.l10n.sendFailed);
     }
   }

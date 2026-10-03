@@ -1483,6 +1483,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get themeDark;
+
+  /// No description provided for @settingsInteraction.
+  ///
+  /// In en, this message translates to:
+  /// **'Interaction'**
+  String get settingsInteraction;
+
+  /// No description provided for @settingsHaptics.
+  ///
+  /// In en, this message translates to:
+  /// **'Haptic feedback'**
+  String get settingsHaptics;
+
+  /// No description provided for @settingsHapticsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibrate lightly on send, when a reply finishes, and when the AI needs your answer'**
+  String get settingsHapticsHelp;
 }
 
 class _AppLocalizationsDelegate

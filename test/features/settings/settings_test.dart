@@ -60,6 +60,20 @@ void main() {
     expect((await SettingsStore().load()).languageCode, isNull);
   });
 
+  testWidgets('haptics are on by default and can be turned off', (
+    tester,
+  ) async {
+    await pumpSettings(tester);
+    final toggle = find.byKey(const Key('haptics'));
+    await tester.scrollUntilVisible(toggle, 100);
+    expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
+
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
+    expect((await SettingsStore().load()).haptics, isFalse);
+  });
+
   testWidgets('stored settings are applied on start', (tester) async {
     await SettingsStore().save(
       const AppSettings(themeMode: ThemeMode.light, languageCode: 'en'),

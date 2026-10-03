@@ -850,4 +850,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeDark => 'Dark';
+
+  @override
+  String get settingsInteraction => 'Interaction';
+
+  @override
+  String get settingsHaptics => 'Haptic feedback';
+
+  @override
+  String get settingsHapticsHelp =>
+      'Vibrate lightly on send, when a reply finishes, and when the AI needs your answer';
 }
