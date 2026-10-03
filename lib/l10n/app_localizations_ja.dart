@@ -835,4 +835,18 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get themeDark => 'ダーク';
+
+  @override
+  String get updateRequiredTitle => 'アップデートが必要です';
+
+  @override
+  String updateRequiredBody(String installed, String minimum) {
+    return 'このバージョン（$installed）は使えなくなりました。$minimum 以降に更新してください。';
+  }
+
+  @override
+  String get updateOpenStore => 'ストアを開く';
+
+  @override
+  String get updateFromStore => 'App Store または Google Play からアプリを更新してください。';
 }

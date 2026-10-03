@@ -1483,6 +1483,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get themeDark;
+
+  /// No description provided for @updateRequiredTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update required'**
+  String get updateRequiredTitle;
+
+  /// No description provided for @updateRequiredBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {installed} can no longer be used. Please update to version {minimum} or later.'**
+  String updateRequiredBody(String installed, String minimum);
+
+  /// No description provided for @updateOpenStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Open the store'**
+  String get updateOpenStore;
+
+  /// No description provided for @updateFromStore.
+  ///
+  /// In en, this message translates to:
+  /// **'Update the app from the App Store or Google Play.'**
+  String get updateFromStore;
 }
 
 class _AppLocalizationsDelegate

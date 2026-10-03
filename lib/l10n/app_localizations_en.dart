@@ -850,4 +850,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get themeDark => 'Dark';
+
+  @override
+  String get updateRequiredTitle => 'Update required';
+
+  @override
+  String updateRequiredBody(String installed, String minimum) {
+    return 'Version $installed can no longer be used. Please update to version $minimum or later.';
+  }
+
+  @override
+  String get updateOpenStore => 'Open the store';
+
+  @override
+  String get updateFromStore =>
+      'Update the app from the App Store or Google Play.';
 }

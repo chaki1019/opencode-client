@@ -465,5 +465,15 @@
   "settingsLanguage": "Language",
   "settingsFollowSystem": "Use system setting",
   "themeLight": "Light",
-  "themeDark": "Dark"
+  "themeDark": "Dark",
+  "updateRequiredTitle": "Update required",
+  "updateRequiredBody": "Version {installed} can no longer be used. Please update to version {minimum} or later.",
+  "@updateRequiredBody": {
+    "placeholders": {
+      "installed": {"type": "String"},
+      "minimum": {"type": "String"}
+    }
+  },
+  "updateOpenStore": "Open the store",
+  "updateFromStore": "Update the app from the App Store or Google Play."
 }

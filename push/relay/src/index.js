@@ -14,9 +14,11 @@
 //   DELETE /v1/devices  {key, token}            unregister
 //   POST   /v1/notify   Authorization: Bearer <key>
 //                       {kind, sessionID, enc}
+//   GET    /v1/app-version                     minimum app version per platform
 //
 // Bindings: KV namespace DEVICES, secret FCM_SERVICE_ACCOUNT (the Firebase
-// service account JSON).
+// service account JSON), vars MIN_VERSION_IOS / MIN_VERSION_ANDROID /
+// STORE_URL_IOS / STORE_URL_ANDROID (all optional).
 
 const MIN_KEY_LENGTH = 32;
 const MAX_DEVICES_PER_KEY = 10;
@@ -40,6 +42,9 @@ export async function handle(request, env, deps = {}) {
     if (url.pathname === "/v1/notify" && request.method === "POST") {
       return await notify(request, env, deps);
     }
+    if (url.pathname === "/v1/app-version" && request.method === "GET") {
+      return appVersion(env);
+    }
     return json({ error: "not_found" }, 404);
   } catch (error) {
     if (error instanceof HttpError) return json({ error: error.message }, error.status);
@@ -55,11 +60,28 @@ class HttpError extends Error {
   }
 }
 
-function json(body, status = 200) {
+function json(body, status = 200, headers = {}) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...headers },
   });
+}
+
+// The app refuses to run below `minimum` and sends the user to `storeUrl`.
+// An unset minimum means every version may run.
+function appVersion(env) {
+  const platform = (minimum, storeUrl) => ({
+    minimum: minimum || null,
+    storeUrl: storeUrl || null,
+  });
+  return json(
+    {
+      ios: platform(env.MIN_VERSION_IOS, env.STORE_URL_IOS),
+      android: platform(env.MIN_VERSION_ANDROID, env.STORE_URL_ANDROID),
+    },
+    200,
+    { "cache-control": "public, max-age=300" },
+  );
 }
 
 async function readJson(request) {

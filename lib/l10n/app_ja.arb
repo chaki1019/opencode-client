@@ -230,5 +230,9 @@
   "settingsLanguage": "言語",
   "settingsFollowSystem": "システム設定に従う",
   "themeLight": "ライト",
-  "themeDark": "ダーク"
+  "themeDark": "ダーク",
+  "updateRequiredTitle": "アップデートが必要です",
+  "updateRequiredBody": "このバージョン（{installed}）は使えなくなりました。{minimum} 以降に更新してください。",
+  "updateOpenStore": "ストアを開く",
+  "updateFromStore": "App Store または Google Play からアプリを更新してください。"
 }
