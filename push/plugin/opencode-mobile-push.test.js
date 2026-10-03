@@ -2,7 +2,7 @@
 import assert from "node:assert/strict";
 import { afterEach, beforeEach, test } from "node:test";
 
-import plugin from "./opencode-push.js";
+import plugin from "./opencode-mobile-push.js";
 
 let sent;
 const realFetch = globalThis.fetch;

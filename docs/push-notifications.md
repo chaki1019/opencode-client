@@ -4,7 +4,7 @@ PC/Mac の OpenCode で Agent の応答が終わったとき（またはエラ�
 
 ```
 OpenCode（PC/Mac）
-  └─ プラグイン push/plugin/opencode-push.js
+  └─ プラグイン push/plugin/opencode-mobile-push.js
        │  POST /v1/notify（認証キー + 暗号文）
        ▼
 中継サーバー push/relay（Cloudflare Workers + D1）
@@ -80,12 +80,12 @@ Android は同じ `push.env.json` を Gradle が読み、FCM がアプリの起�
 ## 4. アプリと PC/Mac の設定
 
 1. アプリでサーバーに接続し、プロジェクト一覧右上のベルから「このサーバーの通知を受け取る」をオンにする。
-2. アプリに表示される項目（コピーボタンあり）を `~/.config/opencode/opencode.json` に追加し、OpenCode を再起動する。プラグインは npm の `opencode-push` から入ります。npm を使わない場合は `push/plugin/opencode-push.js` を `~/.config/opencode/plugins/` にコピーし、`"package"` を `"./plugins/opencode-push.js"` にします。
+2. アプリに表示される項目（コピーボタンあり）を `~/.config/opencode/opencode.json` に追加し、OpenCode を再起動する。プラグインは npm の `opencode-mobile-push` から入ります。npm を使わない場合は `push/plugin/opencode-mobile-push.js` を `~/.config/opencode/plugins/` にコピーし、`"package"` を `"./plugins/opencode-mobile-push.js"` にします。
 
 ```jsonc
 "plugins": [
   {
-    "package": "opencode-push",
+    "package": "opencode-mobile-push",
     "options": {
       "relay": "https://opencode-push-relay.<account>.workers.dev",
       "key": "<アプリが表示するペアリングキー>",
@@ -106,24 +106,10 @@ Android は同じ `push.env.json` を Gradle が読み、FCM がアプリの起�
 
 ### プラグインを npm に公開する
 
-`push/plugin` がそのまま npm パッケージ `opencode-push` になります（MIT ライセンス）。公開されるのは `opencode-push.js`、`README.md`、`LICENSE` だけです。
+`push/plugin` がそのまま npm パッケージ `opencode-mobile-push` になります（MIT ライセンス）。公開されるのは `opencode-mobile-push.js`、`README.md`、`LICENSE` だけです（`npm pack --dry-run` で確認できます）。
 
-```bash
-cd push/plugin
-npm pack --dry-run          # 含まれるファイルを確認
-npm login
-npm publish                 # 公開前にテストが走ります
-```
+公開は GitHub Actions の「Publish plugin」ワークフロー（`.github/workflows/publish-plugin.yml`）で行います。npm の Trusted Publishing を使うので、npm のトークンは要りません。
 
-版を上げるときは `package.json` の `version` を変えてから公開します。
-
-## 対象のイベント
-
-`@opencode/plugin` 2.0.22 の型で確認しています。v2 は `session.idle` を出さないため、完了は `session.execution.succeeded` で判定します。
-
-| 通知 | イベント |
-|---|---|
-| 応答が完了しました | `session.execution.succeeded` |
-| エラーで停止しました | `session.execution.failed` |
-| 許可を待っています | `permission.asked` |
-| 質問に回答を待っています | `form.created` |
+1. 最初の 1 回だけ手元で公開する（Trusted Publishing はパッケージが存在しないと設定できないため）: `cd push/plugin && npm login && npm publish --access public`
+2. npmjs.com のパッケージ設定 → Trusted Publisher で GitHub Actions を選び、リポジトリ `chaki1019/opencode-client`、ワークフロー `publish-plugin.yml` を登録する。
+3. 以降は `package.json` の `version` を上げてからワークフローを実行する。

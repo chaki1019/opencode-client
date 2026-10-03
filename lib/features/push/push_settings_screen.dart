@@ -15,7 +15,7 @@ String pluginConfigSnippet({required String relayUrl, required String key}) =>
     '''
 "plugins": [
   {
-    "package": "opencode-push",
+    "package": "opencode-mobile-push",
     "options": {
       "relay": "$relayUrl",
       "key": "$key"

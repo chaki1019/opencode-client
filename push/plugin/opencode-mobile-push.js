@@ -1,12 +1,12 @@
 // OpenCode v2 plugin: forwards "agent finished / needs you" events to the
 // opencode-client push relay, which delivers them to the phone over FCM.
 //
-// Install from npm (package "opencode-push") or copy this single file to
+// Install from npm (package "opencode-mobile-push") or copy this single file to
 // ~/.config/opencode/plugins/, then add to ~/.config/opencode/opencode.json
 // (the app shows this snippet with your key):
 //
 //   "plugins": [{
-//     "package": "opencode-push",   // or "./plugins/opencode-push.js"
+//     "package": "opencode-mobile-push",  // or "./plugins/opencode-mobile-push.js"
 //     "options": { "relay": "https://<your-relay>", "key": "<pairing key>" }
 //   }]
 //
@@ -19,7 +19,7 @@
 // encryption key it never gets. The project name and session title travel
 // as AES-256-GCM ciphertext that only the phone can open.
 
-const PLUGIN_ID = "opencode-push";
+const PLUGIN_ID = "opencode-mobile-push";
 const DEDUPE_MS = 15_000;
 const BACKOFFS_MS = [2_000, 5_000, 10_000, 30_000];
 
