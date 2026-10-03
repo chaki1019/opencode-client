@@ -74,6 +74,10 @@ class ProjectToolsButton extends StatelessWidget {
 AppBar toolSheetAppBar({required String title, List<Widget>? actions}) =>
     AppBar(
       title: Text(title),
+      // The theme's spacing leaves room for a back button, which a sheet
+      // doesn't have; line the title and actions up with the content.
+      titleSpacing: 16,
+      actionsPadding: const EdgeInsets.only(right: 8),
       primary: false,
       automaticallyImplyLeading: false,
       backgroundColor: Colors.transparent,
