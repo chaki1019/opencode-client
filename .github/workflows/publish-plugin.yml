@@ -3,7 +3,9 @@
 # Uses npm Trusted Publishing (OIDC), so no npm token is stored anywhere.
 # One-time setup on npmjs.com: package settings → Trusted Publisher →
 # GitHub Actions, repository chaki1019/opencode-mobile, workflow
-# publish-plugin.yml. Bump "version" in push/plugin/package.json first.
+# publish-plugin.yml, with "Allow npm publish" left off. Bump "version" in
+# push/plugin/package.json first. The run only stages the release; the owner
+# approves it on npmjs.com before it goes live.
 name: Publish plugin
 
 on:
@@ -28,4 +30,4 @@ jobs:
       # Trusted Publishing needs npm 11.5.1 or later.
       - run: npm install -g npm@latest
       - run: npm test
-      - run: npm publish --access public
+      - run: npm stage publish --access public
