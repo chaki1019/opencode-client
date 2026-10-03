@@ -10,6 +10,7 @@ import '../features/connection/connection_screen.dart';
 import '../features/projects/folder_picker_screen.dart';
 import '../features/projects/project_screen.dart';
 import '../features/projects/projects_screen.dart';
+import '../features/push/push_settings_screen.dart';
 
 /// go_router 18 only recognizes `material_ui`'s MaterialApp and otherwise
 /// falls back to pages without any transition, so every route builds its
@@ -60,6 +61,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                 _page(state, ProjectScreen(project: state.extra! as Project)),
           ),
         ],
+      ),
+      GoRoute(
+        path: '/push',
+        pageBuilder: (context, state) =>
+            _page(state, const PushSettingsScreen()),
       ),
       GoRoute(
         path: '/sessions/:sessionId',

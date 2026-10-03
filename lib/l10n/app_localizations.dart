@@ -1327,6 +1327,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Created'**
   String get sessionCreated;
+
+  /// No description provided for @copy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy'**
+  String get copy;
+
+  /// No description provided for @copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied'**
+  String get copied;
+
+  /// No description provided for @pushTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get pushTitle;
+
+  /// No description provided for @pushReceive.
+  ///
+  /// In en, this message translates to:
+  /// **'Get notified for this server'**
+  String get pushReceive;
+
+  /// No description provided for @pushWhat.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifies you when the agent finishes, stops on an error, or waits for a permission or an answer. Needs the plugin below in OpenCode on your computer.'**
+  String get pushWhat;
+
+  /// No description provided for @pushNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'This build has no push settings. Build it with PUSH_RELAY_URL and the Firebase values (see docs/push-notifications.md).'**
+  String get pushNotConfigured;
+
+  /// No description provided for @pushPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are turned off for this app in system settings'**
+  String get pushPermissionDenied;
+
+  /// No description provided for @pushNoToken.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t get a push token from the device. Try again later.'**
+  String get pushNoToken;
+
+  /// No description provided for @pushFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t update notifications: {error}'**
+  String pushFailed(Object error);
+
+  /// No description provided for @pushSetupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up OpenCode on your computer'**
+  String get pushSetupTitle;
+
+  /// No description provided for @pushSetupSteps.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Copy push/plugin/opencode-push.js from this app\'s repository to ~/.config/opencode/plugins/\n2. Add the entry below to ~/.config/opencode/opencode.json\n3. Restart OpenCode'**
+  String get pushSetupSteps;
+
+  /// No description provided for @pushSendTest.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a test notification'**
+  String get pushSendTest;
+
+  /// No description provided for @pushTestTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Test notification from OpenCode'**
+  String get pushTestTitle;
+
+  /// No description provided for @pushTestSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent. It should arrive in a few seconds.'**
+  String get pushTestSent;
+
+  /// No description provided for @pushOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get pushOpen;
+
+  /// No description provided for @pushDefaultTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenCode'**
+  String get pushDefaultTitle;
+
+  /// No description provided for @pushOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the session: {error}'**
+  String pushOpenFailed(Object error);
 }
 
 class _AppLocalizationsDelegate

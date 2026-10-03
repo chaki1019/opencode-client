@@ -769,4 +769,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sessionCreated => 'Created';
+
+  @override
+  String get copy => 'Copy';
+
+  @override
+  String get copied => 'Copied';
+
+  @override
+  String get pushTitle => 'Notifications';
+
+  @override
+  String get pushReceive => 'Get notified for this server';
+
+  @override
+  String get pushWhat =>
+      'Notifies you when the agent finishes, stops on an error, or waits for a permission or an answer. Needs the plugin below in OpenCode on your computer.';
+
+  @override
+  String get pushNotConfigured =>
+      'This build has no push settings. Build it with PUSH_RELAY_URL and the Firebase values (see docs/push-notifications.md).';
+
+  @override
+  String get pushPermissionDenied =>
+      'Notifications are turned off for this app in system settings';
+
+  @override
+  String get pushNoToken =>
+      'Couldn\'t get a push token from the device. Try again later.';
+
+  @override
+  String pushFailed(Object error) {
+    return 'Couldn\'t update notifications: $error';
+  }
+
+  @override
+  String get pushSetupTitle => 'Set up OpenCode on your computer';
+
+  @override
+  String get pushSetupSteps =>
+      '1. Copy push/plugin/opencode-push.js from this app\'s repository to ~/.config/opencode/plugins/\n2. Add the entry below to ~/.config/opencode/opencode.json\n3. Restart OpenCode';
+
+  @override
+  String get pushSendTest => 'Send a test notification';
+
+  @override
+  String get pushTestTitle => 'Test notification from OpenCode';
+
+  @override
+  String get pushTestSent => 'Sent. It should arrive in a few seconds.';
+
+  @override
+  String get pushOpen => 'Open';
+
+  @override
+  String get pushDefaultTitle => 'OpenCode';
+
+  @override
+  String pushOpenFailed(Object error) {
+    return 'Couldn\'t open the session: $error';
+  }
 }

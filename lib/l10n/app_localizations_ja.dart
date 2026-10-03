@@ -754,4 +754,62 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get sessionCreated => '作成日時';
+
+  @override
+  String get copy => 'コピー';
+
+  @override
+  String get copied => 'コピーしました';
+
+  @override
+  String get pushTitle => '通知';
+
+  @override
+  String get pushReceive => 'このサーバーの通知を受け取る';
+
+  @override
+  String get pushWhat =>
+      'Agent の応答が終わったとき、エラーで止まったとき、許可や回答を待っているときに通知します。PC/Mac の OpenCode に下のプラグインを入れる必要があります。';
+
+  @override
+  String get pushNotConfigured =>
+      'このビルドには通知の設定が含まれていません。PUSH_RELAY_URL と Firebase の値を指定してビルドしてください（docs/push-notifications.md）。';
+
+  @override
+  String get pushPermissionDenied => 'システム設定でこのアプリの通知がオフになっています';
+
+  @override
+  String get pushNoToken => '端末のプッシュトークンを取得できませんでした。時間をおいて試してください。';
+
+  @override
+  String pushFailed(Object error) {
+    return '通知の設定を変更できませんでした: $error';
+  }
+
+  @override
+  String get pushSetupTitle => 'PC/Mac の OpenCode の設定';
+
+  @override
+  String get pushSetupSteps =>
+      '1. このアプリのリポジトリの push/plugin/opencode-push.js を ~/.config/opencode/plugins/ にコピー\n2. ~/.config/opencode/opencode.json に下の項目を追加\n3. OpenCode を再起動';
+
+  @override
+  String get pushSendTest => 'テスト通知を送る';
+
+  @override
+  String get pushTestTitle => 'OpenCode からのテスト通知';
+
+  @override
+  String get pushTestSent => '送信しました。数秒で届きます。';
+
+  @override
+  String get pushOpen => '開く';
+
+  @override
+  String get pushDefaultTitle => 'OpenCode';
+
+  @override
+  String pushOpenFailed(Object error) {
+    return 'セッションを開けませんでした: $error';
+  }
 }
