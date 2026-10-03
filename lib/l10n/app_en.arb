@@ -503,5 +503,14 @@
   "privacyPolicy": "Privacy policy",
   "crashReports": "Send crash reports",
   "crashReportsHelp": "When the app crashes, send the error details (no chat content) to help fix it",
-  "linkOpenFailed": "Couldn't open this:"
+  "linkOpenFailed": "Couldn't open this:",
+  "pushComputerTitle": "On the computer",
+  "pushComputerActive": "The plugin is running",
+  "pushComputerFailed": "The plugin failed to load: {error}",
+  "@pushComputerFailed": {"placeholders": {"error": {}}},
+  "pushComputerOtherKey": "It is set up with a different key. Replace the entry in opencode.json with the one below.",
+  "pushComputerNotLoaded": "It is configured but not loaded yet. Restart OpenCode.",
+  "pushComputerMissing": "Not set up yet. Add it with the steps below.",
+  "pushComputerUnknown": "Couldn't check",
+  "pushComputerRefresh": "Check again"
 }

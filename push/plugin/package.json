@@ -1,6 +1,6 @@
 {
   "name": "opencode-mobile-push",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "OpenCode plugin that sends end-to-end encrypted push notifications to your phone when the agent finishes or needs you.",
   "type": "module",
   "main": "opencode-mobile-push.js",

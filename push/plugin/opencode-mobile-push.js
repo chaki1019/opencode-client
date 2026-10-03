@@ -1,17 +1,21 @@
 // OpenCode v2 plugin: forwards "agent finished / needs you" events to the
 // opencode-mobile push relay, which delivers them to the phone over FCM.
 //
-// Install from npm (package "opencode-mobile-push") or copy this single file to
-// ~/.config/opencode/plugins/, then add to ~/.config/opencode/opencode.json
-// (the app shows this snippet with your key):
+// Install from npm (package "opencode-mobile-push") and add to
+// ~/.config/opencode/opencode.json (the app shows this snippet with your key):
 //
 //   "plugins": [{
-//     "package": "opencode-mobile-push",  // or "./plugins/opencode-mobile-push.js"
+//     "package": "opencode-mobile-push",
 //     "options": { "relay": "https://<your-relay>", "key": "<pairing key>" }
 //   }]
 //
-// The file has no imports on purpose: plugins load from a folder without
-// node_modules, and a failed import makes OpenCode skip the plugin silently.
+// Or drop this file into ~/.config/opencode/plugins/, which OpenCode loads
+// without options; relay and key then come from
+// ~/.config/opencode/opencode-mobile-push.json ({"relay": ..., "key": ...}).
+//
+// The file has no package imports on purpose: plugins load from a folder
+// without node_modules, and a failed import makes OpenCode skip the plugin
+// silently. Node built-ins are loaded lazily and only when needed.
 // Checked against @opencode/plugin 2.0.22 (event names and payloads).
 //
 // The relay never sees what a notification says. Two keys are derived from
@@ -20,6 +24,7 @@
 // as AES-256-GCM ciphertext that only the phone can open.
 
 const PLUGIN_ID = "opencode-mobile-push";
+const SETTINGS_FILE = "opencode-mobile-push.json";
 const DEDUPE_MS = 15_000;
 const BACKOFFS_MS = [2_000, 5_000, 10_000, 30_000];
 
@@ -53,6 +58,41 @@ function readOptions(raw) {
       question: flag("notifyOnQuestion"),
     },
   };
+}
+
+/** Where relay and key are read from when the plugin gets no options. */
+function settingsPaths(env) {
+  const paths = [];
+  if (env.OPENCODE_MOBILE_PUSH_SETTINGS) paths.push(env.OPENCODE_MOBILE_PUSH_SETTINGS);
+  // Next to the plugins folder this file was loaded from.
+  if (import.meta.url.startsWith("file:")) paths.push(new URL(`../${SETTINGS_FILE}`, import.meta.url));
+  const base = env.XDG_CONFIG_HOME || (env.HOME ? `${env.HOME}/.config` : "");
+  if (base) paths.push(`${base}/opencode/${SETTINGS_FILE}`);
+  return paths;
+}
+
+async function readSettings() {
+  try {
+    const { readFile } = await import("node:fs/promises");
+    for (const path of settingsPaths(globalThis.process?.env ?? {})) {
+      try {
+        const settings = JSON.parse(await readFile(path, "utf8"));
+        if (settings && typeof settings === "object") return settings;
+      } catch {
+        // Missing or unreadable; try the next place.
+      }
+    }
+  } catch {
+    // No filesystem access in this runtime.
+  }
+  return {};
+}
+
+/** Options from the config, falling back to the settings file for relay and key. */
+async function resolveOptions(raw) {
+  const options = readOptions(raw);
+  if (options.relay && options.key) return options;
+  return readOptions({ ...(await readSettings()), ...(raw ?? {}) });
 }
 
 /** Maps a v2 event to a notification kind and its session, or null. */
@@ -196,22 +236,25 @@ function sleep(ms, signal) {
 export default {
   id: PLUGIN_ID,
   async setup(ctx) {
-    const options = readOptions(ctx.options);
-    if (!options.relay || !options.key) {
-      console.error(`[${PLUGIN_ID}] "relay" and "key" options are required; notifications are off.`);
-      return;
-    }
-
     const controller = new AbortController();
     const { signal } = controller;
-    // Subscribe before any other await: the stream does not replay events,
-    // so a late subscription misses the first turn.
+    // Resolved after subscribing: the stream does not replay events, so a
+    // late subscription misses the first turn.
+    const ready = resolveOptions(ctx.options).then((options) => {
+      if (options.relay && options.key) return options;
+      console.error(`[${PLUGIN_ID}] "relay" and "key" options are required; notifications are off.`);
+      controller.abort();
+      return null;
+    });
+
     void (async () => {
       let failures = 0;
       while (!signal.aborted) {
         try {
           for await (const event of ctx.event.subscribe({ signal })) {
             failures = 0;
+            const options = await ready;
+            if (!options) break;
             handle(ctx, options, event).catch((error) => {
               console.error(`[${PLUGIN_ID}] notify failed: ${error?.message ?? error}`);
             });

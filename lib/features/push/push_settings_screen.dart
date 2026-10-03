@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/layout.dart';
 import '../../app/theme.dart';
 import '../../core/models/server_config.dart';
+import '../../core/push/computer_plugin.dart';
 import '../../core/push/push_store.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
@@ -135,6 +136,7 @@ class _PairingViewState extends ConsumerState<_PairingView> {
             ),
           ),
           if (pairing.enabled) ...[
+            _ComputerStatus(serverId: widget.server.id),
             _Setup(relayUrl: widget.relayUrl, pairing: pairing),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -154,6 +156,72 @@ class _PairingViewState extends ConsumerState<_PairingView> {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _ComputerStatus extends ConsumerWidget {
+  const _ComputerStatus({required this.serverId});
+
+  final String serverId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final colors = Theme.of(context).colorScheme;
+    final provider = computerPluginProvider(serverId);
+    final check = ref.watch(provider);
+    final (icon, color, text) = switch (check) {
+      AsyncData(value: final check?) => switch (check.status) {
+        ComputerPluginStatus.active => (
+          Icons.check_circle_outline,
+          colors.primary,
+          l10n.pushComputerActive,
+        ),
+        ComputerPluginStatus.failed => (
+          Icons.error_outline,
+          colors.error,
+          l10n.pushComputerFailed(check.error ?? ''),
+        ),
+        ComputerPluginStatus.otherKey => (
+          Icons.key_off_outlined,
+          colors.error,
+          l10n.pushComputerOtherKey,
+        ),
+        ComputerPluginStatus.notLoaded => (
+          Icons.restart_alt,
+          colors.tertiary,
+          l10n.pushComputerNotLoaded,
+        ),
+        ComputerPluginStatus.missing => (
+          Icons.radio_button_unchecked,
+          colors.onSurfaceVariant,
+          l10n.pushComputerMissing,
+        ),
+      },
+      AsyncLoading() => (null, null, null),
+      _ => (
+        Icons.help_outline,
+        colors.onSurfaceVariant,
+        l10n.pushComputerUnknown,
+      ),
+    };
+    return ListTile(
+      key: const Key('push-computer'),
+      leading: icon == null
+          ? const SizedBox.square(
+              dimension: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Icon(icon, color: color),
+      title: Text(l10n.pushComputerTitle),
+      subtitle: text == null ? null : Text(text),
+      trailing: IconButton(
+        key: const Key('push-computer-refresh'),
+        tooltip: l10n.pushComputerRefresh,
+        icon: const Icon(Icons.refresh),
+        onPressed: () => ref.invalidate(provider),
       ),
     );
   }
