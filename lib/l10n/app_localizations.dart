@@ -1331,7 +1331,7 @@ abstract class AppLocalizations {
   /// No description provided for @pushWhat.
   ///
   /// In en, this message translates to:
-  /// **'Notifies you when the agent finishes, stops on an error, or waits for a permission or an answer. Needs the plugin below in OpenCode on your computer.'**
+  /// **'Notifies you when the agent finishes, stops on an error, or waits for a permission or an answer. Needs the plugin below in OpenCode on your computer. Project and session names are encrypted, so the relay server cannot read them.'**
   String get pushWhat;
 
   /// No description provided for @pushNotConfigured.
@@ -1394,11 +1394,35 @@ abstract class AppLocalizations {
   /// **'Open'**
   String get pushOpen;
 
-  /// No description provided for @pushDefaultTitle.
+  /// No description provided for @pushHeadlineCompleted.
   ///
   /// In en, this message translates to:
-  /// **'OpenCode'**
-  String get pushDefaultTitle;
+  /// **'Reply finished'**
+  String get pushHeadlineCompleted;
+
+  /// No description provided for @pushHeadlineFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped with an error'**
+  String get pushHeadlineFailed;
+
+  /// No description provided for @pushHeadlinePermission.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for permission'**
+  String get pushHeadlinePermission;
+
+  /// No description provided for @pushHeadlineQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your answer'**
+  String get pushHeadlineQuestion;
+
+  /// No description provided for @pushChannelName.
+  ///
+  /// In en, this message translates to:
+  /// **'Agent updates'**
+  String get pushChannelName;
 
   /// No description provided for @pushOpenFailed.
   ///

@@ -12,6 +12,11 @@
 // The file has no imports on purpose: plugins load from a folder without
 // node_modules, and a failed import makes OpenCode skip the plugin silently.
 // Checked against @opencode/plugin 2.0.22 (event names and payloads).
+//
+// The relay never sees what a notification says. Two keys are derived from
+// the pairing key with HKDF-SHA256: an auth token the relay knows, and an
+// encryption key it never gets. The project name and session title travel
+// as AES-256-GCM ciphertext that only the phone can open.
 
 const PLUGIN_ID = "opencode-push";
 const DEDUPE_MS = 15_000;
@@ -66,12 +71,57 @@ function classify(event) {
   }
 }
 
-const HEADLINES = {
-  completed: "応答が完了しました",
-  failed: "エラーで停止しました",
-  permission: "許可を待っています",
-  question: "質問に回答を待っています",
-};
+const encoder = new TextEncoder();
+
+function base64url(bytes) {
+  let binary = "";
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+async function deriveBytes(key, info) {
+  const material = await crypto.subtle.importKey("raw", encoder.encode(key), "HKDF", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits(
+    { name: "HKDF", hash: "SHA-256", salt: new Uint8Array(0), info: encoder.encode(info) },
+    material,
+    256,
+  );
+  return new Uint8Array(bits);
+}
+
+const derived = new Map();
+
+/** The relay token and AES key for a pairing key (cached per key). */
+function keysFor(key) {
+  if (!derived.has(key)) {
+    derived.set(key, (async () => {
+      const auth = base64url(await deriveBytes(key, "opencode-push/auth"));
+      const enc = await crypto.subtle.importKey(
+        "raw",
+        await deriveBytes(key, "opencode-push/enc"),
+        "AES-GCM",
+        false,
+        ["encrypt"],
+      );
+      return { auth, enc };
+    })());
+  }
+  return derived.get(key);
+}
+
+/** AES-256-GCM over [content]; kind and session are bound as associated data. */
+async function seal(encKey, kind, sessionID, content) {
+  const nonce = crypto.getRandomValues(new Uint8Array(12));
+  const sealed = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv: nonce, additionalData: encoder.encode(`${kind}:${sessionID}`) },
+    encKey,
+    encoder.encode(JSON.stringify(content)),
+  );
+  const out = new Uint8Array(12 + sealed.byteLength);
+  out.set(nonce);
+  out.set(new Uint8Array(sealed), 12);
+  return base64url(out);
+}
 
 function basename(path) {
   if (typeof path !== "string") return "";
@@ -87,12 +137,12 @@ async function sessionInfo(ctx, sessionID) {
   }
 }
 
-async function post(options, payload) {
+async function post(options, auth, payload) {
   const response = await fetch(`${options.relay}/v1/notify`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
-      authorization: `Bearer ${options.key}`,
+      authorization: `Bearer ${auth}`,
     },
     body: JSON.stringify(payload),
   });
@@ -119,14 +169,16 @@ async function handle(ctx, options, event) {
   if (!remember(sentKeys, `${kind}:${sessionID}`, now)) return;
 
   const directory = event.location?.directory ?? session?.location?.directory ?? ctx.location?.directory;
-  const project = basename(directory) || "OpenCode";
-  const title = options.includeTitle && session?.title ? session.title : undefined;
-  await post(options, {
+  const content = { project: basename(directory) };
+  if (options.includeTitle) {
+    if (session?.title) content.title = session.title;
+    if (match.detail) content.detail = String(match.detail);
+  }
+  const keys = await keysFor(options.key);
+  await post(options, keys.auth, {
     kind,
-    title: `${project}: ${HEADLINES[kind]}`,
-    body: title ?? (options.includeTitle && match.detail ? String(match.detail) : ""),
     sessionID,
-    directory: directory ?? "",
+    enc: await seal(keys.enc, kind, sessionID, content),
   });
 }
 

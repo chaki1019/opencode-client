@@ -751,7 +751,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pushWhat =>
-      'Agent の応答が終わったとき、エラーで止まったとき、許可や回答を待っているときに通知します。PC/Mac の OpenCode に下のプラグインを入れる必要があります。';
+      'Agent の応答が終わったとき、エラーで止まったとき、許可や回答を待っているときに通知します。PC/Mac の OpenCode に下のプラグインを入れる必要があります。プロジェクト名やセッション名は暗号化して送るため、中継サーバーからは読めません。';
 
   @override
   String get pushNotConfigured =>
@@ -788,7 +788,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pushOpen => '開く';
 
   @override
-  String get pushDefaultTitle => 'OpenCode';
+  String get pushHeadlineCompleted => '応答が完了しました';
+
+  @override
+  String get pushHeadlineFailed => 'エラーで停止しました';
+
+  @override
+  String get pushHeadlinePermission => '許可を待っています';
+
+  @override
+  String get pushHeadlineQuestion => '質問に回答を待っています';
+
+  @override
+  String get pushChannelName => 'Agent の通知';
 
   @override
   String pushOpenFailed(Object error) {

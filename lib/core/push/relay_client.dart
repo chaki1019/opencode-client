@@ -10,7 +10,7 @@ class RelayException implements Exception {
 }
 
 /// Talks to the push relay (push/relay): registers this device's token
-/// under a pairing key and can send a test notification through it.
+/// under a pairing's auth key and can send a test notification through it.
 class RelayClient {
   RelayClient(String baseUrl, {Dio? dio}) : _dio = dio ?? Dio() {
     _dio.options
@@ -36,11 +36,12 @@ class RelayClient {
       _send('DELETE', '/v1/devices', {'key': key, 'token': token});
 
   /// Sends a notification as the plugin would, to check the whole path.
-  Future<void> sendTest({required String key, required String title}) => _send(
+  /// [auth] is the derived relay key; [enc] the sealed content.
+  Future<void> sendTest({required String auth, required String enc}) => _send(
     'POST',
     '/v1/notify',
-    {'kind': 'completed', 'title': title, 'body': '', 'sessionID': ''},
-    headers: {'Authorization': 'Bearer $key'},
+    {'kind': 'completed', 'sessionID': '', 'enc': enc},
+    headers: {'Authorization': 'Bearer $auth'},
   );
 
   Future<void> _send(

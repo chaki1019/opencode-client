@@ -205,7 +205,7 @@
   "copied": "コピーしました",
   "pushTitle": "通知",
   "pushReceive": "このサーバーの通知を受け取る",
-  "pushWhat": "Agent の応答が終わったとき、エラーで止まったとき、許可や回答を待っているときに通知します。PC/Mac の OpenCode に下のプラグインを入れる必要があります。",
+  "pushWhat": "Agent の応答が終わったとき、エラーで止まったとき、許可や回答を待っているときに通知します。PC/Mac の OpenCode に下のプラグインを入れる必要があります。プロジェクト名やセッション名は暗号化して送るため、中継サーバーからは読めません。",
   "pushNotConfigured": "このビルドには通知の設定が含まれていません。PUSH_RELAY_URL と Firebase の値を指定してビルドしてください（docs/push-notifications.md）。",
   "pushPermissionDenied": "システム設定でこのアプリの通知がオフになっています",
   "pushNoToken": "端末のプッシュトークンを取得できませんでした。時間をおいて試してください。",
@@ -216,6 +216,10 @@
   "pushTestTitle": "OpenCode からのテスト通知",
   "pushTestSent": "送信しました。数秒で届きます。",
   "pushOpen": "開く",
-  "pushDefaultTitle": "OpenCode",
+  "pushHeadlineCompleted": "応答が完了しました",
+  "pushHeadlineFailed": "エラーで停止しました",
+  "pushHeadlinePermission": "許可を待っています",
+  "pushHeadlineQuestion": "質問に回答を待っています",
+  "pushChannelName": "Agent の通知",
   "pushOpenFailed": "セッションを開けませんでした: {error}"
 }
