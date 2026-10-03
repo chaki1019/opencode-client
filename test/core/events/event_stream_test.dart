@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
+import 'package:dio/dio.dart';
+
 import 'package:flutter_test/flutter_test.dart';
+import 'package:opencode_mobile/core/api/opencode_client.dart';
 import 'package:opencode_mobile/core/events/event_stream.dart';
 import 'package:opencode_mobile/core/events/server_event.dart';
 
@@ -83,5 +87,67 @@ void main() {
     expect(attempts, 2);
     expect(stream.status, EventStreamStatus.connected);
     await stream.dispose();
+  });
+
+  // A stream that reports the CancelToken's cancellation as an error, the
+  // way dio's response stream does.
+  Future<Stream<List<int>>> openCancellable(CancelToken cancel) async {
+    final controller = StreamController<List<int>>();
+    cancel.whenCancel.then(controller.addError);
+    return controller.stream;
+  }
+
+  test('stopping a live connection does not leak the cancel error', () async {
+    final stream = EventStream(random: Random(0), open: openCancellable)
+      ..start();
+    await stream.statusChanges.firstWhere(
+      (s) => s == EventStreamStatus.connected,
+    );
+    await stream.dispose();
+    await pumpEventQueue();
+    expect(stream.status, EventStreamStatus.stopped);
+  });
+
+  test('a heartbeat timeout does not leak the cancel error', () async {
+    var opened = 0;
+    final stream = EventStream(
+      random: Random(0),
+      heartbeatTimeout: const Duration(milliseconds: 100),
+      open: (cancel) {
+        opened++;
+        return openCancellable(cancel);
+      },
+    )..start();
+    await Future<void>.delayed(const Duration(milliseconds: 700));
+    expect(opened, greaterThanOrEqualTo(2));
+    await stream.dispose();
+    await pumpEventQueue();
+  });
+
+  test('disconnecting from a real dio event stream ends cleanly', () async {
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    addTearDown(() => server.close(force: true));
+    server.listen((request) {
+      request.response
+        ..headers.contentType = ContentType('text', 'event-stream')
+        ..bufferOutput = false
+        ..write(': connected\n\n')
+        ..flush();
+    });
+    final client = OpenCodeClient(
+      baseUrl: 'http://127.0.0.1:${server.port}',
+      username: 'opencode',
+      password: '',
+    );
+    final stream = EventStream(
+      random: Random(0),
+      open: (cancel) => client.openEventStream(cancelToken: cancel),
+    )..start();
+    await stream.statusChanges.firstWhere(
+      (s) => s == EventStreamStatus.connected,
+    );
+    await stream.dispose();
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    expect(stream.status, EventStreamStatus.stopped);
   });
 }
