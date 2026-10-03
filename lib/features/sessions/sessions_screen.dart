@@ -9,6 +9,7 @@ import '../../core/models/session.dart';
 import '../../core/paging.dart';
 import '../../core/api/api_errors.dart';
 import '../../l10n/l10n.dart';
+import '../chat/session_actions.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
@@ -69,7 +70,10 @@ class SessionsScreen extends ConsumerWidget {
                   child: ListView.builder(
                     itemCount: paged.items.length + 1,
                     itemBuilder: (context, index) => index < paged.items.length
-                        ? _SessionTile(session: paged.items[index])
+                        ? _SessionTile(
+                            project: project,
+                            session: paged.items[index],
+                          )
                         : _PagingFooter(
                             paged: paged,
                             onRetry: () =>
@@ -107,10 +111,62 @@ class SessionsScreen extends ConsumerWidget {
   }
 }
 
+/// A session row. Swipe right to rename, left to delete; long-press offers
+/// both.
 class _SessionTile extends ConsumerWidget {
-  const _SessionTile({required this.session});
+  const _SessionTile({required this.project, required this.session});
 
+  final Project project;
   final Session session;
+
+  Future<void> _rename(BuildContext context, WidgetRef ref) async {
+    final list = ref.read(sessionListProvider(project).notifier);
+    final updated = await renameSession(context, ref, session);
+    if (updated != null) list.replace(updated);
+  }
+
+  Future<bool> _delete(BuildContext context, WidgetRef ref) =>
+      deleteSession(context, ref, session);
+
+  Future<void> _menu(BuildContext context, WidgetRef ref) async {
+    final action = await showModalBottomSheet<_TileAction>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              key: const Key('session-rename'),
+              leading: const Icon(Icons.edit),
+              title: Text(context.l10n.rename),
+              onTap: () => Navigator.pop(context, _TileAction.rename),
+            ),
+            ListTile(
+              key: const Key('session-delete'),
+              leading: Icon(
+                Icons.delete_outline,
+                color: Theme.of(context).colorScheme.error,
+              ),
+              title: Text(
+                context.l10n.delete,
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
+              ),
+              onTap: () => Navigator.pop(context, _TileAction.delete),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (action == null || !context.mounted) return;
+    switch (action) {
+      case _TileAction.rename:
+        await _rename(context, ref);
+      case _TileAction.delete:
+        final list = ref.read(sessionListProvider(project).notifier);
+        if (await _delete(context, ref)) list.remove(session.id);
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -127,36 +183,103 @@ class _SessionTile extends ConsumerWidget {
     ].join(' · ');
     final theme = Theme.of(context);
     final style = theme.textTheme.labelSmall;
-    return ListTile(
-      title: Text(
-        session.displayTitle ?? context.l10n.untitledSession,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(fontWeight: FontWeight.w500),
+    final scheme = theme.colorScheme;
+    return Dismissible(
+      key: ValueKey(session.id),
+      background: _SwipeBackground(
+        alignment: Alignment.centerLeft,
+        color: scheme.secondaryContainer,
+        foreground: scheme.onSecondaryContainer,
+        icon: Icons.edit,
+        label: context.l10n.rename,
       ),
-      subtitle: Text.rich(
-        TextSpan(
-          children: [
-            if (activity != null) ...[
-              WidgetSpan(
-                alignment: PlaceholderAlignment.middle,
-                child: SessionActivityLabel(activity: activity, style: style),
-              ),
-              const TextSpan(text: ' · '),
-            ],
-            TextSpan(text: details),
-          ],
+      secondaryBackground: _SwipeBackground(
+        alignment: Alignment.centerRight,
+        color: scheme.errorContainer,
+        foreground: scheme.onErrorContainer,
+        icon: Icons.delete_outline,
+        label: context.l10n.delete,
+      ),
+      confirmDismiss: (direction) async {
+        if (direction == DismissDirection.endToStart) {
+          return _delete(context, ref);
+        }
+        // Renaming keeps the row; it springs back after the dialog.
+        await _rename(context, ref);
+        return false;
+      },
+      onDismissed: (_) =>
+          ref.read(sessionListProvider(project).notifier).remove(session.id),
+      child: ListTile(
+        title: Text(
+          session.displayTitle ?? context.l10n.untitledSession,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(fontWeight: FontWeight.w500),
         ),
-        style: style,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-      ),
-      onTap: () => context.push(
-        '/sessions/${Uri.encodeComponent(session.id)}',
-        extra: session,
+        subtitle: Text.rich(
+          TextSpan(
+            children: [
+              if (activity != null) ...[
+                WidgetSpan(
+                  alignment: PlaceholderAlignment.middle,
+                  child: SessionActivityLabel(activity: activity, style: style),
+                ),
+                const TextSpan(text: ' · '),
+              ],
+              TextSpan(text: details),
+            ],
+          ),
+          style: style,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        onTap: () => context.push(
+          '/sessions/${Uri.encodeComponent(session.id)}',
+          extra: session,
+        ),
+        onLongPress: () => _menu(context, ref),
       ),
     );
   }
+}
+
+enum _TileAction { rename, delete }
+
+/// What shows behind a session row while it is swiped.
+class _SwipeBackground extends StatelessWidget {
+  const _SwipeBackground({
+    required this.alignment,
+    required this.color,
+    required this.foreground,
+    required this.icon,
+    required this.label,
+  });
+
+  final Alignment alignment;
+  final Color color;
+  final Color foreground;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) => ColoredBox(
+    color: color,
+    child: Align(
+      alignment: alignment,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: foreground),
+            const SizedBox(width: 8),
+            Text(label, style: TextStyle(color: foreground)),
+          ],
+        ),
+      ),
+    ),
+  );
 }
 
 /// A colored marker and word for what a session is doing.

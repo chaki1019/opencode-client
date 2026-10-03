@@ -13,6 +13,7 @@ import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 import 'chat_providers.dart';
 import 'composer_providers.dart';
+import 'session_actions.dart';
 
 /// How full the model's context window is, from the latest reply.
 class ContextUsage {
@@ -209,6 +210,26 @@ class ContextSheet extends ConsumerWidget {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          OutlinedButton.icon(
+            key: const Key('compact'),
+            icon: const Icon(Icons.compress),
+            label: Text(l10n.compact),
+            onPressed: () {
+              // Reads what it needs before the sheet closes.
+              compactSession(context, ref, session);
+              Navigator.pop(context);
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
+            child: Text(
+              l10n.compactHelp,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
               ),
             ),
           ),

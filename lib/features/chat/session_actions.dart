@@ -6,68 +6,7 @@ import '../../core/api/api_errors.dart';
 import '../../core/models/session.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
-import 'chat_providers.dart';
 import 'composer_providers.dart';
-
-enum SessionAction { reload, rename, fork, compact, delete }
-
-/// The overflow menu of the chat screen.
-class SessionActionsMenu extends ConsumerWidget {
-  const SessionActionsMenu({super.key, required this.session});
-
-  final Session session;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return PopupMenuButton<SessionAction>(
-      key: const Key('session-menu'),
-      onSelected: (action) => switch (action) {
-        SessionAction.reload => ref.invalidate(timelineProvider(session.id)),
-        SessionAction.rename => renameSession(context, ref, session),
-        SessionAction.fork => forkSession(context, ref, session),
-        SessionAction.compact => compactSession(context, ref, session),
-        SessionAction.delete => deleteSession(context, ref, session),
-      },
-      itemBuilder: (_) => [
-        PopupMenuItem(
-          value: SessionAction.reload,
-          child: ListTile(
-            leading: Icon(Icons.refresh),
-            title: Text(context.l10n.reload),
-          ),
-        ),
-        PopupMenuItem(
-          value: SessionAction.rename,
-          child: ListTile(
-            leading: Icon(Icons.edit),
-            title: Text(context.l10n.rename),
-          ),
-        ),
-        PopupMenuItem(
-          value: SessionAction.fork,
-          child: ListTile(
-            leading: Icon(Icons.fork_right),
-            title: Text(context.l10n.fork),
-          ),
-        ),
-        PopupMenuItem(
-          value: SessionAction.compact,
-          child: ListTile(
-            leading: Icon(Icons.compress),
-            title: Text(context.l10n.compact),
-          ),
-        ),
-        PopupMenuItem(
-          value: SessionAction.delete,
-          child: ListTile(
-            leading: Icon(Icons.delete_outline),
-            title: Text(context.l10n.delete),
-          ),
-        ),
-      ],
-    );
-  }
-}
 
 /// Runs [action] and shows [failure] with the server's reason if it throws.
 Future<T?> _guard<T>(
@@ -84,31 +23,25 @@ Future<T?> _guard<T>(
   }
 }
 
-Future<void> renameSession(
+/// Asks for a new title and renames [session]. Returns the renamed session,
+/// or null if cancelled or failed.
+Future<Session?> renameSession(
   BuildContext context,
   WidgetRef ref,
   Session session,
 ) async {
   final client = ref.read(connectionProvider)?.client;
-  if (client == null) return;
-  final router = GoRouter.of(context);
+  if (client == null) return null;
   final title = await showDialog<String>(
     context: context,
     builder: (_) => _RenameDialog(initial: session.title ?? ''),
   );
-  if (title == null || title.trim().isEmpty || !context.mounted) return;
-  final updated = await _guard(
+  if (title == null || title.trim().isEmpty || !context.mounted) return null;
+  return _guard(
     context,
     context.l10n.renameFailed,
     () => client.renameSession(session.id, title.trim()),
   );
-  // Reopen the chat with the renamed session so the title updates.
-  if (updated != null) {
-    router.replace(
-      '/sessions/${Uri.encodeComponent(updated.id)}',
-      extra: updated,
-    );
-  }
 }
 
 /// Forks [session] and opens the copy. With [beforeMessageId], the copy
@@ -151,14 +84,15 @@ Future<void> compactSession(
   }
 }
 
-Future<void> deleteSession(
+/// Asks for confirmation and deletes [session]. Returns whether it was
+/// deleted.
+Future<bool> deleteSession(
   BuildContext context,
   WidgetRef ref,
   Session session,
 ) async {
   final client = ref.read(connectionProvider)?.client;
-  if (client == null) return;
-  final router = GoRouter.of(context);
+  if (client == null) return false;
   final confirmed = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
@@ -181,12 +115,12 @@ Future<void> deleteSession(
       ],
     ),
   );
-  if (confirmed != true || !context.mounted) return;
+  if (confirmed != true || !context.mounted) return false;
   final done = await _guard(context, context.l10n.deleteFailed, () async {
     await client.deleteSession(session.id);
     return true;
   });
-  if (done == true && router.canPop()) router.pop();
+  return done == true;
 }
 
 class _RenameDialog extends StatefulWidget {

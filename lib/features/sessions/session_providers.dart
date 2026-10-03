@@ -45,6 +45,30 @@ class SessionListNotifier extends PagedNotifier<Session> {
     ...page.where((s) => !current.any((c) => c.id == s.id)),
   ];
 
+  /// Shows [session] in place of its old copy, without waiting for the event.
+  void replace(Session session) {
+    final current = state.value;
+    if (current == null) return;
+    state = AsyncData(
+      current.copyWith(
+        items: [
+          for (final s in current.items) s.id == session.id ? session : s,
+        ],
+      ),
+    );
+  }
+
+  /// Drops [sessionId] from the list, without waiting for the event.
+  void remove(String sessionId) {
+    final current = state.value;
+    if (current == null) return;
+    state = AsyncData(
+      current.copyWith(
+        items: current.items.where((s) => s.id != sessionId).toList(),
+      ),
+    );
+  }
+
   void _onEvent(ServerEvent event) {
     final current = state.value;
     final id = event.sessionId;

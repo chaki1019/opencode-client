@@ -39,10 +39,7 @@ class ChatScreen extends ConsumerWidget {
         appBar: AppBar(
           title: _ChatTitle(session: session, busy: busy),
           bottom: const LiveStatusBanner(),
-          actions: [
-            ContextUsageButton(session: session),
-            SessionActionsMenu(session: session),
-          ],
+          actions: [ContextUsageButton(session: session)],
         ),
         body: PrimaryScrollController.none(
           child: Column(
