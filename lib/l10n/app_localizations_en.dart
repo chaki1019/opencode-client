@@ -22,9 +22,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get send => 'Send';
 
   @override
-  String get create => 'Create';
-
-  @override
   String get close => 'Close';
 
   @override
@@ -222,13 +219,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get tabSessions => 'Sessions';
+  String get files => 'Files';
 
   @override
-  String get tabFiles => 'Files';
+  String get terminal => 'Terminal';
 
   @override
-  String get tabTerminal => 'Terminal';
+  String get projectTools => 'Project tools';
 
   @override
   String get newSession => 'New session';
@@ -645,46 +642,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mcpNeedsClientRegistration => 'Needs client registration';
-
-  @override
-  String get newWorktree => 'New worktree';
-
-  @override
-  String get mainWorktree => 'Main';
-
-  @override
-  String worktreesLoadFailed(Object error) {
-    return 'Couldn\'t load worktrees: $error';
-  }
-
-  @override
-  String createFailed(Object error) {
-    return 'Couldn\'t create: $error';
-  }
-
-  @override
-  String deleteWorktreeTitle(Object name) {
-    return 'Delete \"$name\"?';
-  }
-
-  @override
-  String get deleteWorktreeBody =>
-      'The whole folder will be deleted. This can\'t be undone.';
-
-  @override
-  String get uncommittedChangesTitle => 'There are uncommitted changes';
-
-  @override
-  String get uncommittedChangesBody =>
-      'Delete them along with the worktree? This can\'t be undone.';
-
-  @override
-  String deleteFailedWithError(Object error) {
-    return 'Couldn\'t delete: $error';
-  }
-
-  @override
-  String get worktreeNameHint => 'Name (leave blank to let the server choose)';
 
   @override
   String get newTerminal => 'New terminal';

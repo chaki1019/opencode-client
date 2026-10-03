@@ -13,7 +13,7 @@ import '../chat/session_actions.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
-import '../worktrees/worktrees_screen.dart';
+import '../projects/project_tools.dart';
 import 'session_providers.dart';
 
 class SessionsScreen extends ConsumerWidget {
@@ -30,27 +30,16 @@ class SessionsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: Text(project.displayName),
         bottom: const LiveStatusBanner(),
-        actions: [
-          if (project.id != 'global')
-            IconButton(
-              key: const Key('worktrees'),
-              tooltip: 'worktree',
-              icon: const Icon(Icons.account_tree_outlined),
-              onPressed: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => WorktreesScreen(project: project),
-                ),
-              ),
-            ),
-        ],
+        actions: [ProjectToolsButton(project: project)],
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: FloatingActionButton(
         key: const Key('new-session'),
-        // Tabs share one route, so the default tag would clash.
+        // The terminal list opens over this page with a FAB of its own;
+        // without a tag they don't fly between the pages.
         heroTag: null,
+        tooltip: context.l10n.newSession,
         onPressed: () => _createSession(context, ref),
-        icon: const Icon(Icons.add),
-        label: Text(context.l10n.newSession),
+        child: const Icon(Icons.add),
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(provider.future),

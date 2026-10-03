@@ -321,8 +321,23 @@ void main() {
     expect(find.text('OpenCode 2.0.0'), findsNothing);
     expect(find.text('Fix the login bug'), findsOneWidget);
 
-    // The Git tab lists changed files and opens their diff.
-    await tester.tap(find.text('Git'));
+    // Tools open from the header menu. Git opens in a sheet that lists
+    // changed files and opens their diff.
+    Future<void> openTool(String label) async {
+      await tester.tap(find.byKey(const Key('project-tools')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(label));
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> closeSheet() async {
+      await tester.tapAt(const Offset(400, 10));
+      await tester.pumpAndSettle();
+      expect(find.byType(BottomSheet), findsNothing);
+    }
+
+    await openTool('Git');
+    expect(find.byType(BottomSheet), findsOneWidget);
     await tester.pumpAndSettle();
     expect(find.text('fix-login'), findsOneWidget);
     expect(find.text('login.dart'), findsOneWidget);
@@ -331,28 +346,28 @@ void main() {
     expect(find.text('+new'), findsOneWidget);
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
+    expect(find.text('login.dart'), findsOneWidget);
+    await closeSheet();
 
-    // The Files tab browses folders and opens a file.
-    await tester.tap(find.text('ファイル'));
-    await tester.pumpAndSettle();
+    // Files browses folders and opens a file.
+    await openTool('ファイル');
     expect(find.text('lib'), findsOneWidget);
     await tester.tap(find.text('README.md'));
     await tester.pumpAndSettle();
     expect(find.text('# My app'), findsOneWidget);
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
+    await closeSheet();
 
-    // The MCP tab toggles a server's connection.
-    await tester.tap(find.text('MCP'));
-    await tester.pumpAndSettle();
+    // MCP toggles a server's connection.
+    await openTool('MCP');
     expect(find.text('github'), findsOneWidget);
     expect(find.text('接続中'), findsOneWidget);
     await tester.tap(find.byType(Switch));
     await tester.pumpAndSettle();
     expect(replies.last.path, '/api/mcp/github/disconnect');
 
-    await tester.tap(find.text('セッション'));
-    await tester.pumpAndSettle();
+    await closeSheet();
     await tester.tap(find.text('Fix the login bug'));
     await tester.pumpAndSettle();
     expect(find.text('Please fix login'), findsOneWidget);

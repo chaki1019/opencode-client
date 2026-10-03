@@ -8,7 +8,7 @@ import '../../core/models/project.dart';
 import '../../core/models/project_tools.dart';
 import '../../l10n/l10n.dart';
 import '../chat/timeline_widgets.dart';
-import '../live/live_widgets.dart';
+import '../projects/project_tools.dart';
 import 'files_providers.dart';
 
 /// Browses the project's folders, or searches files by name.
@@ -77,9 +77,9 @@ class _FilesScreenState extends ConsumerState<FilesScreen> {
         if (!didPop) _up();
       },
       child: Scaffold(
-        appBar: AppBar(
-          title: Text(widget.project.displayName),
-          bottom: const LiveStatusBanner(),
+        backgroundColor: Colors.transparent,
+        appBar: toolSheetAppBar(
+          title: context.l10n.files,
           actions: [
             IconButton(
               tooltip: context.l10n.reload,

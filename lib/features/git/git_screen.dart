@@ -5,7 +5,7 @@ import '../../app/theme.dart';
 import '../../core/models/project.dart';
 import '../../core/models/project_tools.dart';
 import '../../l10n/l10n.dart';
-import '../live/live_widgets.dart';
+import '../projects/project_tools.dart';
 import 'git_providers.dart';
 
 /// The project's branch and changed files. Tapping a file opens its diff.
@@ -28,9 +28,9 @@ class _GitScreenState extends ConsumerState<GitScreen> {
     final branch = git.value?.branch;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.project.displayName),
-        bottom: const LiveStatusBanner(),
+      backgroundColor: Colors.transparent,
+      appBar: toolSheetAppBar(
+        title: 'Git',
         actions: [
           IconButton(
             tooltip: context.l10n.reload,

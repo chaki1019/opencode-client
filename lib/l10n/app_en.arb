@@ -4,7 +4,6 @@
   "delete": "Delete",
   "cancel": "Cancel",
   "send": "Send",
-  "create": "Create",
   "close": "Close",
   "justNow": "Just now",
   "minutesAgo": "{count, plural, =1{1 minute ago} other{{count} minutes ago}}",
@@ -103,9 +102,9 @@
       "error": {}
     }
   },
-  "tabSessions": "Sessions",
-  "tabFiles": "Files",
-  "tabTerminal": "Terminal",
+  "files": "Files",
+  "terminal": "Terminal",
+  "projectTools": "Project tools",
   "newSession": "New session",
   "sessionsEmpty": "No sessions yet",
   "sessionsLoadFailed": "Couldn't load sessions: {error}",
@@ -375,36 +374,6 @@
   "mcpFailed": "Failed",
   "mcpNeedsAuth": "Needs authentication",
   "mcpNeedsClientRegistration": "Needs client registration",
-  "newWorktree": "New worktree",
-  "mainWorktree": "Main",
-  "worktreesLoadFailed": "Couldn't load worktrees: {error}",
-  "@worktreesLoadFailed": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "createFailed": "Couldn't create: {error}",
-  "@createFailed": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "deleteWorktreeTitle": "Delete \"{name}\"?",
-  "@deleteWorktreeTitle": {
-    "placeholders": {
-      "name": {}
-    }
-  },
-  "deleteWorktreeBody": "The whole folder will be deleted. This can't be undone.",
-  "uncommittedChangesTitle": "There are uncommitted changes",
-  "uncommittedChangesBody": "Delete them along with the worktree? This can't be undone.",
-  "deleteFailedWithError": "Couldn't delete: {error}",
-  "@deleteFailedWithError": {
-    "placeholders": {
-      "error": {}
-    }
-  },
-  "worktreeNameHint": "Name (leave blank to let the server choose)",
   "newTerminal": "New terminal",
   "terminalsEmpty": "No terminals yet",
   "terminalExited": "Exited (code {code})",
