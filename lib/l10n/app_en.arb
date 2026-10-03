@@ -479,5 +479,21 @@
     }
   },
   "updateOpenStore": "Open the store",
-  "updateFromStore": "Update the app from the App Store or Google Play."
+  "updateFromStore": "Update the app from the App Store or Google Play.",
+  "rewardTitle": "Today's free messages are used up",
+  "rewardBody": "You can send {free} messages a day without ads. Watch a short ad to send {more} more today.",
+  "@rewardBody": {"placeholders": {"free": {"type": "int"}, "more": {"type": "int"}}},
+  "rewardWatch": "Watch ad",
+  "rewardSkipped": "Watch the ad to the end to send this message.",
+  "settingsAds": "Ads",
+  "adsFreeLeft": "Messages without ads today",
+  "adsFreeLeftValue": "{left} left",
+  "@adsFreeLeftValue": {"placeholders": {"left": {"type": "int"}}},
+  "removeAds": "Remove ads",
+  "removeAdsSubtitle": "One-time purchase. Hides banners and the ad before sending.",
+  "removeAdsDone": "Ads are removed. Thank you for your support!",
+  "restorePurchases": "Restore purchase",
+  "restoreStarted": "Checking your purchases…",
+  "purchaseFailed": "The purchase didn't go through.",
+  "adPrivacy": "Ad privacy choices"
 }

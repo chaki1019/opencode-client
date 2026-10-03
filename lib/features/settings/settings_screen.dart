@@ -3,13 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/layout.dart';
 import '../../l10n/l10n.dart';
+import '../ads/ads_settings_section.dart';
 import 'settings_providers.dart';
 
 /// Language names are shown in their own language, so they read the same
 /// whichever language the app is in.
 const _languages = {'ja': '日本語', 'en': 'English'};
 
-/// App-wide settings: appearance, language and haptics.
+/// App-wide settings: appearance, language, haptics and ads.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -80,6 +81,7 @@ class SettingsScreen extends ConsumerWidget {
             title: Text(l10n.settingsHaptics),
             subtitle: Text(l10n.settingsHapticsHelp),
           ),
+          AdsSettingsSection(header: _SectionHeader.new),
         ],
       ),
     );

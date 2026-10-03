@@ -1531,6 +1531,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update the app from the App Store or Google Play.'**
   String get updateFromStore;
+
+  /// No description provided for @rewardTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s free messages are used up'**
+  String get rewardTitle;
+
+  /// No description provided for @rewardBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can send {free} messages a day without ads. Watch a short ad to send {more} more today.'**
+  String rewardBody(int free, int more);
+
+  /// No description provided for @rewardWatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch ad'**
+  String get rewardWatch;
+
+  /// No description provided for @rewardSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch the ad to the end to send this message.'**
+  String get rewardSkipped;
+
+  /// No description provided for @settingsAds.
+  ///
+  /// In en, this message translates to:
+  /// **'Ads'**
+  String get settingsAds;
+
+  /// No description provided for @adsFreeLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'Messages without ads today'**
+  String get adsFreeLeft;
+
+  /// No description provided for @adsFreeLeftValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{left} left'**
+  String adsFreeLeftValue(int left);
+
+  /// No description provided for @removeAds.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove ads'**
+  String get removeAds;
+
+  /// No description provided for @removeAdsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'One-time purchase. Hides banners and the ad before sending.'**
+  String get removeAdsSubtitle;
+
+  /// No description provided for @removeAdsDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Ads are removed. Thank you for your support!'**
+  String get removeAdsDone;
+
+  /// No description provided for @restorePurchases.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore purchase'**
+  String get restorePurchases;
+
+  /// No description provided for @restoreStarted.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking your purchases…'**
+  String get restoreStarted;
+
+  /// No description provided for @purchaseFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'The purchase didn\'t go through.'**
+  String get purchaseFailed;
+
+  /// No description provided for @adPrivacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Ad privacy choices'**
+  String get adPrivacy;
 }
 
 class _AppLocalizationsDelegate

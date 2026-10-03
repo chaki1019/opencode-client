@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/router.dart';
 import 'app/theme.dart';
+import 'features/ads/ads_providers.dart';
+import 'features/ads/remove_ads.dart';
 import 'features/push/push_providers.dart';
 import 'features/settings/settings_providers.dart';
 import 'features/update/update_gate.dart';
@@ -31,6 +33,10 @@ class OpenCodeMobileApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(pushCoordinatorProvider);
+    ref.watch(adsStartupProvider);
+    // Kept alive from launch to receive redelivered purchases, without
+    // rebuilding the app on each purchase state.
+    ref.listen(removeAdsProvider, (_, _) {});
     final settings = ref.watch(settingsProvider);
     return MaterialApp.router(
       title: 'OpenCode Mobile',
