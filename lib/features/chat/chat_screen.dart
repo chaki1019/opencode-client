@@ -33,6 +33,7 @@ class ChatScreen extends ConsumerWidget {
     );
 
     return StatusBarScrollsToOldest(
+      onArrived: () => ref.read(provider.notifier).loadMore(),
       builder: (context, scrollController) => Scaffold(
         appBar: AppBar(
           title: _ChatTitle(session: session, busy: busy),
@@ -67,7 +68,8 @@ class ChatScreen extends ConsumerWidget {
                       onRefresh: () => ref.read(provider.notifier).resync(),
                       child: NotificationListener<ScrollNotification>(
                         onNotification: (n) {
-                          if (n.metrics.extentAfter < 600) {
+                          if (n.metrics.extentAfter < 600 &&
+                              !scrollController.scrollingToOldest) {
                             ref.read(provider.notifier).loadMore();
                           }
                           return false;
