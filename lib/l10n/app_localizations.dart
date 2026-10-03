@@ -122,12 +122,6 @@ abstract class AppLocalizations {
   /// **'Send'**
   String get send;
 
-  /// No description provided for @create.
-  ///
-  /// In en, this message translates to:
-  /// **'Create'**
-  String get create;
-
   /// No description provided for @close.
   ///
   /// In en, this message translates to:
@@ -1123,66 +1117,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Needs client registration'**
   String get mcpNeedsClientRegistration;
-
-  /// No description provided for @newWorktree.
-  ///
-  /// In en, this message translates to:
-  /// **'New worktree'**
-  String get newWorktree;
-
-  /// No description provided for @mainWorktree.
-  ///
-  /// In en, this message translates to:
-  /// **'Main'**
-  String get mainWorktree;
-
-  /// No description provided for @worktreesLoadFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Couldn\'t load worktrees: {error}'**
-  String worktreesLoadFailed(Object error);
-
-  /// No description provided for @createFailed.
-  ///
-  /// In en, this message translates to:
-  /// **'Couldn\'t create: {error}'**
-  String createFailed(Object error);
-
-  /// No description provided for @deleteWorktreeTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete \"{name}\"?'**
-  String deleteWorktreeTitle(Object name);
-
-  /// No description provided for @deleteWorktreeBody.
-  ///
-  /// In en, this message translates to:
-  /// **'The whole folder will be deleted. This can\'t be undone.'**
-  String get deleteWorktreeBody;
-
-  /// No description provided for @uncommittedChangesTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'There are uncommitted changes'**
-  String get uncommittedChangesTitle;
-
-  /// No description provided for @uncommittedChangesBody.
-  ///
-  /// In en, this message translates to:
-  /// **'Delete them along with the worktree? This can\'t be undone.'**
-  String get uncommittedChangesBody;
-
-  /// No description provided for @deleteFailedWithError.
-  ///
-  /// In en, this message translates to:
-  /// **'Couldn\'t delete: {error}'**
-  String deleteFailedWithError(Object error);
-
-  /// No description provided for @worktreeNameHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Name (leave blank to let the server choose)'**
-  String get worktreeNameHint;
 
   /// No description provided for @newTerminal.
   ///

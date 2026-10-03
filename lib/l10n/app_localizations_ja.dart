@@ -22,9 +22,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get send => '送信';
 
   @override
-  String get create => '作成';
-
-  @override
   String get close => '閉じる';
 
   @override
@@ -634,44 +631,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get mcpNeedsClientRegistration => 'クライアント登録が必要';
-
-  @override
-  String get newWorktree => '新しい worktree';
-
-  @override
-  String get mainWorktree => 'メイン';
-
-  @override
-  String worktreesLoadFailed(Object error) {
-    return 'worktree を読み込めませんでした: $error';
-  }
-
-  @override
-  String createFailed(Object error) {
-    return '作成できませんでした: $error';
-  }
-
-  @override
-  String deleteWorktreeTitle(Object name) {
-    return '「$name」を削除しますか？';
-  }
-
-  @override
-  String get deleteWorktreeBody => 'フォルダごと削除します。元に戻せません。';
-
-  @override
-  String get uncommittedChangesTitle => 'コミットしていない変更があります';
-
-  @override
-  String get uncommittedChangesBody => '変更も含めて削除しますか？元に戻せません。';
-
-  @override
-  String deleteFailedWithError(Object error) {
-    return '削除できませんでした: $error';
-  }
-
-  @override
-  String get worktreeNameHint => '名前（省略するとサーバーが決めます）';
 
   @override
   String get newTerminal => '新しいターミナル';
