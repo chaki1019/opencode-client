@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 
+import '../core/api/api_errors.dart';
 import '../core/models/attachment.dart';
 import '../core/models/form.dart';
 import 'app_localizations.dart';
@@ -13,6 +14,17 @@ extension L10nContext on BuildContext {
 
 /// Labels for values the models keep language-neutral.
 extension AppLocalizationsLabels on AppLocalizations {
+  /// Why connecting to a server failed. Anything unexpected still says
+  /// why, instead of failing silently.
+  String connectError(Object error) => switch (error) {
+    UnsupportedServerException() => connectUnsupported,
+    OpenCodeApiException(isUnauthorized: true) => connectWrongCredentials,
+    OpenCodeApiException(network: NetworkFailure.timeout) => connectTimeout,
+    OpenCodeApiException(network: NetworkFailure.unreachable) =>
+      connectUnreachable,
+    _ => connectFailed(error),
+  };
+
   String fieldError(FieldError error) => switch (error.kind) {
     FieldErrorKind.required => fieldRequired,
     FieldErrorKind.text => fieldText,

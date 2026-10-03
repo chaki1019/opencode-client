@@ -1429,6 +1429,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t open the session: {error}'**
   String pushOpenFailed(Object error);
+
+  /// No description provided for @servers.
+  ///
+  /// In en, this message translates to:
+  /// **'Servers'**
+  String get servers;
+
+  /// No description provided for @addServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Add server'**
+  String get addServer;
+
+  /// No description provided for @serverSwitchFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t connect to {name}: {error}'**
+  String serverSwitchFailed(String name, String error);
+
+  /// No description provided for @settingsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// No description provided for @settingsAppearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get settingsAppearance;
+
+  /// No description provided for @settingsLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get settingsLanguage;
+
+  /// No description provided for @settingsFollowSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'Use system setting'**
+  String get settingsFollowSystem;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeDark;
 }
 
 class _AppLocalizationsDelegate

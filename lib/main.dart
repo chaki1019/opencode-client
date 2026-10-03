@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/router.dart';
 import 'app/theme.dart';
 import 'features/push/push_providers.dart';
+import 'features/settings/settings_providers.dart';
 import 'l10n/l10n.dart';
 
 void main() {
@@ -29,11 +30,14 @@ class OpenCodeMobileApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(pushCoordinatorProvider);
+    final settings = ref.watch(settingsProvider);
     return MaterialApp.router(
       title: 'OpenCode Mobile',
       scaffoldMessengerKey: ref.watch(scaffoldMessengerKeyProvider),
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
+      themeMode: settings.themeMode,
+      locale: settings.locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: ref.watch(routerProvider),

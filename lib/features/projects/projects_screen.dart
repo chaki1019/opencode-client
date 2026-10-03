@@ -8,15 +8,19 @@ import '../../core/models/project.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_widgets.dart';
+import 'app_drawer.dart';
 import 'folder_picker_sheet.dart';
 import 'project_providers.dart';
 
 class ProjectsScreen extends ConsumerWidget {
   const ProjectsScreen({super.key});
 
-  /// Leading edge shared by the title, the section header and the project
-  /// list card.
+  /// Leading edge shared by the section header and the project list card.
   static const double _edge = 16;
+
+  /// Where the title starts after the menu button (its default width plus
+  /// the theme's title spacing), so the version line sits under it.
+  static const double _titleStart = kToolbarHeight + 4;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,21 +37,22 @@ class ProjectsScreen extends ConsumerWidget {
         if (!didPop) SystemNavigator.pop();
       },
       child: Scaffold(
+        // Only this root screen has the drawer, so its edge swipe never
+        // competes with the iOS swipe back on the screens above it.
+        drawer: const AppDrawer(),
         appBar: AppBar(
-          // Root screen with no back button: line the title up with the
-          // project list's leading edge instead of the theme's tight spacing.
           // The connect screen sits underneath, so AppBar would otherwise
           // add a back button that the PopScope below swallows.
-          automaticallyImplyLeading: false,
-          titleSpacing: _edge,
+          leading: Builder(
+            builder: (context) => IconButton(
+              key: const Key('open-drawer'),
+              tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
+              icon: const Icon(Icons.menu),
+              onPressed: () => Scaffold.of(context).openDrawer(),
+            ),
+          ),
           title: Text(connection?.server.displayName ?? context.l10n.projects),
           actions: [
-            IconButton(
-              key: const Key('push-settings'),
-              tooltip: context.l10n.pushTitle,
-              icon: const Icon(Icons.notifications_outlined),
-              onPressed: () => context.push('/push'),
-            ),
             IconButton(
               tooltip: context.l10n.disconnect,
               icon: const Icon(Icons.logout),
@@ -60,7 +65,7 @@ class ProjectsScreen extends ConsumerWidget {
               : PreferredSize(
                   preferredSize: const Size.fromHeight(20),
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(_edge, 0, 16, 6),
+                    padding: const EdgeInsets.fromLTRB(_titleStart, 0, 16, 6),
                     child: Row(
                       children: [
                         LiveDot(

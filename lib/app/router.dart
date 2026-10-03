@@ -9,6 +9,7 @@ import '../features/connection/connection_providers.dart';
 import '../features/connection/connection_screen.dart';
 import '../features/projects/projects_screen.dart';
 import '../features/push/push_settings_screen.dart';
+import '../features/settings/settings_screen.dart';
 import '../features/sessions/sessions_screen.dart';
 
 /// go_router 18 only recognizes `material_ui`'s MaterialApp and otherwise
@@ -29,6 +30,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final connected = ref.read(connectionProvider) != null;
       final atConnect = state.matchedLocation == '/';
+      // App settings do not need a server.
+      if (state.matchedLocation == '/settings') return null;
       if (!connected && !atConnect) return '/';
       if (connected && atConnect) return '/projects';
       return null;
@@ -60,6 +63,15 @@ final routerProvider = Provider<GoRouter>((ref) {
             ],
           ),
         ],
+      ),
+      GoRoute(
+        path: '/add-server',
+        pageBuilder: (context, state) =>
+            _page(state, const ConnectionScreen(adding: true)),
+      ),
+      GoRoute(
+        path: '/settings',
+        pageBuilder: (context, state) => _page(state, const SettingsScreen()),
       ),
       GoRoute(
         path: '/push',

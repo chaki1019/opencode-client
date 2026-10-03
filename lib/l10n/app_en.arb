@@ -455,5 +455,15 @@
   "pushHeadlineQuestion": "Waiting for your answer",
   "pushChannelName": "Agent updates",
   "pushOpenFailed": "Couldn't open the session: {error}",
-  "@pushOpenFailed": {"placeholders": {"error": {}}}
+  "@pushOpenFailed": {"placeholders": {"error": {}}},
+  "servers": "Servers",
+  "addServer": "Add server",
+  "serverSwitchFailed": "Couldn't connect to {name}: {error}",
+  "@serverSwitchFailed": {"placeholders": {"name": {"type": "String"}, "error": {"type": "String"}}},
+  "settingsTitle": "Settings",
+  "settingsAppearance": "Appearance",
+  "settingsLanguage": "Language",
+  "settingsFollowSystem": "Use system setting",
+  "themeLight": "Light",
+  "themeDark": "Dark"
 }

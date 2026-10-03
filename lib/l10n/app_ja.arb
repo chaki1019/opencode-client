@@ -221,5 +221,14 @@
   "pushHeadlinePermission": "許可を待っています",
   "pushHeadlineQuestion": "質問に回答を待っています",
   "pushChannelName": "Agent の通知",
-  "pushOpenFailed": "セッションを開けませんでした: {error}"
+  "pushOpenFailed": "セッションを開けませんでした: {error}",
+  "servers": "サーバー",
+  "addServer": "サーバーを追加",
+  "serverSwitchFailed": "{name} に接続できませんでした: {error}",
+  "settingsTitle": "設定",
+  "settingsAppearance": "外観",
+  "settingsLanguage": "言語",
+  "settingsFollowSystem": "システム設定に従う",
+  "themeLight": "ライト",
+  "themeDark": "ダーク"
 }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../app/theme.dart';
-import '../../core/api/api_errors.dart';
 import '../../core/discovery/server_discovery.dart';
 import '../../core/models/server_config.dart';
 import '../../l10n/l10n.dart';
@@ -11,7 +11,11 @@ import 'connection_providers.dart';
 import 'opencode_logo.dart';
 
 class ConnectionScreen extends ConsumerStatefulWidget {
-  const ConnectionScreen({super.key});
+  const ConnectionScreen({super.key, this.adding = false});
+
+  /// Opened from the drawer while connected: it gets a back button and
+  /// closes itself once the new server is connected.
+  final bool adding;
 
   @override
   ConsumerState<ConnectionScreen> createState() => _ConnectionScreenState();
@@ -43,21 +47,8 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
     });
     try {
       await action();
-    } on UnsupportedServerException {
-      setState(() => _error = l10n.connectUnsupported);
-    } on OpenCodeApiException catch (e) {
-      setState(
-        () => _error = e.isUnauthorized
-            ? l10n.connectWrongCredentials
-            : switch (e.network) {
-                NetworkFailure.timeout => l10n.connectTimeout,
-                NetworkFailure.unreachable => l10n.connectUnreachable,
-                null => l10n.connectFailed(e),
-              },
-      );
     } catch (e) {
-      // Anything unexpected still says why, instead of failing silently.
-      setState(() => _error = l10n.connectFailed(e));
+      setState(() => _error = l10n.connectError(e));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -147,7 +138,20 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
   Widget build(BuildContext context) {
     final saved = ref.watch(savedServersProvider);
     final theme = Theme.of(context);
+    if (widget.adding) {
+      ref.listen(connectionProvider, (previous, next) {
+        if (next == null || next == previous) return;
+        // The router re-runs its redirect for the same change; popping
+        // before that finishes would be undone by it.
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) context.pop();
+        });
+      });
+    }
     return Scaffold(
+      appBar: widget.adding
+          ? AppBar(title: Text(context.l10n.addServer))
+          : null,
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),

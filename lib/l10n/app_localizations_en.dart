@@ -821,4 +821,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String pushOpenFailed(Object error) {
     return 'Couldn\'t open the session: $error';
   }
+
+  @override
+  String get servers => 'Servers';
+
+  @override
+  String get addServer => 'Add server';
+
+  @override
+  String serverSwitchFailed(String name, String error) {
+    return 'Couldn\'t connect to $name: $error';
+  }
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsAppearance => 'Appearance';
+
+  @override
+  String get settingsLanguage => 'Language';
+
+  @override
+  String get settingsFollowSystem => 'Use system setting';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
 }
