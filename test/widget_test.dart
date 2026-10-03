@@ -114,6 +114,10 @@ void main() {
   testWidgets('connecting shows the project list and saves the server', (
     tester,
   ) async {
+    // A phone: the default test window is wide enough for two panes.
+    tester.view.physicalSize = const Size(430, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
     // The checks below read the Japanese strings.
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     tester.platformDispatcher.localesTestValue = const [Locale('ja')];

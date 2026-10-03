@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../app/layout.dart';
 import '../../app/theme.dart';
 import '../../core/discovery/server_discovery.dart';
 import '../../core/models/server_config.dart';
@@ -154,7 +155,12 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
           : null,
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
+          padding: EdgeInsets.fromLTRB(
+            readableSide(context, min: 20),
+            32,
+            readableSide(context, min: 20),
+            24,
+          ),
           children: [
             const _Brand(),
             const SizedBox(height: 32),

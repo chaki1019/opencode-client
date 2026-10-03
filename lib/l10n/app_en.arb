@@ -466,6 +466,7 @@
   "settingsFollowSystem": "Use system setting",
   "themeLight": "Light",
   "themeDark": "Dark",
+  "chatPaneEmpty": "Pick a session to show its chat here",
   "settingsInteraction": "Interaction",
   "settingsHaptics": "Haptic feedback",
   "settingsHapticsHelp": "Vibrate lightly on send, when a reply finishes, and when the AI needs your answer",
