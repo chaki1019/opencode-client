@@ -169,7 +169,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get projectFolderMustBeAbsolute => 'Enter an absolute path';
 
   @override
-  String get openProject => 'Open';
+  String get chooseFolder => 'Choose a folder';
+
+  @override
+  String get openThisFolder => 'Open this folder';
+
+  @override
+  String get noSubfolders => 'No folders here';
+
+  @override
+  String get searchFolders => 'Search folders below';
+
+  @override
+  String get showHiddenFolders => 'Show hidden folders';
+
+  @override
+  String get hideHiddenFolders => 'Hide hidden folders';
+
+  @override
+  String get enterFolderPath => 'Enter a path';
+
+  @override
+  String get goToFolder => 'Go';
+
+  @override
+  String foldersLoadFailed(Object error) {
+    return 'Couldn\'t load folders: $error';
+  }
 
   @override
   String projectOpenFailed(Object error) {

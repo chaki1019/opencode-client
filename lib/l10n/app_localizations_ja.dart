@@ -163,7 +163,33 @@ class AppLocalizationsJa extends AppLocalizations {
   String get projectFolderMustBeAbsolute => '絶対パスを入力してください';
 
   @override
-  String get openProject => '開く';
+  String get chooseFolder => 'フォルダを選択';
+
+  @override
+  String get openThisFolder => 'このフォルダを開く';
+
+  @override
+  String get noSubfolders => 'フォルダはありません';
+
+  @override
+  String get searchFolders => 'この下のフォルダを検索';
+
+  @override
+  String get showHiddenFolders => '隠しフォルダを表示';
+
+  @override
+  String get hideHiddenFolders => '隠しフォルダを隠す';
+
+  @override
+  String get enterFolderPath => 'パスを入力';
+
+  @override
+  String get goToFolder => '移動';
+
+  @override
+  String foldersLoadFailed(Object error) {
+    return 'フォルダを読み込めませんでした: $error';
+  }
 
   @override
   String projectOpenFailed(Object error) {
