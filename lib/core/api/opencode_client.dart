@@ -141,6 +141,38 @@ class OpenCodeClient {
     );
   }
 
+  /// Opens [directory] (absolute) as a project: resolving its location
+  /// registers the project on the server. A folder outside any Git
+  /// repository resolves to the server's global project; it is returned
+  /// scoped to [directory] so its sessions stay in that folder.
+  Future<Project> openProject(String directory) async {
+    // Fails for a folder the server can't read, before anything is
+    // registered for it.
+    await listFiles(directory: directory);
+    final location = _map(
+      await _getJson(
+        '/api/location',
+        directory: directory,
+        query: _location(directory),
+      ),
+    );
+    final resolved = _map(location['project']);
+    final id = resolved['id'] as String? ?? 'global';
+    if (id != 'global') {
+      final listed = await _getJson('/api/project') as List;
+      for (final p in listed) {
+        final project = Project.fromJson(_map(p));
+        if (project.id == id) return project;
+      }
+    }
+    return Project(
+      id: id,
+      directory: id == 'global'
+          ? directory
+          : resolved['directory'] as String? ?? directory,
+    );
+  }
+
   /// Root sessions of a project directory, newest first.
   Future<Page<Session>> listSessions({
     required String directory,

@@ -320,6 +320,42 @@ abstract class AppLocalizations {
   /// **'Current'**
   String get currentProject;
 
+  /// No description provided for @addProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Add project'**
+  String get addProject;
+
+  /// No description provided for @projectFolderLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder path on the server'**
+  String get projectFolderLabel;
+
+  /// No description provided for @projectFolderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'/home/me/my-app'**
+  String get projectFolderHint;
+
+  /// No description provided for @projectFolderMustBeAbsolute.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an absolute path'**
+  String get projectFolderMustBeAbsolute;
+
+  /// No description provided for @openProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get openProject;
+
+  /// No description provided for @projectOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open the folder: {error}'**
+  String projectOpenFailed(Object error);
+
   /// No description provided for @tabSessions.
   ///
   /// In en, this message translates to:

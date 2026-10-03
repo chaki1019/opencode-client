@@ -157,6 +157,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get currentProject => 'Current';
 
   @override
+  String get addProject => 'Add project';
+
+  @override
+  String get projectFolderLabel => 'Folder path on the server';
+
+  @override
+  String get projectFolderHint => '/home/me/my-app';
+
+  @override
+  String get projectFolderMustBeAbsolute => 'Enter an absolute path';
+
+  @override
+  String get openProject => 'Open';
+
+  @override
+  String projectOpenFailed(Object error) {
+    return 'Couldn\'t open the folder: $error';
+  }
+
+  @override
   String get tabSessions => 'Sessions';
 
   @override
