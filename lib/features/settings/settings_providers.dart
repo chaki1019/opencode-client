@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/crash/crash_reporter.dart';
 import '../../core/storage/settings_store.dart';
 
 final settingsStoreProvider = Provider<SettingsStore>((ref) => SettingsStore());
+
+/// Replaced in `main` with the reporter started before the app.
+final crashReporterProvider = Provider<CrashReporter>(
+  (ref) => const CrashReporter.none(),
+);
 
 /// Starts from the defaults (system theme and language) and switches to the
 /// stored values once they are read, so the first frame never waits on
@@ -31,6 +37,11 @@ class SettingsNotifier extends Notifier<AppSettings> {
       _update(state.copyWith(language: () => code));
 
   Future<void> setHaptics(bool on) => _update(state.copyWith(haptics: on));
+
+  Future<void> setCrashReports(bool on) async {
+    await _update(state.copyWith(crashReports: on));
+    await ref.read(crashReporterProvider).setEnabled(on);
+  }
 
   Future<void> _update(AppSettings settings) async {
     _changed = true;

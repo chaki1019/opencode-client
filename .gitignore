@@ -53,3 +53,9 @@ push.env.json
 # Ad build settings (see docs/ads.md)
 ads.env.json
 /ios/Flutter/Ads.xcconfig
+
+# Crashlytics dSYM upload settings (see docs/support.md)
+/ios/firebase_app_id_file.json
+
+# Support build settings (see docs/support.md)
+app.env.json

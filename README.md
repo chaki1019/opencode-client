@@ -48,3 +48,4 @@ push/
 - [x] フェーズ8: ターミナル（PTY + WebSocket + xterm）
 - [x] プッシュ通知: Agent の完了・エラー・許可待ち・質問を通知（OpenCode プラグイン + 中継 + FCM、[設定手順](docs/push-notifications.md)）
 - [x] 広告: 一覧画面のバナー、1日10回を超えたらリワード広告、買い切りの「広告を外す」（[設定手順](docs/ads.md)）
+- [x] サポート: 設定画面のお問い合わせ・プライバシーポリシー、Crashlytics によるクラッシュレポート、公開用サイト `site/`（[設定手順](docs/support.md)）

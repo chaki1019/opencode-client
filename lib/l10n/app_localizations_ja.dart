@@ -909,6 +909,31 @@ class AppLocalizationsJa extends AppLocalizations {
   String get adPrivacy => '広告のプライバシー設定';
 
   @override
+  String get settingsSupport => 'サポートとプライバシー';
+
+  @override
+  String get contactUs => 'お問い合わせ';
+
+  @override
+  String get contactSubject => 'OpenCode Mobile へのお問い合わせ';
+
+  @override
+  String get contactBodyPrompt => '（お問い合わせ内容や、起きた問題をここにお書きください）';
+
+  @override
+  String get privacyPolicy => 'プライバシーポリシー';
+
+  @override
+  String get crashReports => 'クラッシュレポートを送信';
+
+  @override
+  String get crashReportsHelp =>
+      'アプリが異常終了したとき、修正のためにエラーの情報を送ります（チャットの内容は送りません）';
+
+  @override
+  String get linkOpenFailed => '開けませんでした:';
+
+  @override
   String get pushComputerTitle => 'PC/Mac 側の状態';
 
   @override

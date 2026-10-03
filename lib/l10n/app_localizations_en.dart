@@ -927,6 +927,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adPrivacy => 'Ad privacy choices';
 
   @override
+  String get settingsSupport => 'Support and privacy';
+
+  @override
+  String get contactUs => 'Contact us';
+
+  @override
+  String get contactSubject => 'OpenCode Mobile feedback';
+
+  @override
+  String get contactBodyPrompt =>
+      '(Please write your question or the problem you ran into here.)';
+
+  @override
+  String get privacyPolicy => 'Privacy policy';
+
+  @override
+  String get crashReports => 'Send crash reports';
+
+  @override
+  String get crashReportsHelp =>
+      'When the app crashes, send the error details (no chat content) to help fix it';
+
+  @override
+  String get linkOpenFailed => 'Couldn\'t open this:';
+
+  @override
   String get pushComputerTitle => 'On the computer';
 
   @override

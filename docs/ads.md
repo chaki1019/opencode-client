@@ -38,6 +38,6 @@ flutter run --dart-define-from-file=push.env.json --dart-define-from-file=ads.en
 2. 各アプリにバナー（アダプティブ）とリワードの広告ユニットを作り、ID を `ads.env.json` に書く。
 3. AdMob の「プライバシーとメッセージ」で、EEA・英国向けの GDPR メッセージと、iOS の IDFA 説明メッセージ（ATT）を作成して公開する。
 4. App Store Connect と Play Console で非消耗型アイテム `remove_ads` を登録し、価格（案: 480円）を設定する。登録後に `REMOVE_ADS_ENABLED` を `true` にする。
-5. 公開サイトに `app-ads.txt` を置き、ストアの掲載情報のウェブサイト欄にそのドメインを書く。
+5. 公開サイト（`site/`、[docs/support.md](support.md)）の `app-ads.txt` にパブリッシャー ID を書き、ストアの掲載情報のウェブサイト欄にそのドメインを書く。
 6. App Store の「App のプライバシー」と Play の「データ セーフティ」に、広告 SDK が集めるデータ（デバイス ID、利用状況など）を記載する。
 7. iOS の `SKAdNetworkItems`（`ios/Runner/Info.plist`）には Google の ID だけを入れています。メディエーションを使う場合は、Google が公開している一覧に合わせて足す。

@@ -1616,6 +1616,54 @@ abstract class AppLocalizations {
   /// **'Ad privacy choices'**
   String get adPrivacy;
 
+  /// No description provided for @settingsSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Support and privacy'**
+  String get settingsSupport;
+
+  /// No description provided for @contactUs.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact us'**
+  String get contactUs;
+
+  /// No description provided for @contactSubject.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenCode Mobile feedback'**
+  String get contactSubject;
+
+  /// No description provided for @contactBodyPrompt.
+  ///
+  /// In en, this message translates to:
+  /// **'(Please write your question or the problem you ran into here.)'**
+  String get contactBodyPrompt;
+
+  /// No description provided for @privacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy policy'**
+  String get privacyPolicy;
+
+  /// No description provided for @crashReports.
+  ///
+  /// In en, this message translates to:
+  /// **'Send crash reports'**
+  String get crashReports;
+
+  /// No description provided for @crashReportsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'When the app crashes, send the error details (no chat content) to help fix it'**
+  String get crashReportsHelp;
+
+  /// No description provided for @linkOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t open this:'**
+  String get linkOpenFailed;
+
   /// No description provided for @pushComputerTitle.
   ///
   /// In en, this message translates to:
