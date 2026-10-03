@@ -30,6 +30,12 @@ class ProjectsScreen extends ConsumerWidget {
         title: Text(connection?.server.displayName ?? context.l10n.projects),
         actions: [
           IconButton(
+            key: const Key('push-settings'),
+            tooltip: context.l10n.pushTitle,
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () => context.push('/push'),
+          ),
+          IconButton(
             tooltip: context.l10n.disconnect,
             icon: const Icon(Icons.logout),
             onPressed: () => ref.read(connectionProvider.notifier).disconnect(),

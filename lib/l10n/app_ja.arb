@@ -206,5 +206,22 @@
   "usageLastStepHelp": "直近の応答の数値です。これがコンテキストを占める量になります。",
   "sessionUsage": "セッション全体",
   "sessionCost": "コスト",
-  "sessionCreated": "作成日時"
+  "sessionCreated": "作成日時",
+  "copy": "コピー",
+  "copied": "コピーしました",
+  "pushTitle": "通知",
+  "pushReceive": "このサーバーの通知を受け取る",
+  "pushWhat": "Agent の応答が終わったとき、エラーで止まったとき、許可や回答を待っているときに通知します。PC/Mac の OpenCode に下のプラグインを入れる必要があります。",
+  "pushNotConfigured": "このビルドには通知の設定が含まれていません。PUSH_RELAY_URL と Firebase の値を指定してビルドしてください（docs/push-notifications.md）。",
+  "pushPermissionDenied": "システム設定でこのアプリの通知がオフになっています",
+  "pushNoToken": "端末のプッシュトークンを取得できませんでした。時間をおいて試してください。",
+  "pushFailed": "通知の設定を変更できませんでした: {error}",
+  "pushSetupTitle": "PC/Mac の OpenCode の設定",
+  "pushSetupSteps": "1. このアプリのリポジトリの push/plugin/opencode-push.js を ~/.config/opencode/plugins/ にコピー\n2. ~/.config/opencode/opencode.json に下の項目を追加\n3. OpenCode を再起動",
+  "pushSendTest": "テスト通知を送る",
+  "pushTestTitle": "OpenCode からのテスト通知",
+  "pushTestSent": "送信しました。数秒で届きます。",
+  "pushOpen": "開く",
+  "pushDefaultTitle": "OpenCode",
+  "pushOpenFailed": "セッションを開けませんでした: {error}"
 }

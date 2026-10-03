@@ -24,6 +24,9 @@ lib/
   core/models/  freezed モデル
   core/storage/ 保存済みサーバー（flutter_secure_storage）
   features/     画面ごとの UI と Riverpod プロバイダ
+push/
+  plugin/       OpenCode 用プラグイン（PC/Mac に置く）
+  relay/        通知の中継サーバー（Cloudflare Workers）
 ```
 
 移植計画とフェーズは [docs/porting-plan.md](docs/porting-plan.md) を参照。
@@ -38,3 +41,4 @@ lib/
 - [x] フェーズ6: Git（ブランチ・変更ファイル・差分）、MCP 接続切替、フォーク、要約、名前変更、削除
 - [x] フェーズ7: ファイル閲覧・検索、worktree、画像添付
 - [x] フェーズ8: ターミナル（PTY + WebSocket + xterm）
+- [x] プッシュ通知: Agent の完了・エラー・許可待ち・質問を通知（OpenCode プラグイン + 中継 + FCM、[設定手順](docs/push-notifications.md)）

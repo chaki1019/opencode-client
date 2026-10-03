@@ -6,6 +6,7 @@ import '../../core/api/api_errors.dart';
 import '../../core/discovery/server_discovery.dart';
 import '../../core/models/server_config.dart';
 import '../../l10n/l10n.dart';
+import '../push/push_providers.dart';
 import 'connection_providers.dart';
 
 class ConnectionScreen extends ConsumerStatefulWidget {
@@ -100,6 +101,11 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
     messenger.showSnackBar(
       SnackBar(content: Text(l10n.serverSaved(server.displayName))),
     );
+  }
+
+  Future<void> _forget(ServerConfig server) async {
+    await forgetPush(ref, server.id);
+    await ref.read(savedServersProvider.notifier).forget(server.id);
   }
 
   Future<void> _editSaved(ServerConfig server) async {
@@ -250,10 +256,7 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
                       key: Key('server-menu-${server.id}'),
                       onSelected: (action) => switch (action) {
                         _ServerAction.edit => _editSaved(server),
-                        _ServerAction.delete =>
-                          ref
-                              .read(savedServersProvider.notifier)
-                              .forget(server.id),
+                        _ServerAction.delete => _forget(server),
                       },
                       itemBuilder: (context) => [
                         PopupMenuItem(
