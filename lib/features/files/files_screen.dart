@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../core/models/project.dart';
 import '../../core/models/project_tools.dart';
@@ -179,34 +180,31 @@ class FileViewerScreen extends ConsumerWidget {
       ),
       body: content.when(
         data: (file) {
+          final bytes = Uint8List.fromList(file.bytes);
+          // Anything that fails to decode falls back to its source or size,
+          // so an unsupported format never shows a raw exception.
+          Widget fallback(BuildContext context) => _textOrSize(context, file);
+          if (file.isSvg || entry.path.toLowerCase().endsWith('.svg')) {
+            return InteractiveViewer(
+              child: Center(
+                child: SvgPicture.memory(
+                  bytes,
+                  errorBuilder: (context, _, _) => fallback(context),
+                ),
+              ),
+            );
+          }
           if (file.isImage) {
             return InteractiveViewer(
               child: Center(
-                child: Image.memory(Uint8List.fromList(file.bytes)),
-              ),
-            );
-          }
-          final text = file.text;
-          if (text == null) {
-            return Center(
-              child: Text(context.l10n.binaryFile(file.bytes.length)),
-            );
-          }
-          final truncated = text.length > _maxChars;
-          return ListView(
-            padding: const EdgeInsets.all(12),
-            children: [
-              MonospaceBlock(
-                text: truncated ? text.substring(0, _maxChars) : text,
-                maxLines: 1 << 30,
-              ),
-              if (truncated)
-                Padding(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Text(context.l10n.fileTruncated),
+                child: Image.memory(
+                  bytes,
+                  errorBuilder: (context, _, _) => fallback(context),
                 ),
-            ],
-          );
+              ),
+            );
+          }
+          return fallback(context);
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Padding(
@@ -214,6 +212,28 @@ class FileViewerScreen extends ConsumerWidget {
           child: Text(context.l10n.fileOpenFailed(e)),
         ),
       ),
+    );
+  }
+
+  Widget _textOrSize(BuildContext context, FileContent file) {
+    final text = file.text;
+    if (text == null) {
+      return Center(child: Text(context.l10n.binaryFile(file.bytes.length)));
+    }
+    final truncated = text.length > _maxChars;
+    return ListView(
+      padding: const EdgeInsets.all(12),
+      children: [
+        MonospaceBlock(
+          text: truncated ? text.substring(0, _maxChars) : text,
+          maxLines: 1 << 30,
+        ),
+        if (truncated)
+          Padding(
+            padding: EdgeInsets.only(top: 8),
+            child: Text(context.l10n.fileTruncated),
+          ),
+      ],
     );
   }
 }

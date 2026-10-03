@@ -464,7 +464,10 @@ class OpenCodeClient {
     }
     final mime = response.headers.value('content-type')?.split(';').first;
     String? text;
-    if (!(mime?.startsWith('image/') ?? false)) {
+    // SVG is an image type but plain XML, so it keeps its source as text.
+    final raster =
+        (mime?.startsWith('image/') ?? false) && !mime!.contains('svg');
+    if (!raster) {
       try {
         text = utf8.decode(bytes);
       } on FormatException {
