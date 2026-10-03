@@ -35,6 +35,9 @@ class ProjectsScreen extends ConsumerWidget {
         appBar: AppBar(
           // Root screen with no back button: line the title up with the
           // project list's leading edge instead of the theme's tight spacing.
+          // The connect screen sits underneath, so AppBar would otherwise
+          // add a back button that the PopScope below swallows.
+          automaticallyImplyLeading: false,
           titleSpacing: _edge,
           title: Text(connection?.server.displayName ?? context.l10n.projects),
           actions: [
