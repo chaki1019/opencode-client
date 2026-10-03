@@ -111,6 +111,8 @@ class FileContent {
   final String? text;
 
   bool get isImage => mimeType?.startsWith('image/') ?? false;
+
+  bool get isSvg => mimeType?.contains('svg') ?? false;
 }
 
 /// A checkout of the project (`GET /api/worktree`): the main one, or a copy
