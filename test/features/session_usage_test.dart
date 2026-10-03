@@ -83,6 +83,7 @@ void main() {
       '/api/session/s1': FakeRoute.json({
         'data': _session('s1', 'Waiting one', cost: 0.0234),
       }),
+      '/api/session/s1/compact': const FakeRoute(204, ''),
       '/api/session/s1/message': FakeRoute.json({
         'data': [
           {
@@ -215,18 +216,16 @@ void main() {
     expect(find.text('58,368 / 0'), findsOneWidget);
     expect(find.text(r'$0.02'), findsWidgets);
 
-    // Reloading the transcript lives in the overflow menu.
-    Navigator.of(tester.element(find.byType(ContextSheet))).pop();
+    // The sheet also starts a summary, then closes; the header has no
+    // overflow menu any more.
+    expect(find.byKey(const Key('session-menu')), findsNothing);
+    await tester.tap(find.byKey(const Key('compact')));
     await tester.pumpAndSettle();
-    expect(find.byIcon(Icons.refresh), findsNothing);
-    int messageLoads() => adapter.requests
-        .where((r) => r.path == '/api/session/s1/message')
-        .length;
-    final before = messageLoads();
-    await tester.tap(find.byKey(const Key('session-menu')));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('再読み込み'));
-    await tester.pumpAndSettle();
-    expect(messageLoads(), before + 1);
+    expect(
+      adapter.requests.where((r) => r.path == '/api/session/s1/compact'),
+      hasLength(1),
+    );
+    expect(find.byType(ContextSheet), findsNothing);
+    expect(find.text('会話の要約を依頼しました'), findsOneWidget);
   });
 }

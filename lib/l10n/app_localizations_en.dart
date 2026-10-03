@@ -253,10 +253,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rename => 'Rename';
 
   @override
-  String get fork => 'Fork';
+  String get compact => 'Summarize conversation';
 
   @override
-  String get compact => 'Summarize conversation';
+  String get compactHelp =>
+      'Summarizes the conversation so far to free up context. Use it when the window is getting full.';
 
   @override
   String get renameFailed => 'Couldn\'t rename';

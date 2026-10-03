@@ -248,10 +248,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get rename => '名前を変更';
 
   @override
-  String get fork => 'フォーク';
+  String get compact => '会話を要約';
 
   @override
-  String get compact => '会話を要約';
+  String get compactHelp => 'これまでの会話を要約してコンテキストを空けます。使用率が高くなってきたときに使います。';
 
   @override
   String get renameFailed => '名前を変更できませんでした';

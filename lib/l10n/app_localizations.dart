@@ -494,17 +494,17 @@ abstract class AppLocalizations {
   /// **'Rename'**
   String get rename;
 
-  /// No description provided for @fork.
-  ///
-  /// In en, this message translates to:
-  /// **'Fork'**
-  String get fork;
-
   /// No description provided for @compact.
   ///
   /// In en, this message translates to:
   /// **'Summarize conversation'**
   String get compact;
+
+  /// No description provided for @compactHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarizes the conversation so far to free up context. Use it when the window is getting full.'**
+  String get compactHelp;
 
   /// No description provided for @renameFailed.
   ///

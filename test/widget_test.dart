@@ -464,10 +464,10 @@ void main() {
     ]);
     expect(find.byKey(const Key('attachment-0')), findsNothing);
 
-    // Renaming from the menu updates the title.
-    await tester.tap(find.byKey(const Key('session-menu')));
+    // Back on the list, swiping a session right renames it.
+    await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('名前を変更'));
+    await tester.drag(find.text('Fix the login bug'), const Offset(500, 0));
     await tester.pumpAndSettle();
     await tester.enterText(
       find.byKey(const Key('rename-field')),
@@ -477,6 +477,24 @@ void main() {
     await tester.pumpAndSettle();
     expect(replies.reversed.skip(1).first.method, 'PATCH');
     expect(find.text('Login fixed'), findsOneWidget);
+
+    // Swiping left asks first; cancelling keeps the session.
+    await tester.drag(find.text('Login fixed'), const Offset(-500, 0));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('キャンセル'));
+    await tester.pumpAndSettle();
+    expect(find.text('Login fixed'), findsOneWidget);
+    expect(replies.last.method, isNot('DELETE'));
+
+    // Long-pressing offers the same actions; deleting removes the row.
+    await tester.longPress(find.text('Login fixed'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('session-delete')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('confirm-delete')));
+    await tester.pumpAndSettle();
+    expect(replies.last.method, 'DELETE');
+    expect(find.text('Login fixed'), findsNothing);
 
     final saved = await store.loadServers();
     expect(saved.single.baseUrl, 'http://example.test:4096');
