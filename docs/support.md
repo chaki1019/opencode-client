@@ -33,7 +33,7 @@ flutter build ipa \
 | `/ja/privacy/` , `/en/privacy/` | プライバシーポリシー |
 | `/app-ads.txt` | AdMob の app-ads.txt |
 
-ページは言語コードのフォルダーに分けています。言語を増やすときは `site/<言語コード>/` を作り、各ページの言語切替リンク、`hreflang`、`site/index.html` の `langs` に足します。以前の `/support/` と `/privacy/` は `site/_redirects` で `/ja/` 側へ転送します（古いアプリやストアの記載がこの URL を指しているため）。
+ページは言語コードのフォルダーに分けています。言語を増やすときは `site/<言語コード>/` を作り、各ページの言語切替リンク、`hreflang`、`site/index.html` の `langs` に足します。
 
 ### 公開前に直すところ
 
