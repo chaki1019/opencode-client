@@ -7,7 +7,7 @@ compatibility_date = "2026-09-01"
 [[d1_databases]]
 binding = "DB"
 database_name = "opencode-push"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "0664a2cd-5ce5-47ca-b9f7-11b8ee5dcdcf"
 migrations_dir = "migrations"
 
 # Requests per client address, on every route.
