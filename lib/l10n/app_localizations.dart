@@ -1925,7 +1925,7 @@ abstract class AppLocalizations {
   /// No description provided for @conversationIdle.
   ///
   /// In en, this message translates to:
-  /// **'Tap the mic to speak'**
+  /// **'Tap the mic once, then speak'**
   String get conversationIdle;
 
   /// No description provided for @conversationUnavailable.

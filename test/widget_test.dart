@@ -597,7 +597,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
     await tester.pump(const Duration(milliseconds: 500));
     expect(speechOut.spoken, ['All green.\n（コードは省略します）']);
-    expect(find.text('マイクをタップして話してください'), findsOneWidget);
+    expect(find.text('マイクを1回タップしてから話してください'), findsOneWidget);
     await tester.tap(find.byKey(const Key('conversation-close')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('conversation-panel')), findsNothing);
@@ -607,7 +607,7 @@ void main() {
     await tester.tap(find.byKey(const Key('conversation')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
-    expect(find.text('マイクをタップして話してください'), findsOneWidget);
+    expect(find.text('マイクを1回タップしてから話してください'), findsOneWidget);
     await tester.tap(find.byKey(const Key('conversation-close')));
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('conversation-panel')), findsNothing);

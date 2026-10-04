@@ -1067,7 +1067,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get conversationSpeaking => '返答を読み上げています';
 
   @override
-  String get conversationIdle => 'マイクをタップして話してください';
+  String get conversationIdle => 'マイクを1回タップしてから話してください';
 
   @override
   String get conversationUnavailable =>

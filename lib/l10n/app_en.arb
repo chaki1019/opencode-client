@@ -550,7 +550,7 @@
   "conversationWaiting": "OpenCode is working…",
   "conversationNeedsInput": "Waiting for your answer on screen",
   "conversationSpeaking": "Reading the reply",
-  "conversationIdle": "Tap the mic to speak",
+  "conversationIdle": "Tap the mic once, then speak",
   "conversationUnavailable": "Speech recognition is unavailable. Allow the microphone and speech recognition for this app in Settings.",
   "conversationListen": "Speak",
   "conversationDoneSpeaking": "Done speaking",
