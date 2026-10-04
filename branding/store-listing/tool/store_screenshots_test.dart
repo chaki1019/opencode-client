@@ -55,6 +55,10 @@ const tablet = Device('tablet', Size(1032, 1376), 2, 24, 20);
 // it shows the single-page layout.
 const tablet7 = Device('tablet7', Size(600, 960), 2, 24, 20);
 
+// The same tablets held sideways.
+const tabletLand = Device('tabletLand', Size(1376, 1032), 2, 24, 20);
+const tablet7Land = Device('tablet7Land', Size(960, 600), 2, 24, 20);
+
 final _boundary = GlobalKey();
 
 Future<void> loadFonts() async {
@@ -508,7 +512,7 @@ void main() {
 
   for (final lang in ['ja', 'en']) {
     final c = lang == 'ja' ? ja : en;
-    for (final d in [phone, tablet, tablet7]) {
+    for (final d in [phone, tablet, tablet7, tabletLand, tablet7Land]) {
       final p = '$lang/${d.name}';
 
       testWidgets('$p connect', (tester) async {

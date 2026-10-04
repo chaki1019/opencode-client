@@ -164,6 +164,56 @@ ${kind === 'ios' && !tablet ? '<div class="island"></div>' : ''}
 </body></html>`;
 }
 
+// Landscape canvas: the caption on the left and the tablet on the right.
+function pageLand({ W, H, lang, key, shot }) {
+  const c = copy[lang];
+  const [l1, l2, sub] = c[key];
+  const u = H / 100;
+  const ratio = shot.h / shot.w;
+  const bzRel = 0.018;
+  // 4:3 (iPad) leaves too little room beside the device, so the caption goes
+  // on top in one line; 16:10 keeps it on the left.
+  const top = W / H < 1.5;
+  let dw = top ? W * 0.86 : W * 0.58;
+  const maxH = top ? H * 0.74 : H * 0.84;
+  if (dw * ((1 - 2 * bzRel) * ratio + 2 * bzRel) > maxH) {
+    dw = maxH / ((1 - 2 * bzRel) * ratio + 2 * bzRel);
+  }
+  const bz = dw * bzRel;
+  const pt = (dw - 2 * bz) / shot.logicalW;
+  const vars = {
+    '--dw': dw + 'px', '--bz': bz + 'px', '--r': 0.035 * dw + 'px', '--gap': '0px',
+    '--sbh': shot.top * pt + 'px', '--sbp': 22 * pt + 'px', '--sbf': 13 * pt + 'px',
+    '--nr': 24 * pt + 'px', '--np': 14 * pt + 'px', '--ni': 38 * pt + 'px', '--nf': 15 * pt + 'px',
+  };
+  const style = Object.entries(vars).map(([k, v]) => `${k}:${v}`).join(';');
+  const f = 13 * pt;
+  const note = key === 'notify'
+    ? `<div class="note"><img src="${url(icon)}"><div class="t"><div class="row"><b>${c.note.title}</b><span class="when">${c.note.now}</span></div><div class="body">${c.note.body}</div></div></div>`
+    : '';
+  const sep = lang === 'ja' ? '' : ' ';
+  const layout = top
+    ? `body { flex-direction: column; align-items: center; justify-content: center; gap: ${4 * u}px; }
+.cap { text-align: center; padding: 0; }
+.cap h1 { font-size: ${4.6 * u}px; white-space: nowrap; }
+.cap p { font-size: ${2.2 * u}px; margin-top: ${1.4 * u}px; }`
+    : `body { flex-direction: row; align-items: center; justify-content: center; gap: ${5 * u}px; }
+.cap { text-align: left; padding: 0; flex: 1; max-width: ${W - dw - 15 * u}px; word-break: auto-phrase; }
+.cap h1 { font-size: ${6 * u}px; }
+.cap p { font-size: ${2.8 * u}px; margin-top: ${2.4 * u}px; }`;
+  const head = top ? `${l1}${sep}<span class="ai">${l2}</span>` : `${l1}<br><span class="ai">${l2}</span>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><style>${css}
+${layout}
+.dev { margin-top: 0; }
+.note { left: auto; right: 2%; width: 40%; }
+</style></head><body style="${style}">
+<div class="cap" lang="${lang}"><h1>${head}</h1><p>${sub}</p></div>
+<div class="dev"><div class="scr ${key === 'notify' ? 'dim' : ''}"><img class="shot" src="${url(shot.file)}">
+<div class="sb"><span>9:41</span><span class="ic">${signal(f)}${wifi(f)}${battery(f)}</span></div>
+</div>${note}</div>
+</body></html>`;
+}
+
 function featurePage(lang, phoneShot) {
   const c = copy[lang];
   return `<!doctype html><html><head><meta charset="utf-8"><style>${css}
@@ -313,29 +363,47 @@ const targets = [
   ['google-play', 'phone', 'android', 1080, 1920, 'phone', phoneOrder],
   ['google-play', 'tablet-7', 'android', 1200, 1920, 'tablet7', phoneOrder],
   ['google-play', 'tablet-10', 'android', 1600, 2560, 'tablet', tabletOrder],
+  ['app-store', 'ipad-13-landscape', 'ios', 2752, 2064, 'tabletLand', tabletOrder],
+  ['google-play', 'tablet-7-landscape', 'android', 1920, 1200, 'tablet7Land', tabletOrder],
+  ['google-play', 'tablet-10-landscape', 'android', 2560, 1600, 'tabletLand', tabletOrder],
 ];
 const meta = {
   phone: { logicalW: 430, top: 59 },
   tablet: { logicalW: 1032, top: 24 },
   tablet7: { logicalW: 600, top: 24 },
+  tabletLand: { logicalW: 1376, top: 24 },
+  tablet7Land: { logicalW: 960, top: 24 },
 };
+const sizes = {
+  phone: [1290, 2796],
+  tablet: [2064, 2752],
+  tablet7: [1200, 1920],
+  tabletLand: [2752, 2064],
+  tablet7Land: [1920, 1200],
+};
+
+// ONLY=<regexp> renders just the screenshot folders it matches and skips the
+// feature graphic and the video.
+const only = process.env.ONLY ? new RegExp(process.env.ONLY) : null;
 
 for (const lang of ['ja', 'en']) {
   for (const [store, folder, kind, W, H, dev, order] of targets) {
+    if (only && !only.test(folder)) continue;
     const locale = store === 'app-store' ? locales[lang].appStore : locales[lang].play;
     for (const [i, [key, shotName]] of order.entries()) {
       const file = `${shots}/${lang}/${dev}-${shotName}.png`;
-      const isTablet = dev !== 'phone';
-      const size = { phone: [1290, 2796], tablet: [2064, 2752], tablet7: [1200, 1920] }[dev];
-      const shot = { file, w: size[0], h: size[1], ...meta[dev] };
-      const html = page({ W, H, kind, lang, key, shot, tablet: isTablet });
+      const shot = { file, w: sizes[dev][0], h: sizes[dev][1], ...meta[dev] };
+      const html = W > H
+        ? pageLand({ W, H, lang, key, shot })
+        : page({ W, H, kind, lang, key, shot, tablet: dev !== 'phone' });
       await render(html, W, H, `${out}/${store}/${locale}/screenshots/${folder}/${i + 1}-${key}.png`);
     }
   }
+  if (only) continue;
   await render(featurePage(lang, `${shots}/${lang}/phone-chat.png`), 1024, 500,
     `${out}/google-play/${locales[lang].play}/feature-graphic.png`);
 }
-for (const lang of ['ja', 'en']) {
+for (const lang of only ? [] : ['ja', 'en']) {
   await renderVideo(lang, `${out}/google-play/${locales[lang].play}/promo-video.mp4`);
 }
 fs.rmSync(tmp);
