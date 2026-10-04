@@ -382,6 +382,8 @@ class _SettingsRow extends ConsumerWidget {
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
+      // Keeps the sheet below the status bar when dragged to full height.
+      useSafeArea: true,
       builder: (_) => _ModelSheet(
         directory: session.location.directory,
         current: ref.read(sessionSettingsProvider(session)).model,
@@ -471,6 +473,9 @@ class _ModelSheet extends ConsumerWidget {
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.7,
+      // Stops short of full screen, so the handle and a strip of the chat
+      // above stay visible to drag or tap the sheet closed.
+      maxChildSize: 0.9,
       builder: (context, scrollController) => models.when(
         data: (list) => ModelPicker(
           models: list,
