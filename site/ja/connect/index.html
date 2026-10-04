@@ -25,7 +25,7 @@
       <li><a href="/ja/privacy/">プライバシーポリシー</a></li>
     </ul>
     <div class="side-lang">
-      <p class="side-label">言語 / Language</p>
+      <p class="side-label">言語</p>
       <a href="/en/connect/" hreflang="en"><svg class="flag" viewBox="0 0 38 20" aria-hidden="true"><rect width="38" height="20" fill="#fff"/><rect y="0.00" width="38" height="1.54" fill="#b22234"/><rect y="3.08" width="38" height="1.54" fill="#b22234"/><rect y="6.15" width="38" height="1.54" fill="#b22234"/><rect y="9.23" width="38" height="1.54" fill="#b22234"/><rect y="12.31" width="38" height="1.54" fill="#b22234"/><rect y="15.38" width="38" height="1.54" fill="#b22234"/><rect y="18.46" width="38" height="1.54" fill="#b22234"/><rect width="15.2" height="10.77" fill="#3c3b6e"/></svg>英語</a>
     </div>
   </nav>
@@ -54,7 +54,7 @@ opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
 <p>つながらないときは、PC のファイアウォールでポート 4096 への接続が許可されているかを確認してください。外出先からはこの方法ではつながりません。</p>
 
 <h2 id="tailscale">Tailscale でつなぐ（外出先からも使える）</h2>
-<p><a href="https://tailscale.com/">Tailscale</a> は、自分の端末どうしを安全な専用ネットワークでつなぐサービスです。個人利用は無料で、ポートをインターネットに開ける必要がありません。</p>
+<p><a href="https://tailscale.com/" target="_blank" rel="noopener">Tailscale</a> は、自分の端末どうしを安全な専用ネットワークでつなぐサービスです。個人利用は無料で、ポートをインターネットに開ける必要がありません。</p>
 <ol>
   <li>PC/Mac とスマートフォンの両方に Tailscale を入れ、同じアカウントでログインします。</li>
   <li>上の手順でサーバーを起動します。</li>
@@ -67,7 +67,7 @@ opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
 <h2 id="cloudflare">Cloudflare Tunnel でつなぐ</h2>
 <p>Tailscale を入れられない環境向けです。PC から Cloudflare に向けてトンネルを張り、インターネット上の HTTPS のアドレスで公開します。</p>
 <ol>
-  <li>PC に <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/">cloudflared</a> を入れます。</li>
+  <li>PC に <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/" target="_blank" rel="noopener">cloudflared</a> を入れます。</li>
   <li>上の手順でサーバーを起動します（<code>--hostname 127.0.0.1</code> でも構いません）。</li>
   <li>別のターミナルで次を実行します。<pre><code>cloudflared tunnel --url http://localhost:4096</code></pre></li>
   <li>表示された <code>https://〜.trycloudflare.com</code> のアドレスをアプリに入力して接続します。</li>
