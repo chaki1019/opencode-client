@@ -9,7 +9,7 @@
   var links = [];
 
   // The menu (written by scripts/site_nav.py) lists every page's sections.
-  // Groups open and close with their button; what the reader opened or closed
+  // Groups open and close with the page name; what the reader opened or closed
   // is kept across pages, and an inline script after the menu puts it back
   // before it is painted.
   if (nav) {
@@ -17,7 +17,7 @@
       try { return JSON.parse(localStorage.getItem('nav-open') || '{}'); } catch (e) { return {}; }
     };
     nav.querySelectorAll('.group').forEach(function (g) {
-      var button = g.querySelector('.nav-toggle');
+      var button = g.querySelector('.nav-head');
       var sync = function () {
         button.setAttribute('aria-expanded', String(g.classList.contains('open')));
       };
@@ -30,8 +30,7 @@
         try { localStorage.setItem('nav-open', JSON.stringify(state)); } catch (e) {}
       });
     });
-    var current = nav.querySelector('a[aria-current="page"]');
-    var group = current && current.closest('.group');
+    var group = nav.querySelector('.group.current');
     if (group) {
       links = Array.prototype.slice.call(group.querySelectorAll('.toc a'));
       // The current page starts open; remember that, so it stays open after
@@ -59,8 +58,9 @@
   if (links.length) {
     var picked = null;
     var mark = function (id) {
+      // Above the first heading, the page's overview entry ("#").
       links.forEach(function (a) {
-        a.classList.toggle('active', a.getAttribute('href') === '#' + id);
+        a.classList.toggle('active', a.getAttribute('href') === '#' + (id || ''));
       });
     };
     var update = function () {
@@ -68,7 +68,8 @@
       var line = window.innerHeight * 0.3;
       var atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
       var active = null;
-      headings.forEach(function (h) {
+      // At the very top the overview entry stays highlighted.
+      if (window.scrollY > 0) headings.forEach(function (h) {
         var top = h.getBoundingClientRect().top;
         if (top <= line || (atEnd && top < window.innerHeight)) active = h.id;
       });

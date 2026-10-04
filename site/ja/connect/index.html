@@ -21,8 +21,9 @@
   <nav class="side-nav" id="side-nav" aria-label="サイトの目次">
     <ul>
       <li class="group" data-key="/ja/">
-        <div class="nav-row"><a href="/ja/">トップ</a><button type="button" class="nav-toggle" aria-label="セクションの表示を切り替え: トップ"></button></div>
+        <button type="button" class="nav-head">トップ</button>
         <div class="nav-sub"><ul class="toc">
+          <li><a href="/ja/">概要</a></li>
           <li><a href="/ja/#features">特長</a></li>
           <li><a href="/ja/#setup">はじめ方</a></li>
           <li><a href="/ja/#tablet">タブレット</a></li>
@@ -30,9 +31,10 @@
           <li><a href="/ja/#faq">よくある質問</a></li>
         </ul></div>
       </li>
-      <li class="group open" data-key="/ja/connect/">
-        <div class="nav-row"><a href="/ja/connect/" aria-current="page">つなぎ方</a><button type="button" class="nav-toggle" aria-label="セクションの表示を切り替え: つなぎ方"></button></div>
+      <li class="group current open" data-key="/ja/connect/">
+        <button type="button" class="nav-head">つなぎ方</button>
         <div class="nav-sub"><ul class="toc">
+          <li><a href="#" aria-current="page">概要</a></li>
           <li><a href="#server">まず、サーバーを起動する</a></li>
           <li><a href="#wifi">同じ Wi-Fi でつなぐ</a></li>
           <li><a href="#tailscale">Tailscale でつなぐ（外出先からも使える）</a></li>
@@ -42,16 +44,18 @@
         </ul></div>
       </li>
       <li class="group" data-key="/ja/support/">
-        <div class="nav-row"><a href="/ja/support/">サポート</a><button type="button" class="nav-toggle" aria-label="セクションの表示を切り替え: サポート"></button></div>
+        <button type="button" class="nav-head">サポート</button>
         <div class="nav-sub"><ul class="toc">
+          <li><a href="/ja/support/">概要</a></li>
           <li><a href="/ja/support/#contact">お問い合わせ</a></li>
           <li><a href="/ja/support/#faq">よくある質問</a></li>
           <li><a href="/ja/support/#privacy">プライバシー</a></li>
         </ul></div>
       </li>
       <li class="group" data-key="/ja/privacy/">
-        <div class="nav-row"><a href="/ja/privacy/">プライバシーポリシー</a><button type="button" class="nav-toggle" aria-label="セクションの表示を切り替え: プライバシーポリシー"></button></div>
+        <button type="button" class="nav-head">プライバシーポリシー</button>
         <div class="nav-sub"><ul class="toc">
+          <li><a href="/ja/privacy/">概要</a></li>
           <li><a href="/ja/privacy/#s1">1. 端末の中だけに保存する情報</a></li>
           <li><a href="/ja/privacy/#s2">2. 利用者の OpenCode サーバーとの通信</a></li>
           <li><a href="/ja/privacy/#s3">3. プッシュ通知</a></li>
@@ -127,7 +131,7 @@ opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
 <p>SSH アプリがバックグラウンドに回ると転送が止まることがあります（特に iPhone）。普段使いには Tailscale のほうが安定します。</p>
 
 <h2 id="trouble">うまくいかないとき</h2>
-<p>アプリのメニューにある「接続の診断」で、サーバーの応答、リアルタイム更新、通知プラグイン、MCP の状態をまとめて確認できます。結果はコピーして<a href="/ja/support/">お問い合わせ</a>に貼り付けられます。</p>
+<p>プロジェクト一覧の右上にある「接続の診断」ボタンで、サーバーの応答、リアルタイム更新、通知プラグイン、MCP の状態をまとめて確認できます。結果はコピーして<a href="/ja/support/">お問い合わせ</a>に貼り付けられます。</p>
 
 <footer>OpenCode Mobile は OpenCode の公式アプリではありません。</footer>
 </main>

@@ -21,8 +21,9 @@
   <nav class="side-nav" id="side-nav" aria-label="Site contents">
     <ul>
       <li class="group" data-key="/en/">
-        <div class="nav-row"><a href="/en/">Home</a><button type="button" class="nav-toggle" aria-label="Show or hide sections: Home"></button></div>
+        <button type="button" class="nav-head">Home</button>
         <div class="nav-sub"><ul class="toc">
+          <li><a href="/en/">Overview</a></li>
           <li><a href="/en/#features">Features</a></li>
           <li><a href="/en/#setup">Setup</a></li>
           <li><a href="/en/#tablet">Tablets</a></li>
@@ -30,9 +31,10 @@
           <li><a href="/en/#faq">FAQ</a></li>
         </ul></div>
       </li>
-      <li class="group open" data-key="/en/connect/">
-        <div class="nav-row"><a href="/en/connect/" aria-current="page">Connecting</a><button type="button" class="nav-toggle" aria-label="Show or hide sections: Connecting"></button></div>
+      <li class="group current open" data-key="/en/connect/">
+        <button type="button" class="nav-head">Connecting</button>
         <div class="nav-sub"><ul class="toc">
+          <li><a href="#" aria-current="page">Overview</a></li>
           <li><a href="#server">First, start the server</a></li>
           <li><a href="#wifi">On the same Wi-Fi</a></li>
           <li><a href="#tailscale">With Tailscale (works from anywhere)</a></li>
@@ -42,16 +44,18 @@
         </ul></div>
       </li>
       <li class="group" data-key="/en/support/">
-        <div class="nav-row"><a href="/en/support/">Support</a><button type="button" class="nav-toggle" aria-label="Show or hide sections: Support"></button></div>
+        <button type="button" class="nav-head">Support</button>
         <div class="nav-sub"><ul class="toc">
+          <li><a href="/en/support/">Overview</a></li>
           <li><a href="/en/support/#contact">Contact</a></li>
           <li><a href="/en/support/#faq">Common questions</a></li>
           <li><a href="/en/support/#privacy">Privacy</a></li>
         </ul></div>
       </li>
       <li class="group" data-key="/en/privacy/">
-        <div class="nav-row"><a href="/en/privacy/">Privacy policy</a><button type="button" class="nav-toggle" aria-label="Show or hide sections: Privacy policy"></button></div>
+        <button type="button" class="nav-head">Privacy policy</button>
         <div class="nav-sub"><ul class="toc">
+          <li><a href="/en/privacy/">Overview</a></li>
           <li><a href="/en/privacy/#s1">1. Information kept only on your device</a></li>
           <li><a href="/en/privacy/#s2">2. Talking to your OpenCode server</a></li>
           <li><a href="/en/privacy/#s3">3. Push notifications</a></li>
@@ -127,7 +131,7 @@ opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
 <p>The forward may stop when the SSH app goes to the background, especially on iPhone. For everyday use, Tailscale is steadier.</p>
 
 <h2 id="trouble">If something doesn't work</h2>
-<p>"Connection check" in the app's menu shows at a glance whether the server answers, live updates flow, and the notification plugin and MCP servers are working. You can copy the results into a <a href="/en/support/">support request</a>.</p>
+<p>The "Connection check" button at the top right of the project list shows at a glance whether the server answers, live updates flow, and the notification plugin and MCP servers are working. You can copy the results into a <a href="/en/support/">support request</a>.</p>
 
 <footer>OpenCode Mobile is not an official OpenCode app.</footer>
 </main>
