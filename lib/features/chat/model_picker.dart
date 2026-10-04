@@ -69,15 +69,30 @@ class _ModelPickerState extends State<ModelPicker> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-          child: TextField(
-            controller: _search,
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.search),
-              hintText: context.l10n.searchModels,
-              isDense: true,
-            ),
-            onChanged: (v) => setState(() => _query = v.trim().toLowerCase()),
+          padding: const EdgeInsets.fromLTRB(16, 8, 4, 8),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _search,
+                  decoration: InputDecoration(
+                    prefixIcon: const Icon(Icons.search),
+                    hintText: context.l10n.searchModels,
+                    isDense: true,
+                  ),
+                  onChanged: (v) =>
+                      setState(() => _query = v.trim().toLowerCase()),
+                ),
+              ),
+              // Closes from anywhere in a long list, without scrolling back
+              // to the top first.
+              IconButton(
+                key: const Key('model-picker-close'),
+                tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                onPressed: () => Navigator.pop(context),
+                icon: const Icon(Icons.close),
+              ),
+            ],
           ),
         ),
         Expanded(

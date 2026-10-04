@@ -142,4 +142,45 @@ void main() {
     expect(find.text('Anthropic').hitTestable(), findsNothing);
     expect(top('OpenAI'), lessThan(listTop + 20));
   });
+
+  testWidgets('closes from the middle of a long list', (tester) async {
+    final models = [
+      for (var i = 0; i < 40; i++)
+        ModelOption(
+          providerID: 'p',
+          providerName: 'P',
+          id: 'm$i',
+          name: 'Model $i',
+        ),
+    ];
+    final results = await _open(tester, models);
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -800));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('model-picker-close')));
+    await tester.pumpAndSettle();
+    expect(find.byType(ModelPicker), findsNothing);
+    expect(results, [null]);
+  });
+
+  testWidgets('dragging the filter row down closes it while scrolled', (
+    tester,
+  ) async {
+    final models = [
+      for (var i = 0; i < 40; i++)
+        ModelOption(
+          providerID: 'p',
+          providerName: 'P',
+          id: 'm$i',
+          name: 'Model $i',
+        ),
+    ];
+    await _open(tester, models);
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -800));
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(TextField), const Offset(0, 400));
+    await tester.pumpAndSettle();
+    expect(find.byType(ModelPicker), findsNothing);
+  });
 }
