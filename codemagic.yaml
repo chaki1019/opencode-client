@@ -102,7 +102,7 @@ workflows:
         track: internal
         # Play only accepts draft releases until the app's first release
         # is out. Set to false after that so builds go live on the track.
-        submit_as_draft: true
+        submit_as_draft: false
 
   # Builds only a signed Android App Bundle, without uploading it. Start it
   # by hand from Codemagic ("Start new build") for the first upload to Google
