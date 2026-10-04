@@ -14,7 +14,8 @@ app-store/
     release_notes.txt      このバージョンの新機能
     screenshots/
       iphone-6.9/          1290×2796 ×6（小さい iPhone には自動で縮小）
-      ipad-13/             2064×2752 ×5
+      ipad-13/             2064×2752 ×5（縦）
+      ipad-13-landscape/   2752×2064 ×5（横）
 google-play/
   ja-JP/  en-US/
     title.txt              アプリ名（30 文字まで）
@@ -24,9 +25,13 @@ google-play/
     promo-video.mp4        紹介動画 1920×1080・約 22 秒（YouTube に上げて URL を登録）
     screenshots/
       phone/               スマートフォン 1080×1920 ×6
-      tablet-7/            7 インチ タブレット 1200×1920 ×6
-      tablet-10/           10 インチ タブレット 1600×2560 ×5
+      tablet-7/            7 インチ タブレット 1200×1920 ×6（縦）
+      tablet-7-landscape/  7 インチ タブレット 1920×1200 ×5（横）
+      tablet-10/           10 インチ タブレット 1600×2560 ×5（縦）
+      tablet-10-landscape/ 10 インチ タブレット 2560×1600 ×5（横）
 ```
+
+タブレットは縦向きと横向きの両方を用意しています。横向きでは一覧とチャットを並べた 2 画面表示になります。ストアには向きの違う画像を混ぜて登録できますが、1 つのセットの中ではどちらかにそろえたほうが見栄えがよくなります。
 
 アプリのアイコンは `branding/app-icon/` にあります（App Store 用 `app-store-1024.png`、Google Play 用 `play-store-512.png`）。
 
@@ -51,7 +56,7 @@ google-play/
    flutter test test/zz_store --name "(chat|diff|permission)\$" \
      --dart-define=OUT=/tmp/shots --dart-define=FONT_DIR=<フォントのフォルダ>
    # connect の撮影は終わったあと止まるので、1 つずつ timeout を付けて実行します
-   for t in ja en; do for d in phone tablet tablet7; do
+   for t in ja en; do for d in phone tablet tablet7 tabletLand tablet7Land; do
      timeout 45 flutter test test/zz_store --plain-name "$t/$d connect" \
        --dart-define=OUT=/tmp/shots --dart-define=FONT_DIR=<フォントのフォルダ>
    done; done
@@ -63,5 +68,7 @@ google-play/
    ```bash
    NOTO_JP_DIR=<フォントのフォルダ> node branding/store-listing/tool/render.mjs /tmp/shots branding/store-listing
    ```
+
+   `ONLY=<正規表現>` を付けると、フォルダ名が一致するスクリーンショットだけを作り直します（フィーチャー グラフィックと動画は作りません）。例：`ONLY=landscape`
 
 キャプションの文言は `tool/render.mjs` の `copy` にあります。
