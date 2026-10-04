@@ -4,10 +4,12 @@
 //   NOTO_JP_DIR=<dir with NotoSansJP-{400,600,700}.ttf> \
 //     node branding/store-listing/tool/render.mjs <shots dir> branding/store-listing
 //
-// Requires Node and Playwright (Chromium). Set PLAYWRIGHT_PATH when
+// Requires Node, Playwright (Chromium) and ffmpeg (for the promo video). Set PLAYWRIGHT_PATH when
 // Playwright is not resolvable from here, and CHROMIUM_PATH to use a
 // specific browser binary.
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 
@@ -185,6 +187,101 @@ body { flex-direction: row; align-items: center; padding-left: 64px; }
 </body></html>`;
 }
 
+
+// --- Promo video (Google Play, uploaded to YouTube) --------------------------
+
+// One 1920x1080 frame: the caption on the left and the phone on the right.
+function videoScene(lang, key, shotFile) {
+  const c = copy[lang];
+  const [l1, l2, sub] = c[key];
+  const dw = 420;
+  const bz = dw * 0.035;
+  const pt = (dw - 2 * bz) / meta.phone.logicalW;
+  const vars = {
+    '--dw': dw + 'px', '--bz': bz + 'px', '--r': 0.15 * dw + 'px', '--gap': '0px',
+    '--sbh': meta.phone.top * pt + 'px', '--sbp': 34 * pt + 'px', '--sbf': 17 * pt + 'px',
+    '--nr': 24 * pt + 'px', '--np': 14 * pt + 'px', '--ni': 38 * pt + 'px', '--nf': 15 * pt + 'px',
+  };
+  const style = Object.entries(vars).map(([k, v]) => `${k}:${v}`).join(';');
+  const f = 17 * pt;
+  const note = key === 'notify'
+    ? `<div class="note"><img src="${url(icon)}"><div class="t"><div class="row"><b>${c.note.title}</b><span class="when">${c.note.now}</span></div><div class="body">${c.note.body}</div></div></div>`
+    : '';
+  return `<!doctype html><html><head><meta charset="utf-8"><style>${css}
+body { flex-direction: row; align-items: center; justify-content: center; gap: 140px; }
+.cap { text-align: left; padding: 0; width: 760px; }
+.cap h1 { font-size: 84px; }
+.cap p { font-size: 34px; margin-top: 28px; }
+.dev { margin-top: 0; }
+</style></head><body style="${style}">
+<div class="cap"><h1>${l1}<br><span class="ai">${l2}</span></h1><p>${sub}</p></div>
+<div class="dev"><div class="scr ${key === 'notify' ? 'dim' : ''}"><img class="shot" src="${url(shotFile)}">
+<div class="island"></div>
+<div class="sb"><span>9:41</span><span class="ic">${signal(f)}${wifi(f)}${battery(f)}</span></div>
+</div>${note}</div>
+</body></html>`;
+}
+
+// Opening and closing title cards.
+function videoTitle(lang, closing) {
+  const c = copy[lang];
+  return `<!doctype html><html><head><meta charset="utf-8"><style>${css}
+body { justify-content: center; gap: 36px; }
+img { width: 220px; height: 220px; border-radius: 50px; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
+.name { font-weight: 700; font-size: 96px; }
+.tag { font-weight: 700; font-size: 64px; text-align: center; line-height: 1.2; }
+.tag .ai { background: linear-gradient(90deg, #7CC4FF, #B69CFF); -webkit-background-clip: text; color: transparent; }
+.small { font-size: 32px; color: #9AA4B2; }
+</style></head><body>
+<img src="${url(icon)}">
+${closing
+    ? `<div class="name">OpenCode Mobile</div><div class="small">opencodemobile.app · ${c.unofficial}</div>`
+    : `<div class="tag">${c.feature[0]}<br><span class="ai">${c.feature[1]}</span></div><div class="small">OpenCode Mobile · ${c.unofficial}</div>`}
+</body></html>`;
+}
+
+// Renders the scenes and joins them with crossfades and a slow zoom.
+async function renderVideo(lang, file) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'promo-'));
+  const scenes = [
+    [videoTitle(lang, false), 3],
+    ...phoneOrder.map(([key, shotName]) => [
+      videoScene(lang, key, `${shots}/${lang}/phone-${shotName}.png`), 3.5,
+    ]),
+    [videoTitle(lang, true), 3],
+  ];
+  const fps = 30;
+  const fade = 0.6;
+  const inputs = [];
+  for (const [i, [html, secs]] of scenes.entries()) {
+    const png = path.join(dir, `${i}.png`);
+    await render(html, 1920, 1080, png);
+    inputs.push(['-loop', '1', '-t', String(secs), '-i', png]);
+  }
+  const zoom = scenes.map(([, secs], i) => {
+    const frames = Math.round(secs * fps);
+    return `[${i}:v]scale=3840:-1,zoompan=z='1+0.04*on/${frames}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=1:s=1920x1080:fps=${fps},setsar=1[s${i}]`;
+  });
+  const chain = [];
+  let prev = 's0';
+  let offset = 0;
+  for (let i = 1; i < scenes.length; i++) {
+    offset += scenes[i - 1][1] - fade;
+    const out = i === scenes.length - 1 ? 'v' : `x${i}`;
+    chain.push(`[${prev}][s${i}]xfade=transition=fade:duration=${fade}:offset=${offset.toFixed(2)}[${out}]`);
+    prev = out;
+  }
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  execFileSync('ffmpeg', [
+    '-y', '-loglevel', 'error', ...inputs.flat(),
+    '-filter_complex', [...zoom, ...chain].join(';'),
+    '-map', '[v]', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '18',
+    '-r', String(fps), '-movflags', '+faststart', file,
+  ]);
+  fs.rmSync(dir, { recursive: true });
+  console.log(file);
+}
+
 const browser = await chromium.launch(
   process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
 );
@@ -214,11 +311,13 @@ const targets = [
   ['app-store', 'iphone-6.9', 'ios', 1290, 2796, 'phone', phoneOrder],
   ['app-store', 'ipad-13', 'ios', 2064, 2752, 'tablet', tabletOrder],
   ['google-play', 'phone', 'android', 1080, 1920, 'phone', phoneOrder],
-  ['google-play', 'tablet', 'android', 1600, 2560, 'tablet', tabletOrder],
+  ['google-play', 'tablet-7', 'android', 1200, 1920, 'tablet7', phoneOrder],
+  ['google-play', 'tablet-10', 'android', 1600, 2560, 'tablet', tabletOrder],
 ];
 const meta = {
   phone: { logicalW: 430, top: 59 },
   tablet: { logicalW: 1032, top: 24 },
+  tablet7: { logicalW: 600, top: 24 },
 };
 
 for (const lang of ['ja', 'en']) {
@@ -226,14 +325,18 @@ for (const lang of ['ja', 'en']) {
     const locale = store === 'app-store' ? locales[lang].appStore : locales[lang].play;
     for (const [i, [key, shotName]] of order.entries()) {
       const file = `${shots}/${lang}/${dev}-${shotName}.png`;
-      const isTablet = dev === 'tablet';
-      const shot = { file, w: isTablet ? 2064 : 1290, h: isTablet ? 2752 : 2796, ...meta[dev] };
+      const isTablet = dev !== 'phone';
+      const size = { phone: [1290, 2796], tablet: [2064, 2752], tablet7: [1200, 1920] }[dev];
+      const shot = { file, w: size[0], h: size[1], ...meta[dev] };
       const html = page({ W, H, kind, lang, key, shot, tablet: isTablet });
       await render(html, W, H, `${out}/${store}/${locale}/screenshots/${folder}/${i + 1}-${key}.png`);
     }
   }
   await render(featurePage(lang, `${shots}/${lang}/phone-chat.png`), 1024, 500,
     `${out}/google-play/${locales[lang].play}/feature-graphic.png`);
+}
+for (const lang of ['ja', 'en']) {
+  await renderVideo(lang, `${out}/google-play/${locales[lang].play}/promo-video.mp4`);
 }
 fs.rmSync(tmp);
 await browser.close();

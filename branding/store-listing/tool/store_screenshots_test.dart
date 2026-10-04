@@ -51,6 +51,10 @@ class Device {
 const phone = Device('phone', Size(430, 932), 3, 59, 34);
 const tablet = Device('tablet', Size(1032, 1376), 2, 24, 20);
 
+// A 7-inch tablet in portrait is narrower than the two-pane breakpoint, so
+// it shows the single-page layout.
+const tablet7 = Device('tablet7', Size(600, 960), 2, 24, 20);
+
 final _boundary = GlobalKey();
 
 Future<void> loadFonts() async {
@@ -504,7 +508,7 @@ void main() {
 
   for (final lang in ['ja', 'en']) {
     final c = lang == 'ja' ? ja : en;
-    for (final d in [phone, tablet]) {
+    for (final d in [phone, tablet, tablet7]) {
       final p = '$lang/${d.name}';
 
       testWidgets('$p connect', (tester) async {
