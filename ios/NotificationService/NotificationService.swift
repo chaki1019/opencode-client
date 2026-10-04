@@ -46,7 +46,7 @@ struct PushPayload: Decodable {
   let detail: String?
 
   /// Must match the app's PushKeyStore (ios/Runner/AppDelegate.swift).
-  static let accessGroup = "group.dev.opencodemobile.opencodeMobile"
+  static let accessGroup = "group.app.opencodemobile"
   static let service = "opencode-push"
 
   static func open(keyId: String?, kind: String, sessionID: String, enc: String?) -> PushPayload? {

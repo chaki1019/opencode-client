@@ -1,4 +1,4 @@
-package dev.opencodemobile.opencode_mobile
+package app.opencodemobile
 
 import io.flutter.embedding.android.FlutterActivity
 
