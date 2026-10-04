@@ -662,11 +662,11 @@ abstract class AppLocalizations {
   /// **'Couldn\'t load agents: {error}'**
   String agentsLoadFailed(Object error);
 
-  /// No description provided for @modelCount.
+  /// No description provided for @noMatchingModels.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 model} other{{count} models}}'**
-  String modelCount(int count);
+  /// **'No matching models'**
+  String get noMatchingModels;
 
   /// No description provided for @searchModels.
   ///

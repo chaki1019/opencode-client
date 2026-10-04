@@ -94,7 +94,7 @@
   "model": "モデル",
   "changeFailed": "変更できませんでした: {error}",
   "agentsLoadFailed": "エージェントを読み込めませんでした: {error}",
-  "modelCount": "{count, plural, other{モデル {count} 個}}",
+  "noMatchingModels": "該当するモデルはありません",
   "searchModels": "モデルを検索",
   "modelsLoadFailed": "モデルを読み込めませんでした: {error}",
   "variant": "バリアント",

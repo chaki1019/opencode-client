@@ -351,15 +351,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String modelCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count models',
-      one: '1 model',
-    );
-    return '$_temp0';
-  }
+  String get noMatchingModels => 'No matching models';
 
   @override
   String get searchModels => 'Search models';

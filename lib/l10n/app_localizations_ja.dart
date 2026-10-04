@@ -344,14 +344,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String modelCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'モデル $count 個',
-    );
-    return '$_temp0';
-  }
+  String get noMatchingModels => '該当するモデルはありません';
 
   @override
   String get searchModels => 'モデルを検索';
