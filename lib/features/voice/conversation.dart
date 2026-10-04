@@ -78,6 +78,9 @@ class _ConversationPanelState extends ConsumerState<ConversationPanel>
   var _phase = ConversationPhase.preparing;
   var _words = '';
 
+  /// Why listening stopped early, shown while idle.
+  String? _error;
+
   /// Bumped to cancel the running loop.
   var _run = 0;
 
@@ -116,11 +119,12 @@ class _ConversationPanelState extends ConsumerState<ConversationPanel>
   void _close() =>
       ref.read(conversationActiveProvider(_sessionId).notifier).stop();
 
-  void _set(ConversationPhase phase, {String? words}) {
+  void _set(ConversationPhase phase, {String? words, String? error}) {
     if (!mounted) return;
     setState(() {
       _phase = phase;
       if (words != null) _words = words;
+      _error = error;
     });
   }
 
@@ -155,7 +159,7 @@ class _ConversationPanelState extends ConsumerState<ConversationPanel>
       );
       if (!mounted || run != _run) return;
       if (heard == null) {
-        _set(ConversationPhase.idle);
+        _set(ConversationPhase.idle, error: _input.lastError);
         return;
       }
 
@@ -248,7 +252,12 @@ class _ConversationPanelState extends ConsumerState<ConversationPanel>
         Icons.volume_up_rounded,
         l10n.conversationSpeaking,
       ),
-      ConversationPhase.idle => (Icons.mic_none_rounded, l10n.conversationIdle),
+      ConversationPhase.idle => (
+        Icons.mic_none_rounded,
+        _error == null
+            ? l10n.conversationIdle
+            : l10n.conversationListenFailed(_error!),
+      ),
       ConversationPhase.unavailable => (
         Icons.mic_off_outlined,
         l10n.conversationUnavailable,

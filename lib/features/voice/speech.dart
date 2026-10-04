@@ -18,6 +18,10 @@ abstract class SpeechInput {
   });
 
   Future<void> stop();
+
+  /// Why the last [listen] stopped early, such as the recognizer failing
+  /// to start. Null when it ended normally.
+  String? get lastError;
 }
 
 /// Reads text aloud with the platform's voice.
@@ -34,6 +38,9 @@ class PlatformSpeechInput implements SpeechInput {
   String _words = '';
 
   @override
+  String? lastError;
+
+  @override
   Future<bool> available() async {
     try {
       return await _speech.initialize(
@@ -43,7 +50,10 @@ class PlatformSpeechInput implements SpeechInput {
             _finish();
           }
         },
-        onError: (_) => _finish(),
+        onError: (error) {
+          lastError = error.errorMsg;
+          _finish();
+        },
       );
     } catch (_) {
       return false;
@@ -65,6 +75,7 @@ class PlatformSpeechInput implements SpeechInput {
     _finish();
     final pending = _pending = Completer<String?>();
     _words = '';
+    lastError = null;
     await _speech.listen(
       onResult: (result) {
         _words = result.recognizedWords;

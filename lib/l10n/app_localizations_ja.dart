@@ -1070,6 +1070,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get conversationIdle => 'マイクを1回タップしてから話してください';
 
   @override
+  String conversationListenFailed(Object error) {
+    return '聞き取れませんでした（$error）。もう一度マイクをタップしてください';
+  }
+
+  @override
   String get conversationUnavailable =>
       '音声認識を使えません。端末の設定で、このアプリのマイクと音声認識を許可してください。';
 

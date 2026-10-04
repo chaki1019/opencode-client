@@ -305,6 +305,7 @@
   "conversationNeedsInput": "画面での回答を待っています",
   "conversationSpeaking": "返答を読み上げています",
   "conversationIdle": "マイクを1回タップしてから話してください",
+  "conversationListenFailed": "聞き取れませんでした（{error}）。もう一度マイクをタップしてください",
   "conversationUnavailable": "音声認識を使えません。端末の設定で、このアプリのマイクと音声認識を許可してください。",
   "conversationListen": "話す",
   "conversationDoneSpeaking": "話し終えた",

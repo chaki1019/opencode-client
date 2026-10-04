@@ -551,6 +551,12 @@
   "conversationNeedsInput": "Waiting for your answer on screen",
   "conversationSpeaking": "Reading the reply",
   "conversationIdle": "Tap the mic once, then speak",
+  "conversationListenFailed": "Couldn't listen ({error}). Tap the mic to try again.",
+  "@conversationListenFailed": {
+    "placeholders": {
+      "error": {}
+    }
+  },
   "conversationUnavailable": "Speech recognition is unavailable. Allow the microphone and speech recognition for this app in Settings.",
   "conversationListen": "Speak",
   "conversationDoneSpeaking": "Done speaking",

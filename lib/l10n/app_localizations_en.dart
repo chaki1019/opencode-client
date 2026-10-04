@@ -1090,6 +1090,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conversationIdle => 'Tap the mic once, then speak';
 
   @override
+  String conversationListenFailed(Object error) {
+    return 'Couldn\'t listen ($error). Tap the mic to try again.';
+  }
+
+  @override
   String get conversationUnavailable =>
       'Speech recognition is unavailable. Allow the microphone and speech recognition for this app in Settings.';
 

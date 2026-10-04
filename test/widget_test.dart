@@ -612,6 +612,19 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('conversation-panel')), findsNothing);
 
+    // When the recognizer fails, it says why instead of going quiet.
+    speechIn.lastError = 'error_audio';
+    await tester.tap(find.byKey(const Key('conversation')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(
+      find.text('聞き取れませんでした（error_audio）。もう一度マイクをタップしてください'),
+      findsOneWidget,
+    );
+    await tester.tap(find.byKey(const Key('conversation-close')));
+    await tester.pumpAndSettle();
+    speechIn.lastError = null;
+
     // Back on the list, swiping a session right renames it.
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
@@ -669,6 +682,9 @@ class _FakeSpeechInput implements SpeechInput {
 
   @override
   Future<void> stop() async {}
+
+  @override
+  String? lastError;
 }
 
 class _FakeSpeechOutput implements SpeechOutput {

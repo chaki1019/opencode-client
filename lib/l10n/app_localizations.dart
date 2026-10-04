@@ -1928,6 +1928,12 @@ abstract class AppLocalizations {
   /// **'Tap the mic once, then speak'**
   String get conversationIdle;
 
+  /// No description provided for @conversationListenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t listen ({error}). Tap the mic to try again.'**
+  String conversationListenFailed(Object error);
+
   /// No description provided for @conversationUnavailable.
   ///
   /// In en, this message translates to:
