@@ -76,7 +76,7 @@ Android は同じ `push.env.json` を Gradle が読み、FCM がアプリの起�
 2. Xcode が作った `NotificationService.swift` と `Info.plist` を削除し、`ios/NotificationService/` の同名ファイルをターゲットに追加する。
 3. NotificationService ターゲットの Build Settings（上部のフィルターを All にする）で `CODE_SIGN_ENTITLEMENTS` を `NotificationService/NotificationService.entitlements` にし、iOS Deployment Target を Runner と同じ 18.0 にする（アプリの対応は iOS 18 以降）。
 4. Runner と NotificationService の両方で Signing & Capabilities を開き、Push Notifications（Runner のみ）と App Groups（`group.app.opencodemobile`）が有効になっていることを確認する。Bundle ID を変えたときは App Group 名も `ios/Runner/AppDelegate.swift` と `NotificationService.swift` で合わせて変える。
-5. Runner ターゲットの Build Phases で、**Embed Foundation Extensions** を **Thin Binary** と **Run Script** より上に移動する。これをしないと「Cycle inside Runner」でビルドが止まります。
+5. Runner ターゲットの Build Phases で、**Embed Foundation Extensions** を **Thin Binary** より上（Copy Bundle Resources のすぐ下）に移動する。これをしないと「Cycle inside Runner」でビルドが止まります。
 
 ビルドで「Multiple commands produce ... NotificationService.appex/Info.plist」と出たときは、NotificationService ターゲットの Build Phases → Copy Bundle Resources から `Info.plist`（と `.entitlements`）を外します。一覧に無ければ、`NotificationService/Info.plist` の Target Membership から NotificationService のチェックを外します。
 
