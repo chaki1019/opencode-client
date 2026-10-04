@@ -75,13 +75,13 @@ keyPassword=...
 ### 5. Google Play
 
 1. Play Console でアプリ（パッケージ名 `app.opencodemobile`）を作る。
-2. **最初の 1 回だけ** AAB を手で上げる（Play の API は、まだ一度もビルドが上がっていないアプリには上げられないため）。Codemagic で一度ビルドし、Artifacts の `.aab` を内部テストトラックに上げるのが簡単です。その回は Play への公開ステップが失敗しますが問題ありません。
+2. **最初の 1 回だけ** AAB を手で上げる（Play の API は、まだ一度もビルドが上がっていないアプリには上げられないため）。Codemagic で「Start new build」からワークフロー **Android AAB (manual upload)** を選んで実行し（タグは不要）、Artifacts の `.aab` を内部テストトラックに上げます。このワークフローは Android だけをビルドし、ストアには上げません。先に 6 の `app_config` を作っておくと、本番の設定入りでビルドされます（未設定の項目は push や本番広告がオフのビルドになります）。
 3. Google Cloud でサービスアカウントを作り、JSON キーを発行する。Play Console の「ユーザーと権限」でそのアカウントを招待し、このアプリのリリース権限を付ける。
 4. 最初のリリースを公開したら、`codemagic.yaml` の `submit_as_draft` を `false` にする（それまでは Play が下書きしか受け付けません）。
 
 ### 6. 環境変数
 
-Codemagic のアプリ設定 →「Environment variables」で、次の 2 つのグループを作ります。値はすべて「Secret」にします。
+Codemagic のアプリ設定 →「Environment variables」で、次の 2 つのグループを作ります。値はすべて「Secret」にします。空の変数はスキップされ、その機能がオフのビルドになります。
 
 グループ **`app_config`**
 
