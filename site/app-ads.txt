@@ -1,4 +1,1 @@
-# AdMob の app-ads.txt（docs/support.md を参照）。
-# 下の行の pub-0000000000000000 を AdMob のパブリッシャー ID に置き換え、
-# 行頭の # を外してから公開してください。
-# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
+google.com, pub-0412699964251204, DIRECT, f08c47fec0942fa0

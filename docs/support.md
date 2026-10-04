@@ -34,7 +34,7 @@ flutter build ipa \
 ### 公開前に直すところ
 
 1. お問い合わせ先は `support@opencodemobile.app` です。Cloudflare の Email Routing で、このアドレス宛てのメールを普段のメールボックスへ転送します（ドメインの DNS が Cloudflare にあることが前提です）。
-2. `site/app-ads.txt` の `pub-0000000000000000` を AdMob のパブリッシャー ID（AdMob の「設定」→「アカウント情報」）に置き換え、行頭の `#` を外す。
+2. `site/app-ads.txt` には AdMob のパブリッシャー ID（AdMob の「設定」→「アカウント情報」）を書いてあります。アカウントを変えたらここも直す。
 3. プライバシーポリシーの内容が実際のアプリと合っているか読み直す。データの扱いを変えたら、ここも合わせて直す。
 
 ### デプロイ
