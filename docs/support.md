@@ -42,7 +42,7 @@ flutter build ipa \
 2. `site/app-ads.txt` には AdMob のパブリッシャー ID（AdMob の「設定」→「アカウント情報」）を書いてあります。アカウントを変えたらここも直す。
 3. プライバシーポリシーの内容が実際のアプリと合っているか読み直す。データの扱いを変えたら、ここも合わせて直す。
 4. LP（`site/ja/index.html` と `site/en/index.html`）のストアのボタンは仮置きです。ストアの URL が決まったら、HTML のコメントがある箇所をバッジに差し替えます。
-5. LP のスクリーンショット（`site/img/<言語>/*.webp`）はストア用とは別に作った、説明文や端末の枠を含まないアプリ画面だけの画像です（スマホ 540×1170、タブレット 960×1280）。ストア用画像と同じ素の画面（`store_screenshots_test.dart` の出力）から、プロジェクト共有フォルダの `store-listing/src/lp-render.mjs` でステータスバーを付けて書き出します。リポジトリのルートで `node lp-render.mjs <素の画面のフォルダ> site branding/app-icon/app-store-1024.png` を実行すると、全言語分が上書きされます。
+5. LP のスクリーンショット（`site/img/<言語>/*.webp`）はストア用とは別に作った、説明文や端末の枠を含まないアプリ画面だけの画像です（スマホ 540×1170、タブレットは横向きで 1600×1200 と 1000×750）。ストア用画像と同じ素の画面（`store_screenshots_test.dart` の出力）から、プロジェクト共有フォルダの `store-listing/src/lp-render.mjs` でステータスバーを付けて書き出します。リポジトリのルートで `node lp-render.mjs <素の画面のフォルダ> site branding/app-icon/app-store-1024.png` を実行すると、全言語分が上書きされます。
 
 ### デプロイ
 
