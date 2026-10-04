@@ -3,13 +3,16 @@
 | いつ | どこで | 何をするか |
 | --- | --- | --- |
 | PR を出したとき・追加で push したとき | GitHub Actions（`.github/workflows/ci.yml`） | format チェック、`flutter analyze`、`flutter test`、Android の debug ビルド、`push/` の Node テスト |
-| `v1.0.1` のようなタグを push したとき | Codemagic（`codemagic.yaml`） | iOS / Android のリリースビルドを作り、TestFlight と Google Play の内部テストに上げる |
+| `v1.0.1` のようなタグを push したとき | Codemagic（`codemagic.yaml`） | iOS / Android のリリースビルドを作り、App Store と Google Play の審査に出す（承認されると公開） |
 
-GitHub Actions は Linux で動くので、private リポジトリの無料枠（月 2,000 分）をそのまま消費します。`site/` `docs/` と Markdown だけを変えた PR ではチェックを動かしません。main へのマージ時も再実行しません。
+GitHub Actions は Linux で動くので、private リポジトリの無料枠（月 2,000 分）をそのまま消費します。`site/` `docs/`、Markdown、`release_notes.json` だけを変えた PR ではチェックを動かしません。main へのマージ時も再実行しません。
 
 Codemagic の無料枠（macOS で月 500 分）はリリースビルドにだけ使います。
 
 ## リリースのしかた
+
+1. ルートの `release_notes.json` に今回の変更点を書き、PR でマージする（下の「リリースノート」）。
+2. main でタグを打って push する。
 
 ```bash
 git checkout main && git pull
@@ -19,7 +22,22 @@ git push origin v1.0.1
 
 - バージョン名（`1.0.1`）はタグから取ります。`pubspec.yaml` の `version` を書き換える必要はありません。
 - ビルド番号は TestFlight と Google Play に上がっている最大の番号に 1 を足したものを自動で使います。
-- 終わると TestFlight に新しいビルドが届き、Play の内部テストトラックに下書きのリリースができます。
+- iOS は TestFlight に上げたうえで App Store の審査に出し、承認されると公開されます。「このバージョンの最新情報」には `release_notes.json` の内容が入ります。
+- Play は製品版トラックにリリースを作り、そのまま審査に出します。承認されると公開されます。事前に動作確認したいときは、タグを打つ前に `Android AAB (manual upload)` で作った AAB を内部テストに手で上げて確かめてください。
+
+## リリースノート
+
+`release_notes.json` の `text` が、次の欄にそのまま入ります。
+
+| 言語コード | 入る場所 |
+| --- | --- |
+| `ja` | App Store の「このバージョンの最新情報」と TestFlight の「テスト内容」（日本語） |
+| `ja-JP` | Google Play のリリースノート（日本語） |
+| `en-US` | App Store・TestFlight・Google Play の英語 |
+
+App Store と Google Play で日本語のコードが違うため、日本語は同じ文を 2 回書きます。ストアに登録していない言語は無視されます。`<` と `>` は Apple の API が受け付けないので使わないでください。Google Play のリリースノートは 1 言語 500 文字までです。
+
+ファイルを更新し忘れると前回の文がそのまま使われるので、タグを打つ前に書き換えてください。
 
 ## 初回セットアップ
 
@@ -77,7 +95,7 @@ keyPassword=...
 1. Play Console でアプリ（パッケージ名 `app.opencodemobile`）を作る。
 2. **最初の 1 回だけ** AAB を手で上げる（Play の API は、まだ一度もビルドが上がっていないアプリには上げられないため）。Codemagic で「Start new build」からワークフロー **Android AAB (manual upload)** を選んで実行し（タグは不要）、Artifacts の `.aab` を内部テストトラックに上げます。このワークフローは Android だけをビルドし、ストアには上げません。先に 6 の `app_config` を作っておくと、本番の設定入りでビルドされます（未設定の項目は push や本番広告がオフのビルドになります）。
 3. Google Cloud でサービスアカウントを作り、JSON キーを発行する。Play Console の「ユーザーと権限」でそのアカウントを招待し、このアプリのリリース権限を付ける。
-4. 最初のリリースを公開したら、`codemagic.yaml` の `submit_as_draft` を `false` にする（それまでは Play が下書きしか受け付けません）。
+4. 最初のリリースを公開するまでは、Play が下書きしか受け付けません。それまでは `codemagic.yaml` の `submit_as_draft` を `true` にしておきます（今は公開済みなので `false`）。
 
 ### 6. 環境変数
 

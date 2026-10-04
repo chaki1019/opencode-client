@@ -12,6 +12,7 @@ on:
       - "site/**"
       - "docs/**"
       - "**/*.md"
+      - "release_notes.json"
 
 permissions:
   contents: read
