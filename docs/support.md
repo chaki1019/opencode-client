@@ -32,6 +32,7 @@ flutter build ipa \
 | `/ja/support/` , `/en/support/` | サポートページ（お問い合わせ先、よくある質問） |
 | `/ja/privacy/` , `/en/privacy/` | プライバシーポリシー |
 | `/app-ads.txt` | AdMob の app-ads.txt |
+| `/favicon.svg` , `/favicon.ico` , `/apple-touch-icon.png` | アプリアイコンと同じ図柄の favicon。`branding/app-icon/generate.mjs` で書き出します |
 
 ページは言語コードのフォルダーに分けています。言語を増やすときは `site/<言語コード>/` を作り、各ページの言語切替リンク、`hreflang`、`site/index.html` の `langs` に足します。
 
@@ -40,7 +41,7 @@ flutter build ipa \
 1. お問い合わせ先は `support@opencodemobile.app` です。Cloudflare の Email Routing で、このアドレス宛てのメールを普段のメールボックスへ転送します（ドメインの DNS が Cloudflare にあることが前提です）。
 2. `site/app-ads.txt` には AdMob のパブリッシャー ID（AdMob の「設定」→「アカウント情報」）を書いてあります。アカウントを変えたらここも直す。
 3. プライバシーポリシーの内容が実際のアプリと合っているか読み直す。データの扱いを変えたら、ここも合わせて直す。
-4. LP（`site/ja/index.html` と `site/en/index.html`）のアプリアイコン、スクリーンショット、ストアのボタンは仮置きです。素材とストアの URL ができたら、画像を `site/img/` に置いて、HTML のコメントがある箇所を差し替えます。
+4. LP（`site/ja/index.html` と `site/en/index.html`）のスクリーンショットとストアのボタンは仮置きです。素材とストアの URL ができたら、画像を `site/img/` に置いて、HTML のコメントがある箇所を差し替えます。
 
 ### デプロイ
 

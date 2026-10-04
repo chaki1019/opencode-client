@@ -66,6 +66,8 @@ const designs = {
   monochrome: svg(scaled(glyph({ mono: true }))),
   // Legacy (pre-API 26) launcher icon: rounded square on transparent.
   legacy: svg(`<rect x="40" y="40" width="944" height="944" rx="200" fill="url(#bg)"/>${glyph()}`),
+  // Website favicon: full-bleed rounded square on transparent.
+  web: svg(`<rect width="1024" height="1024" rx="224" fill="url(#bg)"/>${glyph()}`),
 };
 
 // --- Rendering ---------------------------------------------------------------
@@ -111,6 +113,20 @@ for (const [name, factor] of Object.entries(densities)) {
 await render(designs.full, 512, out('branding/app-icon/play-store-512.png'), { opaque: true });
 await render(designs.full, 1024, out('branding/app-icon/app-store-1024.png'), { opaque: true });
 fs.writeFileSync(out('branding/app-icon/icon.svg'), designs.full + '\n');
+
+// Website (site/): SVG favicon, .ico for older browsers, and the home-screen
+// icon for iOS (which rounds the corners itself, so it stays square).
+fs.writeFileSync(out('site/favicon.svg'), designs.web + '\n');
+const icoSizes = [16, 32, 48];
+const icoParts = [];
+for (const size of icoSizes) {
+  const file = out(`site/favicon-${size}.tmp.png`);
+  await render(designs.web, size, file);
+  icoParts.push(file);
+}
+execFileSync('convert', [...icoParts, out('site/favicon.ico')]);
+for (const file of icoParts) fs.rmSync(file);
+await render(designs.full, 180, out('site/apple-touch-icon.png'), { opaque: true });
 
 await browser.close();
 
