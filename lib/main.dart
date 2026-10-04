@@ -9,6 +9,7 @@ import 'core/crash/crash_reporter.dart';
 import 'core/push/push_config.dart';
 import 'features/ads/ads_providers.dart';
 import 'features/ads/remove_ads.dart';
+import 'features/live/server_activity.dart';
 import 'features/push/push_providers.dart';
 import 'features/settings/settings_providers.dart';
 import 'features/update/update_gate.dart';
@@ -45,6 +46,7 @@ class OpenCodeMobileApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(pushCoordinatorProvider);
     ref.watch(adsStartupProvider);
+    ref.watch(serverActivityKeeperProvider);
     // Kept alive from launch to receive redelivered purchases, without
     // rebuilding the app on each purchase state.
     ref.listen(removeAdsProvider, (_, _) {});

@@ -821,6 +821,19 @@ class AppLocalizationsJa extends AppLocalizations {
   String get servers => 'サーバー';
 
   @override
+  String serverRunning(int count) {
+    return '$count件作業中';
+  }
+
+  @override
+  String serverFinished(int count) {
+    return '$count件完了';
+  }
+
+  @override
+  String get serverUnreachable => '接続できません';
+
+  @override
   String get addServer => 'サーバーを追加';
 
   @override

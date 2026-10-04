@@ -6,16 +6,28 @@ import '../../core/events/event_stream.dart';
 import '../../core/events/server_event.dart';
 import '../connection/connection_providers.dart';
 
-/// The single event stream for the active connection, or null when
-/// disconnected. Replaced (and the old one closed) on reconnect.
-final eventStreamProvider = Provider<EventStream?>((ref) {
-  final client = ref.watch(connectionProvider)?.client;
+/// The event stream of one pooled server, open for as long as the server
+/// stays connected. Null when it is not.
+final serverEventStreamProvider = Provider.family<EventStream?, String>((
+  ref,
+  serverId,
+) {
+  final client = ref.watch(
+    connectionPoolProvider.select((pool) => pool[serverId]?.connection?.client),
+  );
   if (client == null) return null;
   final stream = EventStream(
     open: (cancel) => client.openEventStream(cancelToken: cancel),
   )..start();
   ref.onDispose(stream.dispose);
   return stream;
+});
+
+/// The event stream of the server on screen, or null when disconnected.
+/// The same stream keeps running while the server is in the background.
+final eventStreamProvider = Provider<EventStream?>((ref) {
+  final id = ref.watch(connectionProvider.select((c) => c?.server.id));
+  return id == null ? null : ref.watch(serverEventStreamProvider(id));
 });
 
 final eventStreamStatusProvider = StreamProvider<EventStreamStatus>((ref) {

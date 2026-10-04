@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +21,18 @@ import '../../support/fake_discovery.dart';
 
 void main() {
   late FakeDiscovery discovery;
+
+  /// Each connected server's event feed, by server ID.
+  final serverEvents = <String, StreamController<List<int>>>{};
+  void send(String serverId, String type, String sessionId) =>
+      serverEvents[serverId]!.add(
+        utf8.encode(
+          'data: ${jsonEncode({
+            'type': type,
+            'data': {'sessionID': sessionId},
+          })}\n\n',
+        ),
+      );
   final adapter = FakeAdapter({
     '/api/health': (RequestOptions request) {
       if (request.uri.host == 'down.test') {
@@ -50,9 +63,8 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          eventStreamProvider.overrideWith((ref) {
-            if (ref.watch(connectionProvider) == null) return null;
-            final events = StreamController<List<int>>();
+          serverEventStreamProvider.overrideWith((ref, serverId) {
+            final events = serverEvents[serverId] = StreamController();
             final stream = EventStream(open: (_) async => events.stream)
               ..start();
             ref.onDispose(stream.dispose);
@@ -179,6 +191,72 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(Drawer), findsNothing);
       expect(title(tester), '職場');
+    });
+
+    testWidgets('keeps the other servers connected and shows their progress', (
+      tester,
+    ) async {
+      await saveServers([home, work, down]);
+      await pumpApp(tester);
+      await tester.tap(find.text('自宅'));
+      await tester.pumpAndSettle();
+
+      // The other saved servers connected in the background.
+      expect(serverEvents.keys, containsAll(['work']));
+      send('work', 'session.execution.started', 'w1');
+      send('work', 'session.execution.started', 'w2');
+      send('work', 'session.execution.succeeded', 'w1');
+      await tester.pump();
+
+      await openDrawer(tester);
+      String status(String id) => tester
+          .widget<Text>(find.byKey(Key('drawer-server-status-$id')))
+          .data!;
+      expect(status('work'), '1件作業中 · 1件完了');
+      expect(
+        find.byKey(const Key('drawer-server-finished-work')),
+        findsOneWidget,
+      );
+      expect(status('down'), '接続できません');
+      expect(status('home'), 'http://home.test:4096');
+
+      // Switching is instant and clears what was counted.
+      final requests = adapter.requests.length;
+      await tester.tap(find.byKey(const Key('drawer-server-work')));
+      await tester.pumpAndSettle();
+      expect(title(tester), '職場');
+      expect(
+        adapter.requests.skip(requests).where((r) => r.path == '/api/health'),
+        isEmpty,
+      );
+
+      await openDrawer(tester);
+      expect(status('work'), 'http://work.test:4096');
+      expect(
+        find.byKey(const Key('drawer-server-finished-work')),
+        findsNothing,
+      );
+      // The one left behind is followed in turn.
+      send('home', 'session.execution.started', 'h1');
+      await tester.pumpAndSettle();
+      expect(status('home'), '1件作業中');
+    });
+
+    testWidgets('opens diagnostics from the project list, not the drawer', (
+      tester,
+    ) async {
+      await saveServers([home]);
+      await pumpApp(tester);
+      await tester.tap(find.text('自宅'));
+      await tester.pumpAndSettle();
+      await openDrawer(tester);
+      expect(
+        find.descendant(of: find.byType(Drawer), matching: find.text('接続の診断')),
+        findsNothing,
+      );
+      await tester.tapAt(const Offset(420, 300));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('diagnostics')), findsOneWidget);
     });
 
     testWidgets('stays on the current server when switching fails', (

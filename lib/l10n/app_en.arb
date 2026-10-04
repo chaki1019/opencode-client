@@ -462,6 +462,19 @@
   "pushOpenFailed": "Couldn't open the session: {error}",
   "@pushOpenFailed": {"placeholders": {"error": {}}},
   "servers": "Servers",
+  "serverRunning": "{count} running",
+  "@serverRunning": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "serverFinished": "{count} done",
+  "@serverFinished": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "serverUnreachable": "Can't connect",
   "addServer": "Add server",
   "serverSwitchFailed": "Couldn't connect to {name}: {error}",
   "@serverSwitchFailed": {"placeholders": {"name": {"type": "String"}, "error": {"type": "String"}}},

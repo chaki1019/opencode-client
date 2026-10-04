@@ -131,6 +131,13 @@ class ProjectsPane extends ConsumerWidget {
         ),
         title: Text(connection?.server.displayName ?? context.l10n.projects),
         actions: [
+          // Diagnoses the server this list belongs to.
+          IconButton(
+            key: const Key('diagnostics'),
+            tooltip: context.l10n.diagnosticsTitle,
+            icon: const Icon(Icons.monitor_heart_outlined),
+            onPressed: () => context.push('/diagnostics'),
+          ),
           IconButton(
             tooltip: context.l10n.disconnect,
             icon: const Icon(Icons.logout),

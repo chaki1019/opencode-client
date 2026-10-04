@@ -86,7 +86,7 @@ void main() {
               ),
             ),
           ),
-          eventStreamProvider.overrideWithValue(null),
+          serverEventStreamProvider.overrideWith((ref, _) => null),
           computerPluginProvider.overrideWith(
             (ref, id) async =>
                 const ComputerPluginCheck(ComputerPluginStatus.active),
