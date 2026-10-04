@@ -31,7 +31,7 @@ git push origin v1.0.1
 ### 2. App Store Connect API キー
 
 1. App Store Connect の「ユーザとアクセス」→「統合」→「App Store Connect API」で、アクセス権「App Manager」のキーを作り、`.p8` をダウンロードする。
-2. Codemagic の Team settings →「Team integrations」→「Developer Portal」→「Manage keys」で、名前を **`opencode-mobile`** にしてキーを登録する（Issuer ID、Key ID、`.p8`）。
+2. Codemagic の Settings（個人アカウントでは「Personal account settings」、チームでは「Team settings」）→「Integrations」→「Developer Portal」の「Connect」か「Manage keys」で、名前を **`opencode-mobile`** にしてキーを登録する（Issuer ID、Key ID、`.p8`）。
 3. App Store Connect でアプリ（バンドル ID `app.opencodemobile`）を作り、「App 情報」の Apple ID（数字）を `codemagic.yaml` の `APP_STORE_APPLE_ID` に書く。
 
 ### 3. iOS の署名
@@ -43,7 +43,7 @@ Apple Developer の「Identifiers」で、次の 2 つの App ID に機能が付
 | `app.opencodemobile` | Push Notifications、App Groups（`group.app.opencodemobile`） |
 | `app.opencodemobile.NotificationService` | App Groups（`group.app.opencodemobile`） |
 
-そのうえで Codemagic の Team settings →「codemagic.yaml settings」→「Code signing identities」で次を行います。
+そのうえで Codemagic の Settings（上と同じページ）→「codemagic.yaml settings」→「Code signing identities」で次を行います。
 
 1. 「iOS certificates」で Apple Distribution 証明書を作る（「Generate certificate」）か、手元の `.p12` を上げる。
 2. 「iOS provisioning profiles」→「Fetch profiles」で、上の 2 つの App ID の App Store 用プロファイルを取り込む。なければ Apple Developer で作ってから取り込む。
@@ -75,13 +75,13 @@ keyPassword=...
 ### 5. Google Play
 
 1. Play Console でアプリ（パッケージ名 `app.opencodemobile`）を作る。
-2. **最初の 1 回だけ** AAB を手で上げる（Play の API は、まだ一度もビルドが上がっていないアプリには上げられないため）。Codemagic で一度ビルドし、Artifacts の `.aab` を内部テストトラックに上げるのが簡単です。その回は Play への公開ステップが失敗しますが問題ありません。
+2. **最初の 1 回だけ** AAB を手で上げる（Play の API は、まだ一度もビルドが上がっていないアプリには上げられないため）。Codemagic で「Start new build」からワークフロー **Android AAB (manual upload)** を選んで実行し（タグは不要）、Artifacts の `.aab` を内部テストトラックに上げます。このワークフローは Android だけをビルドし、ストアには上げません。先に 6 の `app_config` を作っておくと、本番の設定入りでビルドされます（未設定の項目は push や本番広告がオフのビルドになります）。
 3. Google Cloud でサービスアカウントを作り、JSON キーを発行する。Play Console の「ユーザーと権限」でそのアカウントを招待し、このアプリのリリース権限を付ける。
 4. 最初のリリースを公開したら、`codemagic.yaml` の `submit_as_draft` を `false` にする（それまでは Play が下書きしか受け付けません）。
 
 ### 6. 環境変数
 
-Codemagic のアプリ設定 →「Environment variables」で、次の 2 つのグループを作ります。値はすべて「Secret」にします。
+Codemagic のアプリ設定 →「Environment variables」で、次の 2 つのグループを作ります。値はすべて「Secret」にします。空の変数はスキップされ、その機能がオフのビルドになります。
 
 グループ **`app_config`**
 
