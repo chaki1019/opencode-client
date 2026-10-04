@@ -7,7 +7,7 @@
 設定画面の下に「サポートとプライバシー」の欄があります。
 
 - **お問い合わせ**: メールアプリを開き、件名と、本文の末尾にアプリのバージョンと OS を入れた下書きを作ります。
-- **プライバシーポリシー**: アプリの言語に合わせて `SITE_URL/privacy/`（日本語）か `SITE_URL/en/privacy/`（英語）をブラウザで開きます。
+- **プライバシーポリシー**: アプリの言語に合わせて `SITE_URL/ja/privacy/`（日本語）か `SITE_URL/en/privacy/`（英語）をブラウザで開きます。
 - **クラッシュレポートを送信**: 既定はオンです。オフにすると Crashlytics の送信を止め、未送信のレポートも消します。
 
 宛先とサイトの URL は `app.env.example.json` を `app.env.json` にコピーして埋めます（`app.env.json` は git に入りません）。空の項目の行は表示しません。
@@ -27,15 +27,20 @@ flutter build ipa \
 
 | パス | 内容 |
 | --- | --- |
-| `/` , `/en/` | サポートページ（お問い合わせ先、よくある質問） |
-| `/privacy/` , `/en/privacy/` | プライバシーポリシー |
+| `/` | ブラウザの言語を見て `/ja/` か `/en/` へ移動（どちらでもなければ `/en/`） |
+| `/ja/` , `/en/` | アプリの紹介と使い方（LP） |
+| `/ja/support/` , `/en/support/` | サポートページ（お問い合わせ先、よくある質問） |
+| `/ja/privacy/` , `/en/privacy/` | プライバシーポリシー |
 | `/app-ads.txt` | AdMob の app-ads.txt |
+
+ページは言語コードのフォルダーに分けています。言語を増やすときは `site/<言語コード>/` を作り、各ページの言語切替リンク、`hreflang`、`site/index.html` の `langs` に足します。
 
 ### 公開前に直すところ
 
 1. お問い合わせ先は `support@opencodemobile.app` です。Cloudflare の Email Routing で、このアドレス宛てのメールを普段のメールボックスへ転送します（ドメインの DNS が Cloudflare にあることが前提です）。
 2. `site/app-ads.txt` には AdMob のパブリッシャー ID（AdMob の「設定」→「アカウント情報」）を書いてあります。アカウントを変えたらここも直す。
 3. プライバシーポリシーの内容が実際のアプリと合っているか読み直す。データの扱いを変えたら、ここも合わせて直す。
+4. LP（`site/ja/index.html` と `site/en/index.html`）のアプリアイコン、スクリーンショット、ストアのボタンは仮置きです。素材とストアの URL ができたら、画像を `site/img/` に置いて、HTML のコメントがある箇所を差し替えます。
 
 ### デプロイ
 
@@ -48,8 +53,8 @@ flutter build ipa \
 
 ### ストアに書く URL
 
-- App Store Connect: 「プライバシーポリシー URL」に `/privacy/`（英語ストアには `/en/privacy/`）、「サポート URL」に `/`、「マーケティング URL」は任意。
-- Play Console: 「アプリのコンテンツ」→「プライバシー ポリシー」に `/privacy/`。ストアの掲載情報の「ウェブサイト」にサイトの URL、「メールアドレス」にお問い合わせ先を書きます。
+- App Store Connect: 「プライバシーポリシー URL」に `/ja/privacy/`（英語ストアには `/en/privacy/`）、「サポート URL」に `/ja/support/`（英語ストアには `/en/support/`）、「マーケティング URL」に `/ja/`（英語は `/en/`）。
+- Play Console: 「アプリのコンテンツ」→「プライバシー ポリシー」に `/ja/privacy/`。ストアの掲載情報の「ウェブサイト」にサイトの URL、「メールアドレス」にお問い合わせ先を書きます。
 - AdMob は、ストアの「ウェブサイト」に書いたドメインの直下で `app-ads.txt` を探します。ストアのウェブサイト欄には `https://opencodemobile.app` を書きます。
 
 ### ストアのデータ開示

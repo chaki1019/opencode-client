@@ -14,7 +14,7 @@ void main() {
       final config = SupportConfig(siteUrl: site);
       expect(
         config.privacyPolicy('ja').toString(),
-        'https://x.pages.dev/privacy/',
+        'https://x.pages.dev/ja/privacy/',
       );
       expect(
         config.privacyPolicy('en').toString(),

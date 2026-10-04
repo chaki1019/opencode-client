@@ -1,36 +1,33 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OpenCode Mobile サポート</title>
+<title>OpenCode Mobile</title>
+<link rel="alternate" hreflang="ja" href="https://opencodemobile.app/ja/">
+<link rel="alternate" hreflang="en" href="https://opencodemobile.app/en/">
+<link rel="alternate" hreflang="x-default" href="https://opencodemobile.app/">
+<script>
+  // Send visitors to the page in their language; English when none matches.
+  (function () {
+    var langs = ['ja', 'en'];
+    var prefs = navigator.languages || [navigator.language || ''];
+    for (var i = 0; i < prefs.length; i++) {
+      var code = String(prefs[i]).toLowerCase().split('-')[0];
+      if (langs.indexOf(code) >= 0) { location.replace('/' + code + '/'); return; }
+    }
+    location.replace('/en/');
+  })();
+</script>
 <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 <main>
-<header>
-  <a class="lang" href="/en/">English</a>
-  <h1>OpenCode Mobile</h1>
-  <p>自分の OpenCode サーバーにスマートフォンからつなぐ、非公式のクライアントアプリです。</p>
-</header>
-
-<h2>お問い合わせ</h2>
-<p>不具合の報告、ご質問、ご要望はメールでお送りください。アプリの「設定」→「お問い合わせ」からも、アプリのバージョンと OS を添えたメールを作成できます。</p>
-<p><a href="mailto:support@opencodemobile.app">support@opencodemobile.app</a></p>
-<p>個人で開発しているため、お返事に数日かかることがあります。</p>
-
-<h2>よくある質問</h2>
-<p><strong>サーバーにつながりません。</strong><br>
-スマートフォンと OpenCode サーバーが同じネットワークにあるか、サーバーが外部からの接続を受け付ける設定（<code>opencode serve --hostname 0.0.0.0</code> など）で起動しているかをご確認ください。</p>
-<p><strong>通知が届きません。</strong><br>
-サーバー側に通知用プラグイン <code>opencode-mobile-push</code> を入れ、アプリでペアリングしたかをご確認ください。端末の設定でアプリの通知が許可されている必要があります。</p>
-<p><strong>「広告を外す」を別の端末でも使いたい。</strong><br>
-同じ Apple ID または Google アカウントでログインした端末で、「設定」→「購入を復元」をお試しください。</p>
-
-<h2>プライバシー</h2>
-<p><a href="/privacy/">プライバシーポリシー</a></p>
-
-<footer>OpenCode Mobile は OpenCode の公式アプリではありません。</footer>
+<h1>OpenCode Mobile</h1>
+<ul>
+  <li><a href="/ja/">日本語</a></li>
+  <li><a href="/en/">English</a></li>
+</ul>
 </main>
 </body>
 </html>
