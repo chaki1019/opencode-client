@@ -34,14 +34,15 @@ flutter build ipa \
 | `/app-ads.txt` | AdMob の app-ads.txt |
 | `/favicon.svg` , `/favicon.ico` , `/apple-touch-icon.png` | アプリアイコンと同じ図柄の favicon。`branding/app-icon/generate.mjs` で書き出します |
 
-ページは言語コードのフォルダーに分けています。言語を増やすときは `site/<言語コード>/` を作り、各ページの言語切替リンク、`hreflang`、`site/index.html` の `langs` に足します。
+ページは言語コードのフォルダーに分けています。左側のメニューは各ページに HTML で書いてあり、そのページの見出し（`h2` の `id`）から目次を `site/site.js` が組み立てます。ページを足したら全ページのメニューにも足します。言語を増やすときは `site/<言語コード>/` を作り、各ページの言語切替リンク、`hreflang`、`site/index.html` の `langs` に足します。
 
 ### 公開前に直すところ
 
 1. お問い合わせ先は `support@opencodemobile.app` です。Cloudflare の Email Routing で、このアドレス宛てのメールを普段のメールボックスへ転送します（ドメインの DNS が Cloudflare にあることが前提です）。
 2. `site/app-ads.txt` には AdMob のパブリッシャー ID（AdMob の「設定」→「アカウント情報」）を書いてあります。アカウントを変えたらここも直す。
 3. プライバシーポリシーの内容が実際のアプリと合っているか読み直す。データの扱いを変えたら、ここも合わせて直す。
-4. LP（`site/ja/index.html` と `site/en/index.html`）のスクリーンショットとストアのボタンは仮置きです。素材とストアの URL ができたら、画像を `site/img/` に置いて、HTML のコメントがある箇所を差し替えます。
+4. LP（`site/ja/index.html` と `site/en/index.html`）のストアのボタンは仮置きです。ストアの URL が決まったら、HTML のコメントがある箇所をバッジに差し替えます。
+5. LP のスクリーンショット（`site/img/<言語>/*.webp`）は、ストア用の Google Play 電話向け画像（1080×1920）を 540×960 の WebP に縮小したものです。ストア用の画像を作り直したら、`convert 元.png -resize 540x960 -strip -quality 82 site/img/ja/1-chat.webp` のように置き換えます。
 
 ### デプロイ
 

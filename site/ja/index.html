@@ -12,17 +12,25 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="/style.css">
+<script src="/site.js" defer></script>
 </head>
 <body class="lp">
+<div class="layout">
+<aside class="side">
+  <div class="side-bar">
+    <a class="brand" href="/ja/"><img src="/favicon.svg" alt="" width="28" height="28">OpenCode Mobile</a>
+    <button class="menu-toggle" type="button" aria-controls="side-nav" aria-expanded="false">メニュー</button>
+  </div>
+  <nav class="side-nav" id="side-nav" aria-label="サイトの目次">
+    <ul>
+      <li><a href="/ja/" aria-current="page">トップ</a></li>
+      <li><a href="/ja/support/">サポート</a></li>
+      <li><a href="/ja/privacy/">プライバシーポリシー</a></li>
+    </ul>
+    <p class="side-lang"><a href="/en/" hreflang="en">English</a></p>
+  </nav>
+</aside>
 <main>
-<nav class="top">
-  <a class="brand" href="/ja/">OpenCode Mobile</a>
-  <span>
-    <a href="/ja/support/">サポート</a>
-    <a href="/en/">English</a>
-  </span>
-</nav>
-
 <section class="hero">
   <img class="icon" src="/favicon.svg" alt="" width="72" height="72">
   <h1>PC の OpenCode を、<br>スマートフォンから。</h1>
@@ -34,24 +42,48 @@
   </p>
 </section>
 
-<!-- ストア用のスクリーンショットができたら /img/ に置いて差し替える -->
-<section class="shots" aria-label="スクリーンショット">
-  <div class="shot placeholder">プロジェクト</div>
-  <div class="shot placeholder">チャット</div>
-  <div class="shot placeholder">通知</div>
-</section>
-
-<h2>できること</h2>
+<h2 id="features">できること</h2>
+<div class="feature">
+  <img src="/img/ja/1-chat.webp" alt="スクリーンショット: チャット" width="540" height="960" loading="lazy">
+  <div>
+    <h3>チャット</h3>
+    <p>セッションを選んで指示を送ると、返答やツールの実行がリアルタイムで流れてきます。Todo の進み具合や、実行したコマンドの結果もその場で確認できます。</p>
+  </div>
+</div>
+<div class="feature">
+  <img src="/img/ja/2-permission.webp" alt="スクリーンショット: 許可と質問" width="540" height="960" loading="lazy">
+  <div>
+    <h3>許可と質問</h3>
+    <p>ファイルの編集やコマンドの実行の許可、エージェントからの質問に、スマートフォンから答えられます。PC の前に戻るのを待たずに、作業を先へ進められます。</p>
+  </div>
+</div>
+<div class="feature">
+  <img src="/img/ja/3-notify.webp" alt="スクリーンショット: プッシュ通知" width="540" height="960" loading="lazy">
+  <div>
+    <h3>プッシュ通知</h3>
+    <p>応答の完了、エラー、許可待ち、質問を通知します。通知の中身は端末で復号するので、中継サーバーはプロジェクト名やタイトルを読めません。</p>
+  </div>
+</div>
+<div class="feature">
+  <img src="/img/ja/4-diff.webp" alt="スクリーンショット: 変更のレビュー" width="540" height="960" loading="lazy">
+  <div>
+    <h3>変更のレビュー</h3>
+    <p>Git の変更ファイルと差分、ブランチを確認できます。ファイルの閲覧と検索、ターミナルも使えます。</p>
+  </div>
+</div>
+<div class="feature">
+  <img src="/img/ja/5-model.webp" alt="スクリーンショット: モデルとエージェントの切り替え" width="540" height="960" loading="lazy">
+  <div>
+    <h3>モデルとエージェントの切り替え</h3>
+    <p>モデルやエージェントをその場で切り替えられます。画像の添付や、実行中の応答の中断もできます。</p>
+  </div>
+</div>
 <ul class="features">
-  <li><strong>チャット</strong>セッションを選んで指示を送り、返答やツールの実行をリアルタイムで見られます。モデルやエージェントの切り替え、画像の添付、中断もできます。</li>
-  <li><strong>許可と質問</strong>ファイルの編集やコマンドの実行の許可、エージェントからの質問に、その場で答えられます。</li>
-  <li><strong>プッシュ通知</strong>応答の完了、エラー、許可待ち、質問を通知します。通知の中身は端末で復号するので、中継サーバーはプロジェクト名やタイトルを読めません。</li>
-  <li><strong>Git・ファイル・ターミナル</strong>変更ファイルと差分、ブランチ、ファイルの閲覧と検索、ターミナルまで手元で確認できます。</li>
   <li><strong>複数のサーバー</strong>自宅の PC と仕事の Mac など、つなぎ先を保存して切り替えられます。</li>
   <li><strong>データは自分のサーバーとだけ</strong>チャットやファイルは、アプリとあなたのサーバーの間だけでやり取りします。開発者は受け取りません。</li>
 </ul>
 
-<h2>使い方</h2>
+<h2 id="usage">使い方</h2>
 <ol class="steps">
   <li>
     <strong>PC / Mac で OpenCode サーバーを起動する</strong>
@@ -61,7 +93,8 @@
   </li>
   <li>
     <strong>アプリでサーバーに接続する</strong>
-    <p>サーバー URL（例: <code>http://192.168.1.10:4096</code>）、ユーザー名（既定は <code>opencode</code>）、パスワードを入れて「接続」を押します。パスワードは端末の Keychain / Keystore に保存します。</p>
+    <p>同じネットワークにあるサーバーは自動で一覧に出ます。見つからないときは、サーバー URL（例: <code>http://192.168.1.10:4096</code>）を入れます。ユーザー名（既定は <code>opencode</code>）とパスワードを入れて「接続」を押します。パスワードは端末の Keychain / Keystore に保存します。</p>
+    <img class="step-shot" src="/img/ja/6-connect.webp" alt="スクリーンショット: 接続画面" width="540" height="960" loading="lazy">
   </li>
   <li>
     <strong>プロジェクトとセッションを選ぶ</strong>
@@ -74,7 +107,7 @@
 </ol>
 <p class="note">外出先からつなぐときは、Tailscale などの VPN を使って、サーバーをインターネットに直接公開しないことをおすすめします。対応しているのは OpenCode v2 の API を持つサーバーです。</p>
 
-<h2>料金</h2>
+<h2 id="price">料金</h2>
 <p>無料で使えます。プロジェクトとセッションの一覧にバナー広告が出ます（チャット画面には出しません）。送信が1日10回を超えると、動画広告を見るとさらに10回送れます。買い切りの「広告を外す」を購入すると、どちらの広告も出なくなります。</p>
 
 <footer>
@@ -82,5 +115,6 @@
   <p>OpenCode Mobile は OpenCode の公式アプリではなく、OpenCode チームとは関係のない個人が開発しています。</p>
 </footer>
 </main>
+</div>
 </body>
 </html>
