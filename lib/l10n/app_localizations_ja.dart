@@ -288,6 +288,23 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get rewindHere => 'ここまで戻す';
+
+  @override
+  String get rewindHereHelp => 'このメッセージ以降の会話と、そのファイルの変更を取り消します';
+
+  @override
+  String get rewoundNotice => '巻き戻しました。新しく送信すると確定します。';
+
+  @override
+  String get rewindUndo => '元に戻す';
+
+  @override
+  String rewindFailed(Object error) {
+    return '巻き戻せませんでした: $error';
+  }
+
+  @override
   String get forkFromHere => 'このメッセージの前からフォーク';
 
   @override

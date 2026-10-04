@@ -294,6 +294,24 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get rewindHere => 'Rewind to here';
+
+  @override
+  String get rewindHereHelp =>
+      'Undo this message, everything after it, and their file changes';
+
+  @override
+  String get rewoundNotice => 'Rewound. Sending a new message makes it final.';
+
+  @override
+  String get rewindUndo => 'Undo';
+
+  @override
+  String rewindFailed(Object error) {
+    return 'Could not rewind: $error';
+  }
+
+  @override
   String get forkFromHere => 'Fork from before this message';
 
   @override

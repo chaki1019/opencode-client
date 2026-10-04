@@ -345,6 +345,28 @@ class OpenCodeClient {
     return Session.fromJson(_map(body['data']));
   }
 
+  /// Rewinds the session to just before [messageId]: that message and
+  /// everything after it are set aside and their file changes undone. The
+  /// rewind stays undoable until [commitRevert]. Returns the boundary the
+  /// server staged.
+  Future<String> stageRevert(String sessionId, String messageId) async {
+    final body = _map(
+      await _sendJson(
+        '/api/session/${Uri.encodeComponent(sessionId)}/revert/stage',
+        body: {'messageID': messageId, 'files': true},
+      ),
+    );
+    return _obj(body['data'])?['messageID'] as String? ?? messageId;
+  }
+
+  /// Undoes a staged rewind, bringing the messages and file changes back.
+  Future<void> clearRevert(String sessionId) =>
+      _sendJson('/api/session/${Uri.encodeComponent(sessionId)}/revert/clear');
+
+  /// Makes a staged rewind permanent, dropping the set-aside messages.
+  Future<void> commitRevert(String sessionId) =>
+      _sendJson('/api/session/${Uri.encodeComponent(sessionId)}/revert/commit');
+
   /// Asks the server to summarize the conversation so far. [messageId] is a
   /// client-generated ID for the compaction request.
   Future<void> compactSession(String sessionId, {required String messageId}) =>

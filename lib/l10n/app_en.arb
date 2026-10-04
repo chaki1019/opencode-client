@@ -144,6 +144,12 @@
       "error": {}
     }
   },
+  "rewindHere": "Rewind to here",
+  "rewindHereHelp": "Undo this message, everything after it, and their file changes",
+  "rewoundNotice": "Rewound. Sending a new message makes it final.",
+  "rewindUndo": "Undo",
+  "rewindFailed": "Could not rewind: {error}",
+  "@rewindFailed": {"placeholders": {"error": {"type": "Object"}}},
   "forkFromHere": "Fork from before this message",
   "forkFromHereHelp": "Copies the conversation before this message into a new session",
   "running": "Running",

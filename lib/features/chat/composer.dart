@@ -16,6 +16,7 @@ import '../settings/haptics.dart';
 import 'agent_labels.dart';
 import 'composer_providers.dart';
 import 'model_picker.dart';
+import 'revert_providers.dart';
 
 /// Input row at the bottom of the chat, with the agent and model in use.
 /// While the session is running, the send button becomes a stop button.
@@ -50,6 +51,14 @@ class _ComposerState extends ConsumerState<Composer> {
     final files = _files;
     if (text.isEmpty && files.isEmpty) return;
     if (!await admitMessage(context, ref) || !mounted) return;
+    // Sending after a rewind makes it permanent, as in the OpenCode TUI.
+    try {
+      await ref.read(revertProvider(widget.session).notifier).commit();
+    } catch (e) {
+      if (mounted) _showError(context.l10n.rewindFailed(e));
+      return;
+    }
+    if (!mounted) return;
     _controller.clear();
     setState(() => _files = const []);
     final haptics = ref.read(hapticsProvider);
@@ -133,6 +142,14 @@ class _ComposerState extends ConsumerState<Composer> {
     final busy = ref.watch(
       activeSessionsProvider.select((ids) => ids.contains(widget.session.id)),
     );
+    ref.listen(composerDraftProvider(widget.session.id), (_, draft) {
+      if (draft == null) return;
+      if (_controller.text.trim().isEmpty) {
+        _controller.text = draft;
+        _controller.selection = TextSelection.collapsed(offset: draft.length);
+      }
+      ref.read(composerDraftProvider(widget.session.id).notifier).take();
+    });
     final canSend = _controller.text.trim().isNotEmpty || _files.isNotEmpty;
     final scheme = Theme.of(context).colorScheme;
 

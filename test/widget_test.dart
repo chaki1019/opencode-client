@@ -223,6 +223,20 @@ void main() {
               })
             : const FakeRoute(204, '');
       },
+      '/api/session/s1/revert/stage': (RequestOptions request) {
+        replies.add(request);
+        return FakeRoute.json({
+          'data': {'messageID': 'u1'},
+        });
+      },
+      '/api/session/s1/revert/clear': (RequestOptions request) {
+        replies.add(request);
+        return const FakeRoute(204, '');
+      },
+      '/api/session/s1/revert/commit': (RequestOptions request) {
+        replies.add(request);
+        return const FakeRoute(204, '');
+      },
       '/api/session/s1/prompt': (RequestOptions request) {
         final body = jsonDecode(request.data as String) as Map<String, dynamic>;
         promptIds.add(body['id'] as String);
@@ -511,6 +525,49 @@ void main() {
       {'uri': 'data:image/png;base64,AQID', 'name': 'shot.png'},
     ]);
     expect(find.byKey(const Key('attachment-0')), findsNothing);
+
+    // Rewinding hides the message and what follows, and puts its text back
+    // in the input. Undo brings everything back.
+    await tester.longPress(find.text('Please fix login'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('rewind-here')));
+    await tester.pumpAndSettle();
+    expect(jsonDecode(replies.last.data as String), {
+      'messageID': 'u1',
+      'files': true,
+    });
+    expect(find.byKey(const Key('rewind-banner')), findsOneWidget);
+    expect(find.textContaining('The bug is', findRichText: true), findsNothing);
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('composer')))
+          .controller!
+          .text,
+      'Please fix login',
+    );
+    await tester.tap(find.byKey(const Key('rewind-undo')));
+    await tester.pumpAndSettle();
+    expect(replies.last.path, '/api/session/s1/revert/clear');
+    expect(find.byKey(const Key('rewind-banner')), findsNothing);
+    expect(
+      find.textContaining('The bug is', findRichText: true),
+      findsOneWidget,
+    );
+
+    // Sending while rewound makes the rewind final first.
+    await tester.enterText(find.byKey(const Key('composer')), '');
+    await tester.pump();
+    await tester.longPress(find.text('Please fix login'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('rewind-here')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('send')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(replies.last.path, '/api/session/s1/revert/commit');
+    expect(promptBodies.last['text'], 'Please fix login');
+    expect(find.byKey(const Key('rewind-banner')), findsNothing);
+    await tester.pumpAndSettle();
 
     // Back on the list, swiping a session right renames it.
     await tester.tap(find.byType(BackButton));

@@ -17,6 +17,7 @@ import 'context_sheet.dart';
 import 'expand_downward.dart';
 import 'prompt_widgets.dart';
 import 'pull_up_to_refresh.dart';
+import 'revert_providers.dart';
 import 'scroll_to_newest.dart';
 import 'session_actions.dart';
 import 'status_bar_scroll.dart';
@@ -40,6 +41,7 @@ class ChatScreen extends ConsumerWidget {
       activeSessionsProvider.select((ids) => ids.contains(session.id)),
     );
     ref.watch(sessionHapticsProvider(session.id));
+    final rewoundTo = ref.watch(revertProvider(session));
 
     return StatusBarScrollsToOldest(
       onArrived: () => ref.read(provider.notifier).loadMore(),
@@ -59,7 +61,7 @@ class ChatScreen extends ConsumerWidget {
               Expanded(
                 child: timeline.when(
                   data: (paged) {
-                    final entries = paged.items;
+                    final entries = _beforeRewind(paged.items, rewoundTo);
                     final shownIds = {for (final e in entries) e.id};
                     final pending = ref
                         .watch(pendingPromptsProvider(session.id))
@@ -172,8 +174,20 @@ class ChatScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              ReadableWidth(child: SessionPromptsPanel(session: session)),
-              ReadableWidth(child: Composer(session: session)),
+              if (rewoundTo != null)
+                ReadableWidth(
+                  key: const ValueKey('rewind-slot'),
+                  child: RewindBanner(session: session),
+                ),
+              // Keyed so the banner coming and going keeps their state.
+              ReadableWidth(
+                key: const ValueKey('prompts-slot'),
+                child: SessionPromptsPanel(session: session),
+              ),
+              ReadableWidth(
+                key: const ValueKey('composer-slot'),
+                child: Composer(session: session),
+              ),
             ],
           ),
         ),
@@ -201,6 +215,13 @@ class ChatScreen extends ConsumerWidget {
                 onTap: () => Navigator.pop(context, _MessageAction.copy),
               ),
             ListTile(
+              key: const Key('rewind-here'),
+              leading: const Icon(Icons.undo),
+              title: Text(context.l10n.rewindHere),
+              subtitle: Text(context.l10n.rewindHereHelp),
+              onTap: () => Navigator.pop(context, _MessageAction.rewind),
+            ),
+            ListTile(
               key: const Key('fork-here'),
               leading: const Icon(Icons.fork_right),
               title: Text(context.l10n.forkFromHere),
@@ -218,13 +239,98 @@ class ChatScreen extends ConsumerWidget {
         final copied = context.l10n.copied;
         await Clipboard.setData(ClipboardData(text: entry.text));
         messenger.showSnackBar(SnackBar(content: Text(copied)));
+      case _MessageAction.rewind:
+        final messenger = ScaffoldMessenger.of(context);
+        final l10n = context.l10n;
+        try {
+          await ref.read(revertProvider(session).notifier).stage(entry.id);
+        } catch (e) {
+          messenger.showSnackBar(SnackBar(content: Text(l10n.rewindFailed(e))));
+          return;
+        }
+        // Like undo in an editor: the rewound prompt comes back to edit.
+        if (entry.text.isNotEmpty) {
+          ref
+              .read(composerDraftProvider(session.id).notifier)
+              .offer(entry.text);
+        }
       case _MessageAction.fork:
         await forkSession(context, ref, session, beforeMessageId: entry.id);
     }
   }
+
+  /// The entries before the rewind boundary, or all of them when the
+  /// session is not rewound (or the boundary is not loaded).
+  static List<TimelineEntry> _beforeRewind(
+    List<TimelineEntry> entries,
+    String? boundary,
+  ) {
+    if (boundary == null) return entries;
+    final index = entries.indexWhere((e) => e.id == boundary);
+    return index < 0 ? entries : entries.sublist(0, index);
+  }
 }
 
-enum _MessageAction { copy, fork }
+enum _MessageAction { copy, rewind, fork }
+
+/// Shown above the input while the session is rewound, with a way to bring
+/// the set-aside messages and file changes back.
+class RewindBanner extends ConsumerStatefulWidget {
+  const RewindBanner({super.key, required this.session});
+
+  final Session session;
+
+  @override
+  ConsumerState<RewindBanner> createState() => _RewindBannerState();
+}
+
+class _RewindBannerState extends ConsumerState<RewindBanner> {
+  bool _busy = false;
+
+  Future<void> _undo() async {
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+    setState(() => _busy = true);
+    try {
+      await ref.read(revertProvider(widget.session).notifier).undo();
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.rewindFailed(e))));
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      key: const Key('rewind-banner'),
+      margin: const EdgeInsets.fromLTRB(12, 4, 12, 4),
+      padding: const EdgeInsets.fromLTRB(12, 4, 4, 4),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.undo, size: 18, color: theme.colorScheme.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              context.l10n.rewoundNotice,
+              style: theme.textTheme.bodySmall,
+            ),
+          ),
+          TextButton(
+            key: const Key('rewind-undo'),
+            onPressed: _busy ? null : _undo,
+            child: Text(context.l10n.rewindUndo),
+          ),
+        ],
+      ),
+    );
+  }
+}
 
 /// Session title over a monospace line with the agent and model, led by a
 /// pulsing dot while the session is running.

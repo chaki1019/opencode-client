@@ -194,6 +194,18 @@ void main() {
     expect(entries.map((e) => e.id), ['u1']);
   });
 
+  test('the session.next revert event names the boundary messageID', () {
+    final live = LiveTimeline(session);
+    final entries = run(
+      live,
+      [
+        ev('session.next.revert.committed', {'messageID': 'u2'}),
+      ],
+      const [UserEntry(id: 'u1', text: 'a'), UserEntry(id: 'u2', text: 'b')],
+    );
+    expect(entries.map((e) => e.id), ['u1']);
+  });
+
   test('a replayed older step does not reopen a finished message', () {
     final live = LiveTimeline(session);
     final entries = run(live, [

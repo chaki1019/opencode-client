@@ -68,6 +68,12 @@ _TokenCache _$TokenCacheFromJson(Map<String, dynamic> json) => _TokenCache(
 Map<String, dynamic> _$TokenCacheToJson(_TokenCache instance) =>
     <String, dynamic>{'read': instance.read, 'write': instance.write};
 
+_SessionRevert _$SessionRevertFromJson(Map<String, dynamic> json) =>
+    _SessionRevert(messageID: json['messageID'] as String);
+
+Map<String, dynamic> _$SessionRevertToJson(_SessionRevert instance) =>
+    <String, dynamic>{'messageID': instance.messageID};
+
 _Session _$SessionFromJson(Map<String, dynamic> json) => _Session(
   id: json['id'] as String,
   projectID: json['projectID'] as String,
@@ -83,6 +89,9 @@ _Session _$SessionFromJson(Map<String, dynamic> json) => _Session(
   tokens: json['tokens'] == null
       ? null
       : TokenUsage.fromJson(json['tokens'] as Map<String, dynamic>),
+  revert: json['revert'] == null
+      ? null
+      : SessionRevert.fromJson(json['revert'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$SessionToJson(_Session instance) => <String, dynamic>{
@@ -96,4 +105,5 @@ Map<String, dynamic> _$SessionToJson(_Session instance) => <String, dynamic>{
   'model': instance.model,
   'cost': instance.cost,
   'tokens': instance.tokens,
+  'revert': instance.revert,
 };

@@ -268,8 +268,8 @@ class LiveTimeline {
           ),
         );
 
-      case 'session.revert.committed':
-        final boundary = data['to'];
+      case 'session.revert.committed' || 'session.next.revert.committed':
+        final boundary = data['to'] ?? data['messageID'];
         final index = entries.indexWhere((e) => e.id == boundary);
         if (index < 0) return const Unchanged();
         return Changed(entries.sublist(0, index));

@@ -566,6 +566,36 @@ abstract class AppLocalizations {
   /// **'Couldn\'t load messages: {error}'**
   String messagesLoadFailed(Object error);
 
+  /// No description provided for @rewindHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewind to here'**
+  String get rewindHere;
+
+  /// No description provided for @rewindHereHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo this message, everything after it, and their file changes'**
+  String get rewindHereHelp;
+
+  /// No description provided for @rewoundNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewound. Sending a new message makes it final.'**
+  String get rewoundNotice;
+
+  /// No description provided for @rewindUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get rewindUndo;
+
+  /// No description provided for @rewindFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not rewind: {error}'**
+  String rewindFailed(Object error);
+
   /// No description provided for @forkFromHere.
   ///
   /// In en, this message translates to:
