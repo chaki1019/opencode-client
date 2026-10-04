@@ -1,0 +1,1 @@
+Connect to the OpenCode running on your computer and keep your agent moving from anywhere. Get notified when it finishes or needs your approval.
