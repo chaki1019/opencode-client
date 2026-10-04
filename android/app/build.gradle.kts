@@ -24,6 +24,12 @@ android {
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
+    // AGP 9 turns resValue off by default; defaultConfig uses it for the
+    // Firebase settings from push.env.json and the Crashlytics flag.
+    buildFeatures {
+        resValues = true
+    }
+
     compileOptions {
         // flutter_local_notifications needs java.time on older Android.
         isCoreLibraryDesugaringEnabled = true
