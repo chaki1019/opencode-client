@@ -3,7 +3,7 @@
 | いつ | どこで | 何をするか |
 | --- | --- | --- |
 | PR を出したとき・追加で push したとき | GitHub Actions（`.github/workflows/ci.yml`） | format チェック、`flutter analyze`、`flutter test`、Android の debug ビルド、`push/` の Node テスト |
-| `v1.0.1` のようなタグを push したとき | Codemagic（`codemagic.yaml`） | iOS / Android のリリースビルドを作り、TestFlight と Google Play の製品版に上げる |
+| `v1.0.1` のようなタグを push したとき | Codemagic（`codemagic.yaml`） | iOS / Android のリリースビルドを作り、App Store と Google Play の審査に出す（承認されると公開） |
 
 GitHub Actions は Linux で動くので、private リポジトリの無料枠（月 2,000 分）をそのまま消費します。`site/` `docs/` と Markdown だけを変えた PR ではチェックを動かしません。main へのマージ時も再実行しません。
 
@@ -19,7 +19,7 @@ git push origin v1.0.1
 
 - バージョン名（`1.0.1`）はタグから取ります。`pubspec.yaml` の `version` を書き換える必要はありません。
 - ビルド番号は TestFlight と Google Play に上がっている最大の番号に 1 を足したものを自動で使います。
-- 終わると TestFlight に新しいビルドが届きます。App Store への審査提出は App Store Connect で手動で行います。
+- iOS は TestFlight に上げたうえで App Store の審査に出し、承認されると公開されます。審査に出す前に、App Store Connect でそのバージョンの「このバージョンの最新情報」などの必須項目が埋まっている必要があります。
 - Play は製品版トラックにリリースを作り、そのまま審査に出します。承認されると公開されます。事前に動作確認したいときは、タグを打つ前に `Android AAB (manual upload)` で作った AAB を内部テストに手で上げて確かめてください。
 
 ## 初回セットアップ

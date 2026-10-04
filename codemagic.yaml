@@ -1,13 +1,13 @@
 # Store release on Codemagic (see docs/release.md).
 #
 # Pushing a tag like v1.0.1 builds the iOS and Android release binaries and
-# uploads them to TestFlight and the Play production track, where the
-# release goes to Google's review and then live. Pull
+# submits them for review on the App Store and the Play production track.
+# Each goes live once Apple or Google approves it. Pull
 # request checks run on GitHub Actions (.github/workflows/ci.yml), so this
 # workflow spends Codemagic's free macOS minutes on releases only.
 workflows:
   release:
-    name: Release (TestFlight + Play production)
+    name: Release (App Store + Play production)
     instance_type: mac_mini_m2
     max_build_duration: 60
     integrations:
@@ -98,6 +98,10 @@ workflows:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
+        # Also sends the build to App Store review; it goes live as soon as
+        # Apple approves it.
+        submit_to_app_store: true
+        release_type: AFTER_APPROVAL
       google_play:
         credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
         # Straight to production: the release is sent for review and goes
