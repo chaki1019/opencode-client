@@ -89,6 +89,7 @@ Apple Developer の Identifiers に `app.opencodemobile`（Push Notifications �
 1. アプリでサーバーに接続し、プロジェクト一覧右上のベルから「このサーバーの通知を受け取る」をオンにする。
 2. アプリに表示される項目（コピーボタンあり）を `~/.config/opencode/opencode.json` に追加し、OpenCode を再起動する。プラグインは npm の `opencode-mobile-push` から入ります。npm を使わない場合は、`push/plugin/opencode-mobile-push.js` を `~/.config/opencode/plugins/` にコピーし、`~/.config/opencode/opencode-mobile-push.json` に `{"relay": "...", "key": "..."}` を書きます。`plugins` フォルダーのファイルは OpenCode が自動で読み込みますが、オプションを渡せないため、プラグインはこのファイルから中継とキーを読みます（v2 は `"package"` にファイルのパスを書くと無視します）。
 3. アプリの通知画面の「PC/Mac 側の状態」で、プラグインが動いているかを確認できます（`GET /api/plugin` と `GET /api/config` を読みます）。
+4. 2台目以降の端末（iPhone と Android の両方など）では、通知画面に「別のキーで設定されています」と出ます。「PC の設定のキーを使う」を押すと、その端末も `opencode.json` と同じキーで登録し直され、全部の端末に通知が届きます（1つのキーで最大10台）。
 
 ```jsonc
 "plugins": [

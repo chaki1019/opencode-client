@@ -1711,6 +1711,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check again'**
   String get pushComputerRefresh;
+
+  /// No description provided for @pushComputerAdopt.
+  ///
+  /// In en, this message translates to:
+  /// **'Use the key from the computer'**
+  String get pushComputerAdopt;
+
+  /// No description provided for @pushComputerAdoptHint.
+  ///
+  /// In en, this message translates to:
+  /// **'If another device set this up, switch this device to the same key and both will get notifications.'**
+  String get pushComputerAdoptHint;
+
+  /// No description provided for @pushComputerAdopted.
+  ///
+  /// In en, this message translates to:
+  /// **'Switched to the computer\'s key'**
+  String get pushComputerAdopted;
 }
 
 class _AppLocalizationsDelegate

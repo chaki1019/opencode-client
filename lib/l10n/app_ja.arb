@@ -268,5 +268,8 @@
   "pushComputerNotLoaded": "設定はありますが、まだ読み込まれていません。OpenCode を再起動してください。",
   "pushComputerMissing": "まだ設定されていません。下の手順で追加してください。",
   "pushComputerUnknown": "状態を確認できませんでした",
-  "pushComputerRefresh": "もう一度確認"
+  "pushComputerRefresh": "もう一度確認",
+  "pushComputerAdopt": "PC の設定のキーを使う",
+  "pushComputerAdoptHint": "別の端末で設定したキーなら、この端末も同じキーに切り替えると、両方に通知が届きます。",
+  "pushComputerAdopted": "PC と同じキーに切り替えました"
 }

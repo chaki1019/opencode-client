@@ -105,6 +105,23 @@ class PushPairingNotifier extends AsyncNotifier<PushPairing> {
     state = AsyncData(updated);
   }
 
+  /// Switches this server's pairing to [key], the one `opencode.json`
+  /// already uses, so this device receives what the plugin sends there.
+  /// Re-registers with the relay when notifications were on.
+  Future<void> adoptKey(String key) async {
+    final pairing = await future;
+    if (pairing.key == key) return;
+    await _unregister(
+      relay: ref.read(relayClientProvider),
+      messaging: ref.read(pushMessagingProvider),
+      pairing: pairing,
+    );
+    final adopted = PushPairing(key: key);
+    await _store.save(serverId, adopted);
+    state = AsyncData(adopted);
+    if (pairing.enabled) await enable();
+  }
+
   /// Sends [title] through the relay, encrypted like the plugin does.
   Future<void> sendTest(String title) async {
     final keys = await PushKeys.derive((await future).key);

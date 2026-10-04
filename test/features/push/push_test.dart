@@ -286,6 +286,55 @@ void main() {
     expect(find.byKey(const Key('push-snippet')), findsNothing);
   });
 
+  testWidgets('a second device switches to the key opencode.json uses', (
+    tester,
+  ) async {
+    await pumpConnected(tester);
+    await tester.tap(find.byKey(const Key('open-drawer')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('push-settings')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('push-switch')));
+    await tester.pumpAndSettle();
+    final ownAuth = body(relay.requests.single)['key'];
+
+    // Another phone set OpenCode up with its own key.
+    final shared = 'S' * 43;
+    server.routes['/api/config'] = FakeRoute.json([
+      {
+        'type': 'document',
+        'info': {
+          'plugins': [
+            {
+              'package': 'opencode-mobile-push',
+              'options': {'relay': 'https://relay.test', 'key': shared},
+            },
+          ],
+        },
+      },
+    ]);
+    await tester.tap(find.byKey(const Key('push-computer-refresh')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('push-computer-adopt')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('push-computer-adopt')));
+    await tester.pumpAndSettle();
+    final sharedKeys = await tester.runAsync(() => PushKeys.derive(shared));
+    final unregister = relay.requests[relay.requests.length - 2];
+    final register = relay.requests.last;
+    expect(unregister.method, 'DELETE');
+    expect(body(unregister)['key'], ownAuth);
+    expect(register.method, 'POST');
+    expect(body(register)['key'], sharedKeys!.auth);
+    expect(messaging.shared, {sharedKeys.keyId});
+    expect(find.text('PC と同じキーに切り替えました'), findsOneWidget);
+    expect(find.byKey(const Key('push-computer-adopt')), findsNothing);
+    expect(
+      find.text('設定はありますが、まだ読み込まれていません。OpenCode を再起動してください。'),
+      findsOneWidget,
+    );
+  });
+
   testWidgets('a denied permission leaves notifications off', (tester) async {
     messaging.allow = false;
     await pumpConnected(tester);

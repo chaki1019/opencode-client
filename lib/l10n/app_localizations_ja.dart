@@ -960,4 +960,14 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pushComputerRefresh => 'もう一度確認';
+
+  @override
+  String get pushComputerAdopt => 'PC の設定のキーを使う';
+
+  @override
+  String get pushComputerAdoptHint =>
+      '別の端末で設定したキーなら、この端末も同じキーに切り替えると、両方に通知が届きます。';
+
+  @override
+  String get pushComputerAdopted => 'PC と同じキーに切り替えました';
 }
