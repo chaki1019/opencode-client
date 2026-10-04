@@ -25,7 +25,7 @@
       <li><a href="/en/privacy/">Privacy policy</a></li>
     </ul>
     <div class="side-lang">
-      <p class="side-label">Language / 言語</p>
+      <p class="side-label">Language</p>
       <a href="/ja/connect/" hreflang="ja"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#fff"/><circle cx="15" cy="10" r="6" fill="#bc002d"/></svg>Japanese</a>
     </div>
   </nav>
@@ -54,7 +54,7 @@ opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
 <p>If it still can't connect, check that the computer's firewall allows connections on port 4096. This way does not work when you are away from home.</p>
 
 <h2 id="tailscale">With Tailscale (works from anywhere)</h2>
-<p><a href="https://tailscale.com/">Tailscale</a> joins your own devices in a private, encrypted network. It is free for personal use, and nothing is opened to the internet.</p>
+<p><a href="https://tailscale.com/" target="_blank" rel="noopener">Tailscale</a> joins your own devices in a private, encrypted network. It is free for personal use, and nothing is opened to the internet.</p>
 <ol>
   <li>Install Tailscale on both your computer and your phone, and sign in with the same account.</li>
   <li>Start the server as above.</li>
@@ -67,7 +67,7 @@ opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
 <h2 id="cloudflare">With Cloudflare Tunnel</h2>
 <p>For when you can't install Tailscale. Your computer opens a tunnel to Cloudflare, which gives it a public HTTPS address.</p>
 <ol>
-  <li>Install <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/">cloudflared</a> on the computer.</li>
+  <li>Install <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/" target="_blank" rel="noopener">cloudflared</a> on the computer.</li>
   <li>Start the server as above (<code>--hostname 127.0.0.1</code> is fine here).</li>
   <li>In another terminal, run:<pre><code>cloudflared tunnel --url http://localhost:4096</code></pre></li>
   <li>Enter the <code>https://….trycloudflare.com</code> address it prints in the app and connect.</li>
