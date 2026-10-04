@@ -92,12 +92,12 @@ pre > .copy-btn { position: absolute; top: 8px; right: 8px; margin: 0; }
 
 /* Side menu */
 html { scroll-padding-top: 16px; }
-.layout { display: flex; max-width: 1140px; margin: 0 auto; }
-.side { flex: 0 0 260px; }
+.layout { display: flex; max-width: 1170px; margin: 0 auto; }
+.side { flex: 0 0 290px; }
 .side-bar, .side-nav { padding: 0 16px; }
 .side-bar { padding-top: 32px; }
-.brand { display: flex; align-items: center; gap: 12px; color: var(--fg); font-weight: 700; font-size: 1.15rem; white-space: nowrap; text-decoration: none; }
-.brand img { width: 36px; height: 36px; border-radius: 9px; }
+.brand { display: flex; align-items: center; gap: 12px; color: var(--fg); font-weight: 700; font-size: 1.4rem; white-space: nowrap; text-decoration: none; }
+.brand img { width: 44px; height: 44px; border-radius: 11px; }
 .menu-toggle { display: none; }
 .side-nav { position: sticky; top: 0; padding-top: 20px; padding-bottom: 24px; max-height: 100vh; overflow-y: auto; }
 .side-nav ul { list-style: none; margin: 0; padding: 0; }
@@ -108,7 +108,10 @@ html { scroll-padding-top: 16px; }
 .side-nav .toc { margin: 2px 0 8px 10px; border-left: 1px solid var(--line); }
 .side-nav .toc a { font-size: 0.97rem; padding: 5px 10px; border-radius: 0 6px 6px 0; }
 .side-nav .toc a.active { color: var(--link); box-shadow: inset 2px 0 0 var(--link); }
-.side-lang { margin: 16px 0 0; padding-left: 10px; font-size: 1rem; }
+.side-lang { margin: 20px 0 0; padding-top: 14px; border-top: 1px solid var(--line); }
+.side-label { margin: 0 0 4px; padding: 0 10px; color: var(--muted); font-size: 0.85rem; font-weight: 600; letter-spacing: 0.04em; }
+.side-nav .side-lang a { display: flex; align-items: center; gap: 10px; }
+.flag { width: 24px; height: 16px; flex: none; border-radius: 3px; box-shadow: 0 0 0 1px var(--line); }
 @media (max-width: 860px) {
   .layout { display: block; }
   .side { position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px solid var(--line); }
@@ -123,6 +126,9 @@ html { scroll-padding-top: 16px; }
     border-radius: 8px;
     padding: 4px 12px;
   }
+  .brand { font-size: 1.2rem; gap: 10px; }
+  .brand img { width: 36px; height: 36px; border-radius: 9px; }
+  .js .menu-toggle { white-space: nowrap; flex: none; }
   .side-nav { position: static; max-height: 70vh; padding-top: 0; padding-bottom: 12px; }
   .js .side-nav:not(.open) { display: none; }
   html { scroll-padding-top: 64px; }
@@ -231,15 +237,17 @@ html { scroll-padding-top: 16px; }
 
 /* Support and privacy pages: clear headings */
 .doc h2 {
-  display: flex; align-items: baseline; gap: 10px;
-  font-size: 1.35rem; line-height: 1.4; font-weight: 700;
-  margin: 48px 0 12px; padding-top: 20px; border-top: 1px solid var(--line);
+  display: flex; align-items: center; gap: 12px;
+  font-size: 1.15rem; line-height: 1.4; font-weight: 700; color: var(--fg);
+  margin: 44px 0 14px; padding: 10px 14px; border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--card));
+  border-left: 4px solid var(--accent);
 }
 .doc h2 .num {
-  flex: none; display: inline-grid; place-items: center;
-  min-width: 30px; height: 30px; padding: 0 6px; border-radius: 8px;
-  background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent);
-  font-size: 0.95rem; font-weight: 700;
+  flex: none; display: grid; place-items: center;
+  min-width: 28px; height: 28px; padding: 0 6px; border-radius: 7px;
+  background: var(--accent); color: var(--bg);
+  font-size: 0.9rem; font-weight: 700; line-height: 1;
 }
 .doc main > p, .doc main > ul { color: var(--body); }
 .doc main > p strong { color: var(--fg); display: inline-block; margin-top: 8px; font-size: 1.05rem; }
