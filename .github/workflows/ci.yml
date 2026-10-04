@@ -1,0 +1,49 @@
+# Checks every pull request and push to main on Linux runners, which count
+# 1x against the private repo's free Actions minutes (macOS counts 10x).
+# The build settings files (push.env.json, ads.env.json, app.env.json,
+# ios/Flutter/Ads.xcconfig) are not needed: without them the app builds with
+# push off and Google's test ad IDs.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.x
+          cache: true
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed lib test
+      - run: flutter analyze
+      - run: flutter test
+      - run: flutter build apk --debug
+
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node --test push/relay/test/*.test.js
+      - run: npm test
+        working-directory: push/plugin
