@@ -86,9 +86,12 @@ class SupportSection extends ConsumerWidget {
   Future<void> _open(BuildContext context, Uri uri) async {
     final messenger = ScaffoldMessenger.of(context);
     final failed = context.l10n.linkOpenFailed;
+    // Web pages open in an in-app browser; mail goes to the mail app.
     final opened = await launchUrl(
       uri,
-      mode: LaunchMode.externalApplication,
+      mode: uri.scheme.startsWith('http')
+          ? LaunchMode.inAppBrowserView
+          : LaunchMode.externalApplication,
     ).catchError((_) => false);
     if (!opened) {
       messenger.showSnackBar(SnackBar(content: Text('$failed\n$uri')));

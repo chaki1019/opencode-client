@@ -235,10 +235,8 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
                       key: const Key('connect-guide'),
                       icon: const Icon(Icons.help_outline, size: 18),
                       label: Text(context.l10n.connectGuide),
-                      onPressed: () => launchUrl(
-                        guide,
-                        mode: LaunchMode.externalApplication,
-                      ),
+                      onPressed: () =>
+                          launchUrl(guide, mode: LaunchMode.inAppBrowserView),
                     ),
                 ],
               ),
