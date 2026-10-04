@@ -6,6 +6,7 @@ void main() {
   test('nothing is offered without build settings', () {
     const config = SupportConfig();
     expect(config.privacyPolicy('ja'), isNull);
+    expect(config.connectGuide('ja'), isNull);
     expect(config.contactMail(subject: 's', body: 'b'), isNull);
   });
 
@@ -19,6 +20,10 @@ void main() {
       expect(
         config.privacyPolicy('en').toString(),
         'https://x.pages.dev/en/privacy/',
+      );
+      expect(
+        config.connectGuide('ja').toString(),
+        'https://x.pages.dev/ja/connect/',
       );
     }
   });

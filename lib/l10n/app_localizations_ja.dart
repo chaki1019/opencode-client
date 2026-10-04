@@ -1041,4 +1041,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get diagnosticsCopy => '結果をコピー';
+
+  @override
+  String get connectGuide => '外出先からのつなぎ方など';
 }

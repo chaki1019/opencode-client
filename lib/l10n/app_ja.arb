@@ -295,5 +295,6 @@
   "diagnosticsOs": "OS",
   "diagnosticsChecking": "確認しています…",
   "diagnosticsRecheck": "もう一度確認",
-  "diagnosticsCopy": "結果をコピー"
+  "diagnosticsCopy": "結果をコピー",
+  "connectGuide": "外出先からのつなぎ方など"
 }

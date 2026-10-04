@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/layout.dart';
 import '../../app/theme.dart';
@@ -8,6 +9,7 @@ import '../../core/discovery/server_discovery.dart';
 import '../../core/models/server_config.dart';
 import '../../l10n/l10n.dart';
 import '../push/push_providers.dart';
+import '../settings/support_section.dart';
 import 'connection_providers.dart';
 import 'opencode_logo.dart';
 
@@ -223,6 +225,21 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
                           )
                         : Text(context.l10n.connect),
                   ),
+                  if (ref
+                          .watch(supportConfigProvider)
+                          .connectGuide(
+                            Localizations.localeOf(context).languageCode,
+                          )
+                      case final guide?)
+                    TextButton.icon(
+                      key: const Key('connect-guide'),
+                      icon: const Icon(Icons.help_outline, size: 18),
+                      label: Text(context.l10n.connectGuide),
+                      onPressed: () => launchUrl(
+                        guide,
+                        mode: LaunchMode.externalApplication,
+                      ),
+                    ),
                 ],
               ),
             ),

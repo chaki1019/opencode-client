@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Connecting | OpenCode Mobile</title>
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="/style.css">
+<script src="/site.js" defer></script>
+</head>
+<body class="doc">
+<div class="layout">
+<aside class="side">
+  <div class="side-bar">
+    <a class="brand" href="/en/"><img src="/favicon.svg" alt="" width="28" height="28">OpenCode Mobile</a>
+    <button class="menu-toggle" type="button" aria-controls="side-nav" aria-expanded="false">Menu</button>
+  </div>
+  <nav class="side-nav" id="side-nav" aria-label="Site contents">
+    <ul>
+      <li><a href="/en/">Home</a></li>
+      <li><a href="/en/connect/" aria-current="page">Connecting</a></li>
+      <li><a href="/en/support/">Support</a></li>
+      <li><a href="/en/privacy/">Privacy policy</a></li>
+    </ul>
+    <div class="side-lang">
+      <p class="side-label">Language / 言語</p>
+      <a href="/ja/connect/" hreflang="ja"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#fff"/><circle cx="15" cy="10" r="6" fill="#bc002d"/></svg>Japanese</a>
+    </div>
+  </nav>
+</aside>
+<main>
+<header>
+  <h1>Connecting</h1>
+  <p>Ways to reach the OpenCode running on your computer from your phone. At home, use the same Wi-Fi. To also connect when you are out, Tailscale is the easiest choice.</p>
+</header>
+
+<h2 id="server">First, start the server</h2>
+<p>Whichever way you connect, start OpenCode on your computer with a password.</p>
+<pre><code>export OPENCODE_SERVER_PASSWORD=your-password
+opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
+<p>In Windows PowerShell, set it with <code class="copy">$env:OPENCODE_SERVER_PASSWORD="your-password"</code> before starting. Enter the same password on the app's connect screen (leave the username as <code>opencode</code>).</p>
+<p>Without a password, anyone on the same network can control your computer. Always set one.</p>
+
+<h2 id="wifi">On the same Wi-Fi</h2>
+<p>The simplest way, when your phone and computer share a Wi-Fi network.</p>
+<ol>
+  <li>Start the server as above.</li>
+  <li>Open the app's connect screen. Servers on the same network show up on their own; tap one and enter the password.</li>
+  <li>If yours doesn't appear, look up the computer's IP address and enter it like <code>http://192.168.1.10:4096</code>.<br>
+    Mac: <code class="copy">ipconfig getifaddr en0</code>　Windows: <code class="copy">ipconfig</code>　Linux: <code class="copy">hostname -I</code></li>
+</ol>
+<p>If it still can't connect, check that the computer's firewall allows connections on port 4096. This way does not work when you are away from home.</p>
+
+<h2 id="tailscale">With Tailscale (works from anywhere)</h2>
+<p><a href="https://tailscale.com/">Tailscale</a> joins your own devices in a private, encrypted network. It is free for personal use, and nothing is opened to the internet.</p>
+<ol>
+  <li>Install Tailscale on both your computer and your phone, and sign in with the same account.</li>
+  <li>Start the server as above.</li>
+  <li>On the computer, run <code class="copy">tailscale ip -4</code> and note the address starting with <code>100.</code>.</li>
+  <li>In the app, enter it like <code>http://100.x.y.z:4096</code> and connect. With MagicDNS on, <code>http://computer-name:4096</code> works too.</li>
+</ol>
+<p>While the Tailscale app on your phone is on, this works over mobile data as well.</p>
+<p><strong>For HTTPS</strong>, start OpenCode with <code>--hostname 127.0.0.1</code> and run <code class="copy">tailscale serve --bg 4096</code> on the computer; then connect to <code>https://computer-name.your-tailnet.ts.net</code>.</p>
+
+<h2 id="cloudflare">With Cloudflare Tunnel</h2>
+<p>For when you can't install Tailscale. Your computer opens a tunnel to Cloudflare, which gives it a public HTTPS address.</p>
+<ol>
+  <li>Install <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/">cloudflared</a> on the computer.</li>
+  <li>Start the server as above (<code>--hostname 127.0.0.1</code> is fine here).</li>
+  <li>In another terminal, run:<pre><code>cloudflared tunnel --url http://localhost:4096</code></pre></li>
+  <li>Enter the <code>https://….trycloudflare.com</code> address it prints in the app and connect.</li>
+</ol>
+<p>Anyone who learns the address can reach your server, so <strong>use a long, hard-to-guess password</strong>. The address changes every time you start the tunnel; for a fixed one, create a named tunnel in your Cloudflare account.</p>
+
+<h2 id="ssh">With SSH port forwarding</h2>
+<p>For people who already SSH into their computer. Set up forwarding in an SSH app on your phone (Termius, for example).</p>
+<ol>
+  <li>Start OpenCode on the computer with <code>--hostname 127.0.0.1</code>.</li>
+  <li>In the SSH app, add a local port forward from port <code>4096</code> on the phone to <code>127.0.0.1:4096</code> on the computer.</li>
+  <li>With the forward running, connect the app to <code>http://127.0.0.1:4096</code>.</li>
+</ol>
+<p>The forward may stop when the SSH app goes to the background, especially on iPhone. For everyday use, Tailscale is steadier.</p>
+
+<h2 id="trouble">If something doesn't work</h2>
+<p>"Connection check" in the app's menu shows at a glance whether the server answers, live updates flow, and the notification plugin and MCP servers are working. You can copy the results into a <a href="/en/support/">support request</a>.</p>
+
+<footer>OpenCode Mobile is not an official OpenCode app.</footer>
+</main>
+</div>
+</body>
+</html>

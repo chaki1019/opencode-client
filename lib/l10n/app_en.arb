@@ -541,5 +541,6 @@
   "diagnosticsOs": "OS",
   "diagnosticsChecking": "Checking…",
   "diagnosticsRecheck": "Check again",
-  "diagnosticsCopy": "Copy the results"
+  "diagnosticsCopy": "Copy the results",
+  "connectGuide": "How to connect from home or away"
 }

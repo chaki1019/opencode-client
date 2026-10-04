@@ -1061,4 +1061,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diagnosticsCopy => 'Copy the results';
+
+  @override
+  String get connectGuide => 'How to connect from home or away';
 }

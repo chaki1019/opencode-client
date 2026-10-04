@@ -1873,6 +1873,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Copy the results'**
   String get diagnosticsCopy;
+
+  /// No description provided for @connectGuide.
+  ///
+  /// In en, this message translates to:
+  /// **'How to connect from home or away'**
+  String get connectGuide;
 }
 
 class _AppLocalizationsDelegate
