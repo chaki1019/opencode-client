@@ -461,6 +461,9 @@ class _ListeningSpeech implements SpeechInput {
   Future<bool> available() async => true;
 
   @override
+  String? get lastError => null;
+
+  @override
   Future<String?> listen({
     required String localeTag,
     void Function(String words)? onPartial,
