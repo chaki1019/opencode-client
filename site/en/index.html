@@ -12,17 +12,25 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="/style.css">
+<script src="/site.js" defer></script>
 </head>
 <body class="lp">
+<div class="layout">
+<aside class="side">
+  <div class="side-bar">
+    <a class="brand" href="/en/"><img src="/favicon.svg" alt="" width="28" height="28">OpenCode Mobile</a>
+    <button class="menu-toggle" type="button" aria-controls="side-nav" aria-expanded="false">Menu</button>
+  </div>
+  <nav class="side-nav" id="side-nav" aria-label="Site contents">
+    <ul>
+      <li><a href="/en/" aria-current="page">Home</a></li>
+      <li><a href="/en/support/">Support</a></li>
+      <li><a href="/en/privacy/">Privacy policy</a></li>
+    </ul>
+    <p class="side-lang"><a href="/ja/" hreflang="ja">日本語</a></p>
+  </nav>
+</aside>
 <main>
-<nav class="top">
-  <a class="brand" href="/en/">OpenCode Mobile</a>
-  <span>
-    <a href="/en/support/">Support</a>
-    <a href="/ja/">日本語</a>
-  </span>
-</nav>
-
 <section class="hero">
   <img class="icon" src="/favicon.svg" alt="" width="72" height="72">
   <h1>Your OpenCode,<br>from your phone.</h1>
@@ -34,24 +42,48 @@
   </p>
 </section>
 
-<!-- Put the store screenshots in /img/ and replace these -->
-<section class="shots" aria-label="Screenshots">
-  <div class="shot placeholder">Projects</div>
-  <div class="shot placeholder">Chat</div>
-  <div class="shot placeholder">Notifications</div>
-</section>
-
-<h2>What it does</h2>
+<h2 id="features">What it does</h2>
+<div class="feature">
+  <img src="/img/en/1-chat.webp" alt="Screenshot: Chat" width="540" height="960" loading="lazy">
+  <div>
+    <h3>Chat</h3>
+    <p>Pick a session and send instructions. Replies and tool runs stream in live, along with todo progress and command output.</p>
+  </div>
+</div>
+<div class="feature">
+  <img src="/img/en/2-permission.webp" alt="Screenshot: Permissions and questions" width="540" height="960" loading="lazy">
+  <div>
+    <h3>Permissions and questions</h3>
+    <p>Approve file edits and commands, and answer the agent's questions from your phone, so work doesn't stall until you are back at your desk.</p>
+  </div>
+</div>
+<div class="feature">
+  <img src="/img/en/3-notify.webp" alt="Screenshot: Push notifications" width="540" height="960" loading="lazy">
+  <div>
+    <h3>Push notifications</h3>
+    <p>Get notified when a reply finishes, fails, waits for permission or asks a question. Notifications are decrypted on your phone, so the relay can't read project names or titles.</p>
+  </div>
+</div>
+<div class="feature">
+  <img src="/img/en/4-diff.webp" alt="Screenshot: Review changes" width="540" height="960" loading="lazy">
+  <div>
+    <h3>Review changes</h3>
+    <p>Check changed files, diffs and branches. Browse and search files, or open a terminal.</p>
+  </div>
+</div>
+<div class="feature">
+  <img src="/img/en/5-model.webp" alt="Screenshot: Switch models and agents" width="540" height="960" loading="lazy">
+  <div>
+    <h3>Switch models and agents</h3>
+    <p>Change the model or agent on the spot, attach images, or stop a running reply.</p>
+  </div>
+</div>
 <ul class="features">
-  <li><strong>Chat</strong>Pick a session, send instructions, and watch replies and tool runs stream in. Switch models or agents, attach images, or stop a run.</li>
-  <li><strong>Permissions and questions</strong>Approve file edits and commands, and answer the agent's questions, right where you are.</li>
-  <li><strong>Push notifications</strong>Get notified when a reply finishes, fails, waits for permission or asks a question. Notifications are decrypted on your phone, so the relay can't read project names or titles.</li>
-  <li><strong>Git, files and terminal</strong>Check changed files and diffs, branches, browse and search files, and open a terminal.</li>
   <li><strong>Several servers</strong>Save your home PC and work Mac and switch between them.</li>
   <li><strong>Your data stays with your server</strong>Chats and files travel only between the app and your server. The developer never receives them.</li>
 </ul>
 
-<h2>How to use it</h2>
+<h2 id="usage">How to use it</h2>
 <ol class="steps">
   <li>
     <strong>Start the OpenCode server on your PC or Mac</strong>
@@ -61,7 +93,8 @@
   </li>
   <li>
     <strong>Connect from the app</strong>
-    <p>Enter the server URL (for example <code>http://192.168.1.10:4096</code>), the username (<code>opencode</code> by default) and the password, then tap Connect. The password is kept in the Keychain / Keystore.</p>
+    <p>Servers on the same network show up in the list automatically. If yours doesn't, enter its URL (for example <code>http://192.168.1.10:4096</code>). Enter the username (<code>opencode</code> by default) and the password, then tap Connect. The password is kept in the Keychain / Keystore.</p>
+    <img class="step-shot" src="/img/en/6-connect.webp" alt="Screenshot: connect screen" width="540" height="960" loading="lazy">
   </li>
   <li>
     <strong>Pick a project and a session</strong>
@@ -74,7 +107,7 @@
 </ol>
 <p class="note">To connect from outside your home, we recommend a VPN such as Tailscale rather than exposing the server to the internet. The app works with servers that have the OpenCode v2 API.</p>
 
-<h2>Price</h2>
+<h2 id="price">Price</h2>
 <p>Free to use. A banner ad appears on the project and session lists (never in chat). After 10 messages in a day, watching a video ad lets you send 10 more. A one-time "Remove ads" purchase turns off both.</p>
 
 <footer>
@@ -82,5 +115,6 @@
   <p>OpenCode Mobile is not an official OpenCode app. It is made by an individual with no connection to the OpenCode team.</p>
 </footer>
 </main>
+</div>
 </body>
 </html>

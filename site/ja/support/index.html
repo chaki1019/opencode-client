@@ -8,22 +8,36 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="/style.css">
+<script src="/site.js" defer></script>
 </head>
 <body>
+<div class="layout">
+<aside class="side">
+  <div class="side-bar">
+    <a class="brand" href="/ja/"><img src="/favicon.svg" alt="" width="28" height="28">OpenCode Mobile</a>
+    <button class="menu-toggle" type="button" aria-controls="side-nav" aria-expanded="false">メニュー</button>
+  </div>
+  <nav class="side-nav" id="side-nav" aria-label="サイトの目次">
+    <ul>
+      <li><a href="/ja/">トップ</a></li>
+      <li><a href="/ja/support/" aria-current="page">サポート</a></li>
+      <li><a href="/ja/privacy/">プライバシーポリシー</a></li>
+    </ul>
+    <p class="side-lang"><a href="/en/support/" hreflang="en">English</a></p>
+  </nav>
+</aside>
 <main>
 <header>
-  <a class="lang" href="/en/support/">English</a>
-  <p class="crumb"><a href="/ja/">OpenCode Mobile</a></p>
   <h1>サポート</h1>
   <p>自分の OpenCode サーバーにスマートフォンからつなぐ、非公式のクライアントアプリです。</p>
 </header>
 
-<h2>お問い合わせ</h2>
+<h2 id="contact">お問い合わせ</h2>
 <p>不具合の報告、ご質問、ご要望はメールでお送りください。アプリの「設定」→「お問い合わせ」からも、アプリのバージョンと OS を添えたメールを作成できます。</p>
 <p><a href="mailto:support@opencodemobile.app">support@opencodemobile.app</a></p>
 <p>個人で開発しているため、お返事に数日かかることがあります。</p>
 
-<h2>よくある質問</h2>
+<h2 id="faq">よくある質問</h2>
 <p><strong>サーバーにつながりません。</strong><br>
 スマートフォンと OpenCode サーバーが同じネットワークにあるか、サーバーが外部からの接続を受け付ける設定（<code>opencode serve --hostname 0.0.0.0</code> など）で起動しているかをご確認ください。</p>
 <p><strong>通知が届きません。</strong><br>
@@ -31,10 +45,11 @@
 <p><strong>「広告を外す」を別の端末でも使いたい。</strong><br>
 同じ Apple ID または Google アカウントでログインした端末で、「設定」→「購入を復元」をお試しください。</p>
 
-<h2>プライバシー</h2>
+<h2 id="privacy">プライバシー</h2>
 <p><a href="/ja/privacy/">プライバシーポリシー</a></p>
 
 <footer>OpenCode Mobile は OpenCode の公式アプリではありません。</footer>
 </main>
+</div>
 </body>
 </html>

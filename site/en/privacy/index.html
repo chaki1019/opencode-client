@@ -8,18 +8,33 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="/style.css">
+<script src="/site.js" defer></script>
 </head>
 <body>
+<div class="layout">
+<aside class="side">
+  <div class="side-bar">
+    <a class="brand" href="/en/"><img src="/favicon.svg" alt="" width="28" height="28">OpenCode Mobile</a>
+    <button class="menu-toggle" type="button" aria-controls="side-nav" aria-expanded="false">Menu</button>
+  </div>
+  <nav class="side-nav" id="side-nav" aria-label="Site contents">
+    <ul>
+      <li><a href="/en/">Home</a></li>
+      <li><a href="/en/support/">Support</a></li>
+      <li><a href="/en/privacy/" aria-current="page">Privacy policy</a></li>
+    </ul>
+    <p class="side-lang"><a href="/ja/privacy/" hreflang="ja">日本語</a></p>
+  </nav>
+</aside>
 <main>
 <header>
-  <a class="lang" href="/ja/privacy/">日本語</a>
   <h1>Privacy Policy</h1>
   <p>OpenCode Mobile ("the app") · Effective October 3, 2026</p>
 </header>
 
 <p>The app connects your phone to an OpenCode server that you run yourself. This policy explains what information the app handles and where it goes.</p>
 
-<h2>1. Information kept only on your device</h2>
+<h2 id="s1">1. Information kept only on your device</h2>
 <ul>
   <li>Your servers' URLs, user names and passwords</li>
   <li>Settings such as language and theme, today's free message count, and whether you bought "Remove ads"</li>
@@ -27,11 +42,11 @@
 </ul>
 <p>These are kept in the device's secure storage (the iOS Keychain, encrypted storage on Android) and are never sent to the developer.</p>
 
-<h2>2. Talking to your OpenCode server</h2>
+<h2 id="s2">2. Talking to your OpenCode server</h2>
 <p>Chats, attached images, files and terminal input and output go directly between the app and the server you chose. They never pass through the developer's servers, and the developer cannot see them.</p>
 <p>To find servers on the same network, the app may browse the local network (mDNS). What it finds stays on your device.</p>
 
-<h2>3. Push notifications</h2>
+<h2 id="s3">3. Push notifications</h2>
 <p>When you turn notifications on, the app registers the following with a notification relay run by the developer on Cloudflare Workers:</p>
 <ul>
   <li>Your device's notification token (issued by Firebase Cloud Messaging)</li>
@@ -42,7 +57,7 @@
 <p>The registration is deleted when you turn notifications off or remove the pairing in the app, or when the token stops being valid, for example after the app is uninstalled.</p>
 <p>Notifications are delivered through Google's Firebase Cloud Messaging and, on iOS, Apple Push Notification service.</p>
 
-<h2>4. Ads</h2>
+<h2 id="s4">4. Ads</h2>
 <p>The app shows ads from Google AdMob. To show and measure ads, AdMob may collect your advertising ID (IDFA on iOS, the advertising ID on Android), IP address, device and app information, and how you view and tap ads.</p>
 <ul>
   <li>In the European Economic Area, the UK and similar regions, the app asks for consent at launch with Google's tools. You can change your choice in Settings → Ad privacy choices.</li>
@@ -51,10 +66,10 @@
 </ul>
 <p>See <a href="https://policies.google.com/technologies/partner-sites">How Google uses information from sites or apps that use our services</a> for details.</p>
 
-<h2>5. In-app purchase</h2>
+<h2 id="s5">5. In-app purchase</h2>
 <p>"Remove ads" is bought through the App Store or Google Play. Apple or Google handles payment details; the developer never receives them.</p>
 
-<h2>6. Crash reports</h2>
+<h2 id="s6">6. Crash reports</h2>
 <p>When the app crashes, it sends the following to Google's Firebase Crashlytics so the cause can be found:</p>
 <ul>
   <li>The error and its stack trace</li>
@@ -63,10 +78,10 @@
 </ul>
 <p>Chats and server connection details are not included. Turn off Settings → Send crash reports to stop sending them.</p>
 
-<h2>7. Update check</h2>
+<h2 id="s7">7. Update check</h2>
 <p>At launch, the app asks the notification relay for the oldest version still supported. This request carries only what any internet request does (such as your IP address) and nothing that identifies you.</p>
 
-<h2>8. Sharing with others</h2>
+<h2 id="s8">8. Sharing with others</h2>
 <p>Apart from processing by the service providers above (Google, Apple and Cloudflare), the developer does not share collected information with anyone, unless required by law.</p>
 <ul>
   <li><a href="https://policies.google.com/privacy">Google Privacy Policy</a> (AdMob, Firebase)</li>
@@ -74,16 +89,17 @@
   <li><a href="https://www.cloudflare.com/privacypolicy/">Cloudflare Privacy Policy</a></li>
 </ul>
 
-<h2>9. Children</h2>
+<h2 id="s9">9. Children</h2>
 <p>The app is a developer tool and is not directed at children under 13.</p>
 
-<h2>10. Changes to this policy</h2>
+<h2 id="s10">10. Changes to this policy</h2>
 <p>Changes will be announced on this page.</p>
 
-<h2>11. Contact</h2>
+<h2 id="s11">11. Contact</h2>
 <p>Send questions about this policy to <a href="mailto:support@opencodemobile.app">support@opencodemobile.app</a>.</p>
 
 <footer><a href="/en/support/">Back to support</a> · <a href="/en/">Home</a></footer>
 </main>
+</div>
 </body>
 </html>
