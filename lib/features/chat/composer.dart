@@ -473,6 +473,9 @@ class _ModelSheet extends ConsumerWidget {
     return DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.7,
+      // Stops short of full screen, so the handle and a strip of the chat
+      // above stay visible to drag or tap the sheet closed.
+      maxChildSize: 0.9,
       builder: (context, scrollController) => models.when(
         data: (list) => ModelPicker(
           models: list,
