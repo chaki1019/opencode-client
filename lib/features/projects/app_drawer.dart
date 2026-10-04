@@ -7,9 +7,11 @@ import '../../core/models/server_config.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_widgets.dart';
+import '../live/server_activity.dart';
 
 /// The project list's side menu: servers to switch between on top, app
-/// settings at the bottom. One server is connected at a time.
+/// settings at the bottom. Every saved server stays connected; the drawer
+/// shows what the ones in the background are doing.
 class AppDrawer extends ConsumerStatefulWidget {
   const AppDrawer({super.key});
 
@@ -56,6 +58,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     final theme = Theme.of(context);
     final current = ref.watch(connectionProvider)?.server;
     final saved = ref.watch(savedServersProvider).value ?? const [];
+    final pool = ref.watch(connectionPoolProvider);
     // A server connected without saving is still listed while it is open.
     final servers = [
       if (current != null && !saved.any((s) => s.id == current.id)) current,
@@ -85,6 +88,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
                       server: server,
                       isCurrent: server.id == current?.id,
                       isSwitching: server.id == _switching,
+                      link: pool[server.id],
                       onTap: server.id == current?.id
                           ? () => Navigator.of(context).pop()
                           : _switching != null
@@ -107,13 +111,6 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
               title: Text(l10n.pushTitle),
               onTap: () => _open('/push'),
             ),
-            if (current != null)
-              ListTile(
-                key: const Key('diagnostics'),
-                leading: const Icon(Icons.monitor_heart_outlined),
-                title: Text(l10n.diagnosticsTitle),
-                onTap: () => _open('/diagnostics'),
-              ),
             ListTile(
               key: const Key('app-settings'),
               leading: const Icon(Icons.settings_outlined),
@@ -128,23 +125,60 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
   }
 }
 
-class _ServerTile extends StatelessWidget {
+class _ServerTile extends ConsumerWidget {
   const _ServerTile({
     required this.server,
     required this.isCurrent,
     required this.isSwitching,
+    required this.link,
     required this.onTap,
   });
 
   final ServerConfig server;
   final bool isCurrent;
   final bool isSwitching;
+  final ServerLink? link;
   final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final colors = AppColors.of(context);
+    final activity = ref.watch(serverActivityProvider(server.id));
+    final link = this.link;
+    final failed = !isCurrent && link?.error != null;
+    // What the server is up to while it is not on screen.
+    final status = isCurrent || link == null
+        ? null
+        : failed
+        ? l10n.serverUnreachable
+        : [
+            if (activity.running.isNotEmpty)
+              l10n.serverRunning(activity.running.length),
+            if (activity.finished > 0) l10n.serverFinished(activity.finished),
+          ].join(' · ');
+    final Widget? indicator =
+        isSwitching || (!isCurrent && link?.isConnecting == true)
+        ? const SizedBox.square(
+            dimension: 18,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          )
+        : isCurrent
+        ? LiveDot(size: 8, color: colors.success, pulse: false)
+        : failed
+        ? Icon(Icons.cloud_off_outlined, size: 18, color: scheme.error)
+        : activity.finished > 0
+        ? Badge(
+            key: Key('drawer-server-finished-${server.id}'),
+            label: Text('${activity.finished}'),
+          )
+        : activity.running.isNotEmpty
+        ? LiveDot(size: 8, color: colors.running, pulse: false)
+        : link?.connection != null
+        ? LiveDot(size: 8, color: scheme.outline, pulse: false)
+        : null;
     return ListTile(
       key: Key('drawer-server-${server.id}'),
       selected: isCurrent,
@@ -156,22 +190,16 @@ class _ServerTile extends StatelessWidget {
         style: const TextStyle(fontWeight: FontWeight.w600),
       ),
       subtitle: Text(
-        server.baseUrl,
+        status == null || status.isEmpty ? server.baseUrl : status,
+        key: Key('drawer-server-status-${server.id}'),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: theme.textTheme.bodySmall?.copyWith(
-          fontFamily: AppFonts.mono,
-          color: scheme.onSurfaceVariant,
+          fontFamily: status == null || status.isEmpty ? AppFonts.mono : null,
+          color: failed ? scheme.error : scheme.onSurfaceVariant,
         ),
       ),
-      trailing: isSwitching
-          ? const SizedBox.square(
-              dimension: 18,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : isCurrent
-          ? LiveDot(size: 8, color: AppColors.of(context).success, pulse: false)
-          : null,
+      trailing: indicator,
       onTap: onTap,
     );
   }

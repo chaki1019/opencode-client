@@ -1466,6 +1466,24 @@ abstract class AppLocalizations {
   /// **'Servers'**
   String get servers;
 
+  /// No description provided for @serverRunning.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} running'**
+  String serverRunning(int count);
+
+  /// No description provided for @serverFinished.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} done'**
+  String serverFinished(int count);
+
+  /// No description provided for @serverUnreachable.
+  ///
+  /// In en, this message translates to:
+  /// **'Can\'t connect'**
+  String get serverUnreachable;
+
   /// No description provided for @addServer.
   ///
   /// In en, this message translates to:

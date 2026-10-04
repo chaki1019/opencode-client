@@ -130,8 +130,7 @@ void main() {
         overrides: [
           ...noDiscoveryOverrides,
           serverStoreProvider.overrideWithValue(ServerStore()),
-          eventStreamProvider.overrideWith((ref) {
-            if (ref.watch(connectionProvider) == null) return null;
+          serverEventStreamProvider.overrideWith((ref, _) {
             final stream = EventStream(open: (_) async => events.stream)
               ..start();
             ref.onDispose(stream.dispose);

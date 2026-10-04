@@ -836,6 +836,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get servers => 'Servers';
 
   @override
+  String serverRunning(int count) {
+    return '$count running';
+  }
+
+  @override
+  String serverFinished(int count) {
+    return '$count done';
+  }
+
+  @override
+  String get serverUnreachable => 'Can\'t connect';
+
+  @override
   String get addServer => 'Add server';
 
   @override
