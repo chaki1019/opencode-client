@@ -87,10 +87,17 @@ android {
     signingConfigs {
         if (uploadStoreFile != null) {
             create("upload") {
+                val password = signingValue("CM_KEYSTORE_PASSWORD", "storePassword")
+                val alias = signingValue("CM_KEY_ALIAS", "keyAlias")
+                if (password == null || alias == null) {
+                    throw GradleException("Upload key is missing its store password or key alias (see docs/release.md).")
+                }
                 storeFile = file(uploadStoreFile)
-                storePassword = signingValue("CM_KEYSTORE_PASSWORD", "storePassword")
-                keyAlias = signingValue("CM_KEY_ALIAS", "keyAlias")
-                keyPassword = signingValue("CM_KEY_PASSWORD", "keyPassword")
+                storePassword = password
+                keyAlias = alias
+                // keytool's default PKCS12 keystores use the store password for
+                // the key too, so an empty key password falls back to it.
+                keyPassword = signingValue("CM_KEY_PASSWORD", "keyPassword") ?: password
             }
         }
     }
