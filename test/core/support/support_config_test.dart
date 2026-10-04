@@ -46,4 +46,13 @@ void main() {
       'OpenCode Mobile へのお問い合わせ',
     );
   });
+
+  test('builds without settings use the public site and address', () {
+    const config = SupportConfig.fromEnvironment();
+    expect(
+      config.connectGuide('ja').toString(),
+      'https://opencodemobile.app/ja/connect/',
+    );
+    expect(config.email, 'support@opencodemobile.app');
+  });
 }

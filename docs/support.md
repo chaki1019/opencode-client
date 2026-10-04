@@ -10,7 +10,7 @@
 - **プライバシーポリシー**: アプリの言語に合わせて `SITE_URL/ja/privacy/`（日本語）か `SITE_URL/en/privacy/`（英語）をブラウザで開きます。
 - **クラッシュレポートを送信**: 既定はオンです。オフにすると Crashlytics の送信を止め、未送信のレポートも消します。
 
-宛先とサイトの URL は `app.env.example.json` を `app.env.json` にコピーして埋めます（`app.env.json` は git に入りません）。空の項目の行は表示しません。
+宛先とサイトの URL は `app.env.example.json` を `app.env.json` にコピーして埋めます（`app.env.json` は git に入りません）。指定しないでビルドしたときは `support@opencodemobile.app` と `https://opencodemobile.app` を使います。空の文字列を指定した項目の行は表示しません。
 
 ```bash
 flutter build ipa \
