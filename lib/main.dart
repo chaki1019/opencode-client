@@ -59,7 +59,26 @@ class OpenCodeMobileApp extends ConsumerWidget {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: ref.watch(routerProvider),
-      builder: (context, child) => UpdateGate(child: child!),
+      // Android draws the app under transparent system bars (MainActivity
+      // opts in below Android 15 too). Screens without an AppBar and the
+      // navigation bar take their icon colors from here.
+      builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
+        value: _systemBars(Theme.of(context).brightness),
+        child: UpdateGate(child: child!),
+      ),
     );
   }
+}
+
+SystemUiOverlayStyle _systemBars(Brightness brightness) {
+  final icons = brightness == Brightness.dark
+      ? Brightness.light
+      : Brightness.dark;
+  return SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: icons,
+    statusBarBrightness: brightness,
+    systemNavigationBarColor: Colors.transparent,
+    systemNavigationBarIconBrightness: icons,
+  );
 }
