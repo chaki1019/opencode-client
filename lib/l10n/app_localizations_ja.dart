@@ -1044,4 +1044,56 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get connectGuide => '外出先からのつなぎ方など';
+
+  @override
+  String get conversationMode => '会話モード';
+
+  @override
+  String get conversationPreparing => '準備しています…';
+
+  @override
+  String get conversationListening => '聞いています…';
+
+  @override
+  String get conversationSending => '送信しています';
+
+  @override
+  String get conversationWaiting => 'OpenCode が作業しています…';
+
+  @override
+  String get conversationNeedsInput => '画面での回答を待っています';
+
+  @override
+  String get conversationSpeaking => '返答を読み上げています';
+
+  @override
+  String get conversationIdle => 'マイクをタップして話してください';
+
+  @override
+  String get conversationUnavailable =>
+      '音声認識を使えません。端末の設定で、このアプリのマイクと音声認識を許可してください。';
+
+  @override
+  String get conversationListen => '話す';
+
+  @override
+  String get conversationDoneSpeaking => '話し終えた';
+
+  @override
+  String get conversationEnd => '会話モードを終える';
+
+  @override
+  String get readAloud => '読み上げる';
+
+  @override
+  String get readingAloud => '読み上げています…';
+
+  @override
+  String get stopReading => '停止';
+
+  @override
+  String get speechCodeSkipped => '（コードは省略します）';
+
+  @override
+  String get speechTruncated => '以下は省略します。';
 }

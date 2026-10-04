@@ -296,5 +296,22 @@
   "diagnosticsChecking": "確認しています…",
   "diagnosticsRecheck": "もう一度確認",
   "diagnosticsCopy": "結果をコピー",
-  "connectGuide": "外出先からのつなぎ方など"
+  "connectGuide": "外出先からのつなぎ方など",
+  "conversationMode": "会話モード",
+  "conversationPreparing": "準備しています…",
+  "conversationListening": "聞いています…",
+  "conversationSending": "送信しています",
+  "conversationWaiting": "OpenCode が作業しています…",
+  "conversationNeedsInput": "画面での回答を待っています",
+  "conversationSpeaking": "返答を読み上げています",
+  "conversationIdle": "マイクをタップして話してください",
+  "conversationUnavailable": "音声認識を使えません。端末の設定で、このアプリのマイクと音声認識を許可してください。",
+  "conversationListen": "話す",
+  "conversationDoneSpeaking": "話し終えた",
+  "conversationEnd": "会話モードを終える",
+  "readAloud": "読み上げる",
+  "readingAloud": "読み上げています…",
+  "stopReading": "停止",
+  "speechCodeSkipped": "（コードは省略します）",
+  "speechTruncated": "以下は省略します。"
 }

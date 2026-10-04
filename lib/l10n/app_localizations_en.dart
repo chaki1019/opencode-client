@@ -1064,4 +1064,56 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get connectGuide => 'How to connect from home or away';
+
+  @override
+  String get conversationMode => 'Conversation mode';
+
+  @override
+  String get conversationPreparing => 'Getting ready…';
+
+  @override
+  String get conversationListening => 'Listening…';
+
+  @override
+  String get conversationSending => 'Sending';
+
+  @override
+  String get conversationWaiting => 'OpenCode is working…';
+
+  @override
+  String get conversationNeedsInput => 'Waiting for your answer on screen';
+
+  @override
+  String get conversationSpeaking => 'Reading the reply';
+
+  @override
+  String get conversationIdle => 'Tap the mic to speak';
+
+  @override
+  String get conversationUnavailable =>
+      'Speech recognition is unavailable. Allow the microphone and speech recognition for this app in Settings.';
+
+  @override
+  String get conversationListen => 'Speak';
+
+  @override
+  String get conversationDoneSpeaking => 'Done speaking';
+
+  @override
+  String get conversationEnd => 'End conversation mode';
+
+  @override
+  String get readAloud => 'Read aloud';
+
+  @override
+  String get readingAloud => 'Reading aloud…';
+
+  @override
+  String get stopReading => 'Stop';
+
+  @override
+  String get speechCodeSkipped => '(code omitted)';
+
+  @override
+  String get speechTruncated => 'The rest is omitted.';
 }

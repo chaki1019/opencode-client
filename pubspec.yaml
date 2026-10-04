@@ -59,6 +59,8 @@ dependencies:
   package_info_plus: ^10.2.2
   url_launcher: ^6.3.3
   firebase_crashlytics: ^5.4.0
+  flutter_tts: ^4.2.5
+  speech_to_text: ^7.5.0
 
 dev_dependencies:
   flutter_test:

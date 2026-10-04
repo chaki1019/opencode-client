@@ -1879,6 +1879,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'How to connect from home or away'**
   String get connectGuide;
+
+  /// No description provided for @conversationMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation mode'**
+  String get conversationMode;
+
+  /// No description provided for @conversationPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting ready…'**
+  String get conversationPreparing;
+
+  /// No description provided for @conversationListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening…'**
+  String get conversationListening;
+
+  /// No description provided for @conversationSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending'**
+  String get conversationSending;
+
+  /// No description provided for @conversationWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenCode is working…'**
+  String get conversationWaiting;
+
+  /// No description provided for @conversationNeedsInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your answer on screen'**
+  String get conversationNeedsInput;
+
+  /// No description provided for @conversationSpeaking.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading the reply'**
+  String get conversationSpeaking;
+
+  /// No description provided for @conversationIdle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the mic to speak'**
+  String get conversationIdle;
+
+  /// No description provided for @conversationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech recognition is unavailable. Allow the microphone and speech recognition for this app in Settings.'**
+  String get conversationUnavailable;
+
+  /// No description provided for @conversationListen.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak'**
+  String get conversationListen;
+
+  /// No description provided for @conversationDoneSpeaking.
+  ///
+  /// In en, this message translates to:
+  /// **'Done speaking'**
+  String get conversationDoneSpeaking;
+
+  /// No description provided for @conversationEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End conversation mode'**
+  String get conversationEnd;
+
+  /// No description provided for @readAloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Read aloud'**
+  String get readAloud;
+
+  /// No description provided for @readingAloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading aloud…'**
+  String get readingAloud;
+
+  /// No description provided for @stopReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get stopReading;
+
+  /// No description provided for @speechCodeSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'(code omitted)'**
+  String get speechCodeSkipped;
+
+  /// No description provided for @speechTruncated.
+  ///
+  /// In en, this message translates to:
+  /// **'The rest is omitted.'**
+  String get speechTruncated;
 }
 
 class _AppLocalizationsDelegate

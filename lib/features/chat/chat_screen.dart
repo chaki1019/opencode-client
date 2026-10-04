@@ -22,6 +22,9 @@ import 'scroll_to_newest.dart';
 import 'session_actions.dart';
 import 'status_bar_scroll.dart';
 import 'timeline_widgets.dart';
+import '../voice/conversation.dart';
+import '../voice/speakable.dart';
+import '../voice/speech.dart';
 
 /// A session's transcript, updated live, with the input at the bottom.
 class ChatScreen extends ConsumerWidget {
@@ -42,6 +45,7 @@ class ChatScreen extends ConsumerWidget {
     );
     ref.watch(sessionHapticsProvider(session.id));
     final rewoundTo = ref.watch(revertProvider(session));
+    final conversing = ref.watch(conversationActiveProvider(session.id));
 
     return StatusBarScrollsToOldest(
       onArrived: () => ref.read(provider.notifier).loadMore(),
@@ -139,6 +143,24 @@ class ChatScreen extends ConsumerWidget {
                                             entry: entry,
                                           ),
                                         )
+                                      : entry is AssistantEntry &&
+                                            assistantText(entry).isNotEmpty
+                                      ? GestureDetector(
+                                          onLongPress: () {
+                                            Feedback.forLongPress(context);
+                                            ref
+                                                .read(hapticsProvider)
+                                                .play(HapticCue.longPress);
+                                            _assistantMessageMenu(
+                                              context,
+                                              ref,
+                                              entry,
+                                            );
+                                          },
+                                          child: TimelineEntryView(
+                                            entry: entry,
+                                          ),
+                                        )
                                       : TimelineEntryView(entry: entry);
                                 }
                                 return ReadableWidth(
@@ -184,9 +206,19 @@ class ChatScreen extends ConsumerWidget {
                 key: const ValueKey('prompts-slot'),
                 child: SessionPromptsPanel(session: session),
               ),
+              if (conversing)
+                ReadableWidth(
+                  key: const ValueKey('conversation-slot'),
+                  child: ConversationPanel(session: session),
+                ),
+              // Kept while conversing so a draft survives.
               ReadableWidth(
                 key: const ValueKey('composer-slot'),
-                child: Composer(session: session),
+                child: Visibility(
+                  visible: !conversing,
+                  maintainState: true,
+                  child: Composer(session: session),
+                ),
               ),
             ],
           ),
@@ -256,6 +288,72 @@ class ChatScreen extends ConsumerWidget {
         }
       case _MessageAction.fork:
         await forkSession(context, ref, session, beforeMessageId: entry.id);
+      case _MessageAction.readAloud:
+        break;
+    }
+  }
+
+  Future<void> _assistantMessageMenu(
+    BuildContext context,
+    WidgetRef ref,
+    AssistantEntry entry,
+  ) async {
+    final action = await showModalBottomSheet<_MessageAction>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              key: const Key('copy-reply'),
+              leading: const Icon(Icons.copy),
+              title: Text(context.l10n.copy),
+              onTap: () => Navigator.pop(context, _MessageAction.copy),
+            ),
+            ListTile(
+              key: const Key('read-aloud'),
+              leading: const Icon(Icons.volume_up_outlined),
+              title: Text(context.l10n.readAloud),
+              onTap: () => Navigator.pop(context, _MessageAction.readAloud),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (action == null || !context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+    final text = assistantText(entry);
+    switch (action) {
+      case _MessageAction.copy:
+        await Clipboard.setData(ClipboardData(text: text));
+        messenger.showSnackBar(SnackBar(content: Text(l10n.copied)));
+      case _MessageAction.readAloud:
+        final output = ref.read(speechOutputProvider);
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.readingAloud),
+            duration: const Duration(minutes: 10),
+            action: SnackBarAction(
+              label: l10n.stopReading,
+              onPressed: output.stop,
+            ),
+          ),
+        );
+        await output.speak(
+          speakableText(
+            text,
+            codeSkipped: l10n.speechCodeSkipped,
+            truncated: l10n.speechTruncated,
+          ),
+          localeTag: speechLocaleTag(
+            Localizations.localeOf(context).languageCode,
+          ),
+        );
+        messenger.hideCurrentSnackBar();
+      case _MessageAction.rewind || _MessageAction.fork:
+        break;
     }
   }
 
@@ -271,7 +369,7 @@ class ChatScreen extends ConsumerWidget {
   }
 }
 
-enum _MessageAction { copy, rewind, fork }
+enum _MessageAction { copy, rewind, fork, readAloud }
 
 /// Shown above the input while the session is rewound, with a way to bring
 /// the set-aside messages and file changes back.

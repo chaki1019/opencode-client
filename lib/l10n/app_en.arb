@@ -542,5 +542,22 @@
   "diagnosticsChecking": "Checking…",
   "diagnosticsRecheck": "Check again",
   "diagnosticsCopy": "Copy the results",
-  "connectGuide": "How to connect from home or away"
+  "connectGuide": "How to connect from home or away",
+  "conversationMode": "Conversation mode",
+  "conversationPreparing": "Getting ready…",
+  "conversationListening": "Listening…",
+  "conversationSending": "Sending",
+  "conversationWaiting": "OpenCode is working…",
+  "conversationNeedsInput": "Waiting for your answer on screen",
+  "conversationSpeaking": "Reading the reply",
+  "conversationIdle": "Tap the mic to speak",
+  "conversationUnavailable": "Speech recognition is unavailable. Allow the microphone and speech recognition for this app in Settings.",
+  "conversationListen": "Speak",
+  "conversationDoneSpeaking": "Done speaking",
+  "conversationEnd": "End conversation mode",
+  "readAloud": "Read aloud",
+  "readingAloud": "Reading aloud…",
+  "stopReading": "Stop",
+  "speechCodeSkipped": "(code omitted)",
+  "speechTruncated": "The rest is omitted."
 }
