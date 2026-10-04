@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../app/layout.dart';
 import '../../app/theme.dart';
 import '../../core/discovery/server_discovery.dart';
 import '../../core/models/server_config.dart';
+import '../../core/support/web_sheet.dart';
 import '../../l10n/l10n.dart';
 import '../push/push_providers.dart';
 import '../settings/support_section.dart';
@@ -235,8 +235,7 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
                       key: const Key('connect-guide'),
                       icon: const Icon(Icons.help_outline, size: 18),
                       label: Text(context.l10n.connectGuide),
-                      onPressed: () =>
-                          launchUrl(guide, mode: LaunchMode.inAppBrowserView),
+                      onPressed: () => openWebSheet(context, guide),
                     ),
                 ],
               ),
