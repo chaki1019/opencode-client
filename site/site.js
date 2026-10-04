@@ -15,7 +15,7 @@
       var li = document.createElement('li');
       var a = document.createElement('a');
       a.href = '#' + h.id;
-      a.textContent = h.textContent;
+      a.textContent = h.dataset.toc || h.textContent;
       li.appendChild(a);
       list.appendChild(li);
       links.push(a);

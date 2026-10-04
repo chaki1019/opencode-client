@@ -32,86 +32,161 @@
 </aside>
 <main>
 <section class="hero">
-  <img class="icon" src="/favicon.svg" alt="" width="72" height="72">
-  <h1>PC の OpenCode を、<br>スマートフォンから。</h1>
-  <p class="lead">OpenCode Mobile は、自分の PC や Mac で動かしている <a href="https://opencode.ai">OpenCode</a> に iPhone・Android からつなぐクライアントアプリです。席を離れていても、エージェントへの指示、進み具合の確認、許可の判断ができます。</p>
-  <!-- ストアの URL が決まったらバッジに差し替える -->
-  <p class="stores">
-    <span class="store">App Store（近日公開）</span>
-    <span class="store">Google Play（近日公開）</span>
-  </p>
-</section>
-
-<h2 id="features">できること</h2>
-<div class="feature">
-  <img src="/img/ja/1-chat.webp" alt="スクリーンショット: チャット" width="540" height="960" loading="lazy">
-  <div>
-    <h3>チャット</h3>
-    <p>セッションを選んで指示を送ると、返答やツールの実行がリアルタイムで流れてきます。Todo の進み具合や、実行したコマンドの結果もその場で確認できます。</p>
+  <div class="hero-text">
+    <p class="eyebrow"><img src="/favicon.svg" alt="" width="20" height="20">iPhone・Android 向けの OpenCode クライアント</p>
+    <h1>PC の OpenCode を、<br>スマートフォンから。</h1>
+    <p class="lead">自分の PC や Mac で動かしている <a href="https://opencode.ai">OpenCode</a> に、iPhone・Android からつなぐアプリです。席を離れていても、エージェントへの指示、進み具合の確認、許可の判断ができます。</p>
+    <!-- ストアの URL が決まったら a 要素に変えてリンクする -->
+    <div class="cta-row">
+      <span class="btn btn-store" aria-disabled="true">App Store<small>近日公開</small></span>
+      <span class="btn btn-store" aria-disabled="true">Google Play<small>近日公開</small></span>
+      <a class="btn btn-ghost" href="#setup">はじめ方を見る →</a>
+    </div>
+    <ul class="chips"><li>無料で使える</li><li>日本語・英語</li><li>データは自分のサーバーとだけ</li></ul>
   </div>
-</div>
+  <img class="hero-shot" src="/img/ja/1-chat.webp" alt="スクリーンショット: チャット画面" width="540" height="960">
+</section>
+<section class="sec" aria-labelledby="features">
+<p class="eyebrow">01 / 特長</p>
+<h2 id="features" data-toc="特長">席を離れても、作業は手元で進む。</h2>
+<p class="sec-lead">チャットの流れを見るだけでなく、許可や質問に答えたり、変更を確かめたりするところまでスマートフォンでできます。</p>
 <div class="feature">
-  <img src="/img/ja/2-permission.webp" alt="スクリーンショット: 許可と質問" width="540" height="960" loading="lazy">
+  <img src="/img/ja/2-permission.webp" alt="スクリーンショット: 許可と質問にその場で答える" width="540" height="960" loading="lazy">
   <div>
-    <h3>許可と質問</h3>
+    <h3>許可と質問にその場で答える</h3>
     <p>ファイルの編集やコマンドの実行の許可、エージェントからの質問に、スマートフォンから答えられます。PC の前に戻るのを待たずに、作業を先へ進められます。</p>
   </div>
 </div>
 <div class="feature">
-  <img src="/img/ja/3-notify.webp" alt="スクリーンショット: プッシュ通知" width="540" height="960" loading="lazy">
+  <img src="/img/ja/3-notify.webp" alt="スクリーンショット: 終わったら通知で知らせる" width="540" height="960" loading="lazy">
   <div>
-    <h3>プッシュ通知</h3>
+    <h3>終わったら通知で知らせる</h3>
     <p>応答の完了、エラー、許可待ち、質問を通知します。通知の中身は端末で復号するので、中継サーバーはプロジェクト名やタイトルを読めません。</p>
   </div>
 </div>
 <div class="feature">
-  <img src="/img/ja/4-diff.webp" alt="スクリーンショット: 変更のレビュー" width="540" height="960" loading="lazy">
+  <img src="/img/ja/4-diff.webp" alt="スクリーンショット: 変更をスマートフォンでレビュー" width="540" height="960" loading="lazy">
   <div>
-    <h3>変更のレビュー</h3>
+    <h3>変更をスマートフォンでレビュー</h3>
     <p>Git の変更ファイルと差分、ブランチを確認できます。ファイルの閲覧と検索、ターミナルも使えます。</p>
   </div>
 </div>
 <div class="feature">
-  <img src="/img/ja/5-model.webp" alt="スクリーンショット: モデルとエージェントの切り替え" width="540" height="960" loading="lazy">
+  <img src="/img/ja/5-model.webp" alt="スクリーンショット: モデルもエージェントもすぐ切り替え" width="540" height="960" loading="lazy">
   <div>
-    <h3>モデルとエージェントの切り替え</h3>
+    <h3>モデルもエージェントもすぐ切り替え</h3>
     <p>モデルやエージェントをその場で切り替えられます。画像の添付や、実行中の応答の中断もできます。</p>
   </div>
 </div>
-<ul class="features">
-  <li><strong>複数のサーバー</strong>自宅の PC と仕事の Mac など、つなぎ先を保存して切り替えられます。</li>
-  <li><strong>データは自分のサーバーとだけ</strong>チャットやファイルは、アプリとあなたのサーバーの間だけでやり取りします。開発者は受け取りません。</li>
-</ul>
+</section>
 
-<h2 id="usage">使い方</h2>
-<ol class="steps">
+<section class="sec" aria-labelledby="setup">
+<p class="eyebrow">02 / はじめ方</p>
+<h2 id="setup" data-toc="はじめ方">3 つの手順でつながります。</h2>
+<p class="sec-lead">OpenCode が動いている PC か Mac があれば、ほかに用意するものはありません。</p>
+<ol class="step-cards">
   <li>
-    <strong>PC / Mac で OpenCode サーバーを起動する</strong>
+    <span class="step-num">1</span>
+    <h3>サーバーを起動する</h3>
     <p>OpenCode を最新版にして、パスワードを決めてから、ほかの端末からの接続を受け付けるように起動します。</p>
     <pre><code>OPENCODE_SERVER_PASSWORD=好きなパスワード \
   opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
   </li>
   <li>
-    <strong>アプリでサーバーに接続する</strong>
-    <p>同じネットワークにあるサーバーは自動で一覧に出ます。見つからないときは、サーバー URL（例: <code>http://192.168.1.10:4096</code>）を入れます。ユーザー名（既定は <code>opencode</code>）とパスワードを入れて「接続」を押します。パスワードは端末の Keychain / Keystore に保存します。</p>
-    <img class="step-shot" src="/img/ja/6-connect.webp" alt="スクリーンショット: 接続画面" width="540" height="960" loading="lazy">
+    <span class="step-num">2</span>
+    <h3>つなぎ方を決める</h3>
+    <p>家や職場では、スマートフォンを PC と同じ Wi-Fi につなぐだけです。外出先から使うときは、Tailscale などの VPN を通し、サーバーをインターネットに直接公開しないことをおすすめします。</p>
   </li>
   <li>
-    <strong>プロジェクトとセッションを選ぶ</strong>
-    <p>OpenCode で開いたことのあるプロジェクトが並びます。セッションを開いて続きを指示するか、新しいセッションを始めます。</p>
-  </li>
-  <li>
-    <strong>通知を受け取る（任意）</strong>
-    <p>プロジェクト一覧右上のベルから通知をオンにし、表示される設定を PC の <code>~/.config/opencode/opencode.json</code> に貼って OpenCode を再起動します。プラグイン <code>opencode-mobile-push</code> は npm から自動で入ります。</p>
+    <span class="step-num">3</span>
+    <h3>アプリで接続する</h3>
+    <p>同じネットワークにあるサーバーは自動で一覧に出ます。ユーザー名（既定は <code>opencode</code>）とパスワードを入れて「接続」を押せば、プロジェクトとセッションが並びます。</p>
+    <img class="step-shot" src="/img/ja/6-connect.webp" alt="スクリーンショット: アプリで接続する" width="540" height="960" loading="lazy">
   </li>
 </ol>
-<p class="note">外出先からつなぐときは、Tailscale などの VPN を使って、サーバーをインターネットに直接公開しないことをおすすめします。対応しているのは OpenCode v2 の API を持つサーバーです。</p>
+<div class="callout">
+  <h3>通知も受け取るには</h3>
+  <p>プロジェクト一覧右上のベルから通知をオンにし、表示される設定を PC の <code>~/.config/opencode/opencode.json</code> に貼って OpenCode を再起動します。プラグイン <code>opencode-mobile-push</code> は npm から自動で入ります。</p>
+</div>
+</section>
 
-<h2 id="price">料金</h2>
-<p>無料で使えます。プロジェクトとセッションの一覧にバナー広告が出ます（チャット画面には出しません）。送信が1日10回を超えると、動画広告を見るとさらに10回送れます。買い切りの「広告を外す」を購入すると、どちらの広告も出なくなります。</p>
+<section class="sec" aria-labelledby="tablet">
+<p class="eyebrow">03 / タブレット</p>
+<h2 id="tablet" data-toc="タブレット">大きな画面では 2 画面で。</h2>
+<p class="sec-lead">iPad や Android タブレットでは、左にプロジェクトとセッション、右にチャットを並べて表示します。縦向きでも横向きでも使えます。</p>
+<img class="tablet-shot" src="/img/ja/tablet-chat.webp" alt="スクリーンショット: タブレットのチャット画面" width="720" height="960" loading="lazy">
+</section>
 
-<footer>
-  <p><a href="/ja/support/">サポート・お問い合わせ</a> · <a href="/ja/privacy/">プライバシーポリシー</a></p>
+<section class="sec" aria-labelledby="price">
+<p class="eyebrow">04 / 料金</p>
+<h2 id="price" data-toc="料金">無料で、すべての機能を使えます。</h2>
+<div class="price-cards">
+  <div class="card">
+    <h3>無料</h3>
+    <p>機能の制限はありません。プロジェクトとセッションの一覧にバナー広告が出ます（チャット画面には出しません）。送信が 1 日 10 回を超えたら、動画広告を見るとさらに 10 回送れます。</p>
+  </div>
+  <div class="card">
+    <h3>広告を外す</h3>
+    <p>買い切りで、バナーと動画のどちらの広告も出なくなります。同じ Apple ID や Google アカウントの端末では「購入を復元」で引き継げます。</p>
+  </div>
+</div>
+</section>
+
+<section class="sec" aria-labelledby="faq">
+<p class="eyebrow">05 / よくある質問</p>
+<h2 id="faq" data-toc="よくある質問">使う前に。</h2>
+<div class="faq">
+  <details>
+    <summary>どの端末で使えますか？</summary>
+    <p>iPhone と iPad（iOS 18 以降）、Android のスマートフォンとタブレットで使えます。</p>
+  </details>
+  <details>
+    <summary>何を用意すればいいですか？</summary>
+    <p>OpenCode を動かしている PC か Mac が必要です。対応しているのは OpenCode v2 の API を持つサーバーなので、OpenCode は最新版にしておいてください。</p>
+  </details>
+  <details>
+    <summary>外出先からつなげますか？</summary>
+    <p>つなげます。Tailscale などの VPN を使い、PC とスマートフォンを同じネットワークに入れる方法をおすすめします。サーバーをインターネットにそのまま公開するのは避けてください。</p>
+  </details>
+  <details>
+    <summary>会話やコードはどこに送られますか？</summary>
+    <p>アプリとあなたのサーバーの間だけでやり取りし、開発者には送られません。詳しくは<a href="/ja/privacy/">プライバシーポリシー</a>をご覧ください。</p>
+  </details>
+  <details>
+    <summary>OpenCode の公式アプリですか？</summary>
+    <p>いいえ。OpenCode チームとは関係のない個人が開発している、非公式のクライアントです。OpenCode そのものを置き換えるものではありません。</p>
+  </details>
+  <details>
+    <summary>不具合を見つけたら？</summary>
+    <p><a href="/ja/support/">サポートページ</a>のメールアドレスか、アプリの「設定」→「お問い合わせ」からお知らせください。</p>
+  </details>
+</div>
+</section>
+
+<section class="final-cta">
+  <h2>サーバーの準備ができたら、すぐに使えます。</h2>
+  <p>次の OpenCode のセッションを、ポケットに入れて持ち歩きましょう。</p>
+  <div class="cta-row">
+    <span class="btn btn-store" aria-disabled="true">App Store<small>近日公開</small></span>
+    <span class="btn btn-store" aria-disabled="true">Google Play<small>近日公開</small></span>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-cols">
+    <div>
+      <h3>アプリ</h3>
+      <ul><li><a href="#features">特長</a></li><li><a href="#setup">はじめ方</a></li><li><a href="#price">料金</a></li><li><a href="#faq">よくある質問</a></li></ul>
+    </div>
+    <div>
+      <h3>サポート</h3>
+      <ul><li><a href="/ja/support/">サポート・お問い合わせ</a></li><li><a href="/ja/privacy/">プライバシーポリシー</a></li><li><a href="mailto:support@opencodemobile.app">support@opencodemobile.app</a></li></ul>
+    </div>
+    <div>
+      <h3>言語</h3>
+      <ul><li><a href="/ja/">日本語</a></li><li><a href="/en/">English</a></li></ul>
+    </div>
+  </div>
   <p>OpenCode Mobile は OpenCode の公式アプリではなく、OpenCode チームとは関係のない個人が開発しています。</p>
 </footer>
 </main>
