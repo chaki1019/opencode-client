@@ -95,7 +95,12 @@ void main() {
   testWidgets('support rows are hidden when the build has none', (
     tester,
   ) async {
-    await pumpSettings(tester);
+    await pumpSettings(
+      tester,
+      overrides: [
+        supportConfigProvider.overrideWithValue(const SupportConfig()),
+      ],
+    );
     expect(find.text('サポートとプライバシー'), findsNothing);
   });
 

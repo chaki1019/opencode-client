@@ -1,12 +1,20 @@
 /// Build-time support settings, passed with
-/// `--dart-define-from-file=app.env.json` (see docs/support.md). Rows whose
-/// value is missing are not shown.
+/// `--dart-define-from-file=app.env.json` (see docs/support.md). Without
+/// them the app uses the public address and site, so links still show in
+/// builds run straight from the IDE. Rows whose value is empty are not
+/// shown.
 class SupportConfig {
   const SupportConfig({this.email = '', this.siteUrl = ''});
 
   const SupportConfig.fromEnvironment()
-    : email = const String.fromEnvironment('SUPPORT_EMAIL'),
-      siteUrl = const String.fromEnvironment('SITE_URL');
+    : email = const String.fromEnvironment(
+        'SUPPORT_EMAIL',
+        defaultValue: 'support@opencodemobile.app',
+      ),
+      siteUrl = const String.fromEnvironment(
+        'SITE_URL',
+        defaultValue: 'https://opencodemobile.app',
+      );
 
   /// Where "Contact us" sends mail.
   final String email;
