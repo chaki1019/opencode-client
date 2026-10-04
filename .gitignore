@@ -59,3 +59,6 @@ ads.env.json
 
 # Support build settings (see docs/support.md)
 app.env.json
+
+# Wrangler local state (push/relay)
+.wrangler/
