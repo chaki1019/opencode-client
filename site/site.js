@@ -51,20 +51,58 @@
     });
   }
 
-  if (links.length && 'IntersectionObserver' in window) {
-    var visible = {};
-    var observer = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) { visible[e.target.id] = e.isIntersecting; });
-      var active = null;
-      for (var i = 0; i < headings.length; i++) {
-        if (visible[headings[i].id]) { active = headings[i].id; break; }
-      }
-      if (!active) return;
+  // Highlight the section being read: the last heading that has reached the
+  // upper part of the window, or the last one in view once the page cannot
+  // scroll further. A section picked from the menu (or the address) stays
+  // highlighted until the reader scrolls by themselves, because a short
+  // section near the end may never reach the top.
+  if (links.length) {
+    var picked = null;
+    var mark = function (id) {
       links.forEach(function (a) {
-        a.classList.toggle('active', a.getAttribute('href') === '#' + active);
+        a.classList.toggle('active', a.getAttribute('href') === '#' + id);
       });
-    }, { rootMargin: '0px 0px -60% 0px' });
-    headings.forEach(function (h) { observer.observe(h); });
+    };
+    var update = function () {
+      if (picked) return mark(picked);
+      var line = window.innerHeight * 0.3;
+      var atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+      var active = null;
+      headings.forEach(function (h) {
+        var top = h.getBoundingClientRect().top;
+        if (top <= line || (atEnd && top < window.innerHeight)) active = h.id;
+      });
+      mark(active);
+    };
+    var pick = function () {
+      var id = decodeURIComponent(location.hash.slice(1));
+      picked = document.getElementById(id) && headings.some(function (h) { return h.id === id; }) ? id : null;
+      update();
+    };
+    var release = function () {
+      if (picked) { picked = null; update(); }
+    };
+    var queued = false;
+    window.addEventListener('scroll', function () {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(function () { queued = false; update(); });
+    }, { passive: true });
+    window.addEventListener('resize', update);
+    window.addEventListener('hashchange', pick);
+    ['wheel', 'touchmove'].forEach(function (t) {
+      window.addEventListener(t, release, { passive: true });
+    });
+    window.addEventListener('keydown', function (e) {
+      if (/^(Arrow|Page|Home|End| )/.test(e.key)) release();
+    });
+    links.forEach(function (a) {
+      a.addEventListener('click', function () {
+        // Same hash again: hashchange does not fire.
+        if (a.getAttribute('href') === location.hash) setTimeout(pick);
+      });
+    });
+    if (location.hash) pick(); else update();
   }
 
   var toggle = document.querySelector('.menu-toggle');
