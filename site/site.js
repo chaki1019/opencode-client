@@ -2,72 +2,52 @@
 // view is highlighted, and the menu opens/closes on narrow screens.
 (function () {
   document.documentElement.classList.add('js');
+  var ja = document.documentElement.lang === 'ja';
 
   var nav = document.getElementById('side-nav');
-  var ja = document.documentElement.lang === 'ja';
   var headings = Array.prototype.slice.call(document.querySelectorAll('main h2[id]'));
   var links = [];
 
-  // Each top-level page becomes a group that opens and closes to show its
-  // sections. The current page's sections come from this page; the others
-  // are read from their pages in the background.
-  function sectionList(items, base) {
-    var list = document.createElement('ul');
-    list.className = 'toc';
-    items.forEach(function (h) {
-      var li = document.createElement('li');
-      var a = document.createElement('a');
-      a.href = base + '#' + h.id;
-      a.textContent = h.dataset.toc || h.textContent;
-      li.appendChild(a);
-      list.appendChild(li);
-    });
-    return list;
-  }
-
-  function makeGroup(li, link, open) {
-    var row = document.createElement('div');
-    row.className = 'nav-row';
-    li.insertBefore(row, link);
-    row.appendChild(link);
-    var button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'nav-toggle';
-    button.setAttribute('aria-label', (ja ? 'セクションを表示: ' : 'Show sections: ') + link.textContent);
-    row.appendChild(button);
-    var sub = document.createElement('div');
-    sub.className = 'nav-sub';
-    li.appendChild(sub);
-    li.classList.add('group');
-    var setOpen = function (o) {
-      li.classList.toggle('open', o);
-      button.setAttribute('aria-expanded', String(o));
-    };
-    setOpen(open);
-    button.addEventListener('click', function () {
-      setOpen(!li.classList.contains('open'));
-    });
-    return sub;
-  }
-
+  // The menu (written by scripts/site_nav.py) lists every page's sections.
+  // Groups open and close with their button; what the reader opened or closed
+  // is kept across pages, and an inline script after the menu puts it back
+  // before it is painted.
   if (nav) {
-    nav.querySelectorAll(':scope > ul > li').forEach(function (li) {
-      var link = li.querySelector('a');
-      if (!link) return;
-      if (link.getAttribute('aria-current') === 'page') {
-        if (!headings.length) return;
-        var list = sectionList(headings, '');
-        list.querySelectorAll('a').forEach(function (a) { links.push(a); });
-        makeGroup(li, link, true).appendChild(list);
-        return;
+    var load = function () {
+      try { return JSON.parse(localStorage.getItem('nav-open') || '{}'); } catch (e) { return {}; }
+    };
+    nav.querySelectorAll('.group').forEach(function (g) {
+      var button = g.querySelector('.nav-toggle');
+      var sync = function () {
+        button.setAttribute('aria-expanded', String(g.classList.contains('open')));
+      };
+      sync();
+      button.addEventListener('click', function () {
+        g.classList.toggle('open');
+        sync();
+        var state = load();
+        state[g.dataset.key] = g.classList.contains('open');
+        try { localStorage.setItem('nav-open', JSON.stringify(state)); } catch (e) {}
+      });
+    });
+    var current = nav.querySelector('a[aria-current="page"]');
+    var group = current && current.closest('.group');
+    if (group) {
+      links = Array.prototype.slice.call(group.querySelectorAll('.toc a'));
+      // The current page starts open; remember that, so it stays open after
+      // moving to another page until the reader closes it.
+      var state = load();
+      if (!(group.dataset.key in state)) {
+        state[group.dataset.key] = group.classList.contains('open');
+        try { localStorage.setItem('nav-open', JSON.stringify(state)); } catch (e) {}
       }
-      if (!window.fetch || !window.DOMParser) return;
-      var href = link.getAttribute('href');
-      fetch(href).then(function (r) { return r.ok ? r.text() : ''; }).then(function (html) {
-        var doc = new DOMParser().parseFromString(html, 'text/html');
-        var hs = Array.prototype.slice.call(doc.querySelectorAll('main h2[id]'));
-        if (hs.length) makeGroup(li, link, false).appendChild(sectionList(hs, href));
-      }).catch(function () {});
+    }
+    window.addEventListener('pagehide', function () {
+      try { sessionStorage.setItem('nav-scroll', String(nav.scrollTop)); } catch (e) {}
+    });
+    // Animate only changes the reader makes, not the state put back on load.
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { nav.classList.add('ready'); });
     });
   }
 

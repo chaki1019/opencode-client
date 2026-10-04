@@ -34,7 +34,7 @@ flutter build ipa \
 | `/app-ads.txt` | AdMob の app-ads.txt |
 | `/favicon.svg` , `/favicon.ico` , `/apple-touch-icon.png` | アプリアイコンと同じ図柄の favicon。`branding/app-icon/generate.mjs` で書き出します |
 
-ページは言語コードのフォルダーに分けています。左側のメニューは各ページに HTML で書いてあり、そのページの見出し（`h2` の `id`）から目次を `site/site.js` が組み立てます。ページを足したら全ページのメニューにも足します。言語を増やすときは `site/<言語コード>/` を作り、各ページの言語切替リンク、`hreflang`、`site/index.html` の `langs` に足します。
+ページは言語コードのフォルダーに分けています。左側のメニューは `python3 scripts/site_nav.py` で全ページに書き込みます。各ページの見出し（`h2` の `id`、`data-toc` があればその文言）から目次を作るので、ページや見出しを変えたらこのスクリプトを実行します。ページを足すときはスクリプトの `PAGES` にも足します。言語を増やすときは `site/<言語コード>/` を作り、各ページの言語切替リンク、`hreflang`、`site/index.html` の `langs` に足します。
 
 ### 公開前に直すところ
 
