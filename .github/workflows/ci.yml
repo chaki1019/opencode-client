@@ -1,5 +1,6 @@
-# Checks every pull request and push to main on Linux runners, which count
-# 1x against the private repo's free Actions minutes (macOS counts 10x).
+# Checks every pull request on Linux runners, which count 1x against the
+# private repo's free Actions minutes (macOS counts 10x). Merges to main are
+# not re-checked, and pull requests that only touch the site or docs skip it.
 # The build settings files (push.env.json, ads.env.json, app.env.json,
 # ios/Flutter/Ads.xcconfig) are not needed: without them the app builds with
 # push off and Google's test ad IDs.
@@ -7,8 +8,10 @@ name: CI
 
 on:
   pull_request:
-  push:
-    branches: [main]
+    paths-ignore:
+      - "site/**"
+      - "docs/**"
+      - "**/*.md"
 
 permissions:
   contents: read

@@ -1,4 +1,5 @@
 import groovy.json.JsonSlurper
+import java.util.Properties
 
 plugins {
     id("com.android.application")
@@ -18,6 +19,17 @@ val pushEnv: Map<*, *> = rootProject.file("../push.env.json").let {
 val adsEnv: Map<*, *> = rootProject.file("../ads.env.json").let {
     if (it.exists()) JsonSlurper().parse(it) as Map<*, *> else emptyMap<Any, Any>()
 }
+
+// Upload key for release builds (see docs/release.md). Codemagic sets the
+// CM_KEYSTORE_* variables; locally, android/key.properties holds the same
+// values. Without either, release builds fall back to the debug key so
+// `flutter run --release` still works.
+val keyProperties = Properties().apply {
+    rootProject.file("key.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+fun signingValue(env: String, key: String): String? =
+    System.getenv(env)?.takeIf { it.isNotEmpty() } ?: keyProperties.getProperty(key)
+val uploadStoreFile = signingValue("CM_KEYSTORE_PATH", "storeFile")
 
 android {
     namespace = "app.opencodemobile"
@@ -72,11 +84,20 @@ android {
         resValue("bool", "com.crashlytics.RequireBuildId", "false")
     }
 
+    signingConfigs {
+        if (uploadStoreFile != null) {
+            create("upload") {
+                storeFile = file(uploadStoreFile)
+                storePassword = signingValue("CM_KEYSTORE_PASSWORD", "storePassword")
+                keyAlias = signingValue("CM_KEY_ALIAS", "keyAlias")
+                keyPassword = signingValue("CM_KEY_PASSWORD", "keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(if (uploadStoreFile != null) "upload" else "debug")
         }
     }
 }
