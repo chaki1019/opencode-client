@@ -359,6 +359,7 @@ const locales = {
 const targets = [
   // [store, screenshot folder, kind, W, H, device, order]
   ['app-store', 'iphone-6.9', 'ios', 1290, 2796, 'phone', phoneOrder],
+  ['app-store', 'iphone-6.5', 'ios', 1284, 2778, 'phone', phoneOrder],
   ['app-store', 'ipad-13', 'ios', 2064, 2752, 'tablet', tabletOrder],
   ['google-play', 'phone', 'android', 1080, 1920, 'phone', phoneOrder],
   ['google-play', 'tablet-7', 'android', 1200, 1920, 'tablet7', phoneOrder],
