@@ -61,78 +61,53 @@ Future<List<ModelRef?>> _open(
 }
 
 void main() {
-  testWidgets('drills down from provider to model', (tester) async {
+  testWidgets('lists every model under its provider heading', (tester) async {
     final results = await _open(tester, [..._anthropic, ..._openai]);
 
     expect(find.text('Anthropic'), findsOneWidget);
     expect(find.text('OpenAI'), findsOneWidget);
-    expect(find.text('2 models'), findsOneWidget);
-    expect(find.text('Sonnet'), findsNothing);
-
-    await tester.tap(find.text('Anthropic'));
-    await tester.pumpAndSettle();
     expect(find.text('Sonnet'), findsOneWidget);
-    expect(find.text('GPT'), findsNothing);
+    expect(find.text('Opus'), findsOneWidget);
+    expect(find.text('GPT'), findsOneWidget);
+    expect(find.byType(BackButton), findsNothing);
+    // Headings come before their own models.
+    expect(
+      tester.getTopLeft(find.text('Anthropic')).dy,
+      lessThan(tester.getTopLeft(find.text('Sonnet')).dy),
+    );
+    expect(
+      tester.getTopLeft(find.text('Opus')).dy,
+      lessThan(tester.getTopLeft(find.text('OpenAI')).dy),
+    );
 
-    await tester.tap(find.byType(BackButton));
-    await tester.pumpAndSettle();
-    expect(find.text('OpenAI'), findsOneWidget);
-
-    await tester.tap(find.text('OpenAI'));
-    await tester.pumpAndSettle();
     await tester.tap(find.text('GPT'));
     await tester.pumpAndSettle();
     expect(results, [const ModelRef(providerID: 'openai', id: 'gpt')]);
   });
 
-  testWidgets('slides between the steps', (tester) async {
+  testWidgets('the filter drops providers without a match', (tester) async {
     await _open(tester, [..._anthropic, ..._openai]);
-    await tester.tap(find.text('Anthropic'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
-    // Mid-slide both steps are on screen.
-    expect(find.text('OpenAI'), findsOneWidget);
-    expect(find.text('Sonnet'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), 'opu');
     await tester.pumpAndSettle();
+    expect(find.text('Anthropic'), findsOneWidget);
+    expect(find.text('Opus'), findsOneWidget);
+    expect(find.text('Sonnet'), findsNothing);
     expect(find.text('OpenAI'), findsNothing);
-
-    await tester.tap(find.byType(BackButton));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
-    expect(find.text('OpenAI'), findsOneWidget);
-    expect(find.text('Sonnet'), findsOneWidget);
-    await tester.pumpAndSettle();
-    expect(find.text('Sonnet'), findsNothing);
+    expect(find.text('GPT'), findsNothing);
   });
 
-  testWidgets('system back returns to the provider list', (tester) async {
+  testWidgets('the filter matches provider names', (tester) async {
     await _open(tester, [..._anthropic, ..._openai]);
-    await tester.tap(find.text('Anthropic'));
+    await tester.enterText(find.byType(TextField), 'openai');
     await tester.pumpAndSettle();
-
-    final nav = tester.state<NavigatorState>(find.byType(Navigator).last);
-    await nav.maybePop();
-    await tester.pumpAndSettle();
-    expect(find.text('OpenAI'), findsOneWidget);
+    expect(find.text('GPT'), findsOneWidget);
     expect(find.text('Sonnet'), findsNothing);
   });
 
-  testWidgets('a single provider shows its models directly', (tester) async {
-    await _open(tester, _anthropic);
-    expect(find.text('Sonnet'), findsOneWidget);
-    expect(find.text('Opus'), findsOneWidget);
-    expect(find.byType(BackButton), findsNothing);
-  });
-
-  testWidgets('only the model step has a search field', (tester) async {
+  testWidgets('says so when nothing matches', (tester) async {
     await _open(tester, [..._anthropic, ..._openai]);
-    expect(find.byType(TextField), findsNothing);
-
-    await tester.tap(find.text('Anthropic'));
+    await tester.enterText(find.byType(TextField), 'zzz');
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField), 'op');
-    await tester.pumpAndSettle();
-    expect(find.text('Opus'), findsOneWidget);
-    expect(find.text('Sonnet'), findsNothing);
+    expect(find.text('No matching models'), findsOneWidget);
   });
 }

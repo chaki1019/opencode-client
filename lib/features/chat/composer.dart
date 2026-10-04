@@ -16,6 +16,28 @@ import '../settings/haptics.dart';
 import 'agent_labels.dart';
 import 'composer_providers.dart';
 import 'model_picker.dart';
+import 'revert_providers.dart';
+import '../voice/conversation.dart';
+
+/// Checks the daily quota (offering a rewarded ad when it is used up) and
+/// makes a staged rewind permanent, as sending does in the OpenCode TUI.
+/// False when the message should not be sent.
+Future<bool> readyToSend(
+  BuildContext context,
+  WidgetRef ref,
+  Session session,
+) async {
+  if (!await admitMessage(context, ref) || !context.mounted) return false;
+  final messenger = ScaffoldMessenger.of(context);
+  final l10n = context.l10n;
+  try {
+    await ref.read(revertProvider(session).notifier).commit();
+  } catch (e) {
+    messenger.showSnackBar(SnackBar(content: Text(l10n.rewindFailed(e))));
+    return false;
+  }
+  return true;
+}
 
 /// Input row at the bottom of the chat, with the agent and model in use.
 /// While the session is running, the send button becomes a stop button.
@@ -49,7 +71,7 @@ class _ComposerState extends ConsumerState<Composer> {
     final text = _controller.text.trim();
     final files = _files;
     if (text.isEmpty && files.isEmpty) return;
-    if (!await admitMessage(context, ref) || !mounted) return;
+    if (!await readyToSend(context, ref, widget.session) || !mounted) return;
     _controller.clear();
     setState(() => _files = const []);
     final haptics = ref.read(hapticsProvider);
@@ -133,6 +155,14 @@ class _ComposerState extends ConsumerState<Composer> {
     final busy = ref.watch(
       activeSessionsProvider.select((ids) => ids.contains(widget.session.id)),
     );
+    ref.listen(composerDraftProvider(widget.session.id), (_, draft) {
+      if (draft == null) return;
+      if (_controller.text.trim().isEmpty) {
+        _controller.text = draft;
+        _controller.selection = TextSelection.collapsed(offset: draft.length);
+      }
+      ref.read(composerDraftProvider(widget.session.id).notifier).take();
+    });
     final canSend = _controller.text.trim().isNotEmpty || _files.isNotEmpty;
     final scheme = Theme.of(context).colorScheme;
 
@@ -191,6 +221,19 @@ class _ComposerState extends ConsumerState<Composer> {
                         style: _buttonStyle,
                         onPressed: _stopping ? null : _stop,
                         icon: const Icon(Icons.stop_rounded),
+                      )
+                    else if (!canSend && !busy)
+                      IconButton.filledTonal(
+                        key: const Key('conversation'),
+                        tooltip: context.l10n.conversationMode,
+                        style: _buttonStyle,
+                        onPressed: () => ref
+                            .read(
+                              conversationActiveProvider(widget.session.id)
+                                  .notifier,
+                            )
+                            .start(),
+                        icon: const Icon(Icons.graphic_eq_rounded),
                       )
                     else
                       IconButton.filled(

@@ -15,11 +15,17 @@ class SupportConfig {
   /// `/en/privacy/`).
   final String siteUrl;
 
-  Uri? privacyPolicy(String languageCode) {
+  Uri? privacyPolicy(String languageCode) => _page(languageCode, 'privacy/');
+
+  /// The guide to the ways of reaching a server (`/ja/connect/`,
+  /// `/en/connect/`).
+  Uri? connectGuide(String languageCode) => _page(languageCode, 'connect/');
+
+  Uri? _page(String languageCode, String path) {
     if (siteUrl.isEmpty) return null;
     final base = siteUrl.endsWith('/') ? siteUrl : '$siteUrl/';
     return Uri.parse(base)
-        .resolve(languageCode == 'ja' ? 'ja/privacy/' : 'en/privacy/');
+        .resolve('${languageCode == 'ja' ? 'ja' : 'en'}/$path');
   }
 
   /// A new mail to support with [subject] and [body] filled in.

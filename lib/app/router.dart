@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../core/models/project.dart';
 import '../core/models/session.dart';
+import '../features/diagnostics/diagnostics_screen.dart';
 import '../features/chat/chat_screen.dart';
 import '../features/connection/connection_providers.dart';
 import '../features/connection/connection_screen.dart';
@@ -72,6 +73,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/settings',
         pageBuilder: (context, state) => _page(state, const SettingsScreen()),
+      ),
+      GoRoute(
+        path: '/diagnostics',
+        pageBuilder: (context, state) =>
+            _page(state, const DiagnosticsScreen()),
       ),
       GoRoute(
         path: '/push',

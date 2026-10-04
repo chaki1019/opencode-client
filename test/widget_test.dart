@@ -15,6 +15,7 @@ import 'package:opencode_mobile/features/chat/composer_providers.dart';
 import 'package:opencode_mobile/features/connection/connection_providers.dart';
 import 'package:opencode_mobile/features/live/live_providers.dart';
 import 'package:opencode_mobile/features/projects/projects_screen.dart';
+import 'package:opencode_mobile/features/voice/speech.dart';
 import 'package:opencode_mobile/main.dart';
 
 import 'support/fake_adapter.dart';
@@ -223,6 +224,20 @@ void main() {
               })
             : const FakeRoute(204, '');
       },
+      '/api/session/s1/revert/stage': (RequestOptions request) {
+        replies.add(request);
+        return FakeRoute.json({
+          'data': {'messageID': 'u1'},
+        });
+      },
+      '/api/session/s1/revert/clear': (RequestOptions request) {
+        replies.add(request);
+        return const FakeRoute(204, '');
+      },
+      '/api/session/s1/revert/commit': (RequestOptions request) {
+        replies.add(request);
+        return const FakeRoute(204, '');
+      },
       '/api/session/s1/prompt': (RequestOptions request) {
         final body = jsonDecode(request.data as String) as Map<String, dynamic>;
         promptIds.add(body['id'] as String);
@@ -260,6 +275,8 @@ void main() {
       }),
     });
     final store = ServerStore();
+    final speechIn = _FakeSpeechInput();
+    final speechOut = _FakeSpeechOutput();
     final events = StreamController<List<int>>();
     void send(String type, Map<String, Object?> data) => events.add(
       utf8.encode(
@@ -275,6 +292,8 @@ void main() {
         overrides: [
           ...noDiscoveryOverrides,
           serverStoreProvider.overrideWithValue(store),
+          speechInputProvider.overrideWithValue(speechIn),
+          speechOutputProvider.overrideWithValue(speechOut),
           pickImagesProvider.overrideWithValue(
             ({bool camera = false}) async => [
               PromptFile(
@@ -512,6 +531,78 @@ void main() {
     ]);
     expect(find.byKey(const Key('attachment-0')), findsNothing);
 
+    // Rewinding hides the message and what follows, and puts its text back
+    // in the input. Undo brings everything back.
+    await tester.longPress(find.text('Please fix login'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('rewind-here')));
+    await tester.pumpAndSettle();
+    expect(jsonDecode(replies.last.data as String), {
+      'messageID': 'u1',
+      'files': true,
+    });
+    expect(find.byKey(const Key('rewind-banner')), findsOneWidget);
+    expect(find.textContaining('The bug is', findRichText: true), findsNothing);
+    expect(
+      tester
+          .widget<TextField>(find.byKey(const Key('composer')))
+          .controller!
+          .text,
+      'Please fix login',
+    );
+    await tester.tap(find.byKey(const Key('rewind-undo')));
+    await tester.pumpAndSettle();
+    expect(replies.last.path, '/api/session/s1/revert/clear');
+    expect(find.byKey(const Key('rewind-banner')), findsNothing);
+    expect(
+      find.textContaining('The bug is', findRichText: true),
+      findsOneWidget,
+    );
+
+    // Sending while rewound makes the rewind final first.
+    await tester.enterText(find.byKey(const Key('composer')), '');
+    await tester.pump();
+    await tester.longPress(find.text('Please fix login'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('rewind-here')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('send')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(replies.last.path, '/api/session/s1/revert/commit');
+    expect(promptBodies.last['text'], 'Please fix login');
+    expect(find.byKey(const Key('rewind-banner')), findsNothing);
+    await tester.pumpAndSettle();
+
+    // Conversation mode: what is heard is sent, and once the session goes
+    // idle again the reply is read aloud before listening again.
+    speechIn.heard.addAll(['Run the tests', null]);
+    await tester.tap(find.byKey(const Key('conversation')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.byKey(const Key('conversation-panel')), findsOneWidget);
+    expect(promptBodies.last['text'], 'Run the tests');
+    expect(find.text('OpenCode が作業しています…'), findsOneWidget);
+    send('session.execution.started', {});
+    send('session.step.started', {'assistantMessageID': 'a9'});
+    send('session.text.started', {'assistantMessageID': 'a9', 'ordinal': 0});
+    send('session.text.delta', {
+      'assistantMessageID': 'a9',
+      'ordinal': 0,
+      'delta': 'All **green**. ```\nflutter test\n```',
+    });
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(speechOut.spoken, isEmpty);
+    send('session.execution.succeeded', {});
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(speechOut.spoken, ['All green.\n（コードは省略します）']);
+    expect(find.text('マイクをタップして話してください'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('conversation-close')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('conversation-panel')), findsNothing);
+    expect(find.byKey(const Key('composer')), findsOneWidget);
+
     // Back on the list, swiping a session right renames it.
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
@@ -552,4 +643,32 @@ void main() {
     await tester.pumpWidget(const SizedBox());
     await tester.pump();
   });
+}
+
+class _FakeSpeechInput implements SpeechInput {
+  /// What each listen returns, in order; null means nothing was heard.
+  final heard = <String?>[];
+
+  @override
+  Future<bool> available() async => true;
+
+  @override
+  Future<String?> listen({
+    required String localeTag,
+    void Function(String words)? onPartial,
+  }) async => heard.isEmpty ? null : heard.removeAt(0);
+
+  @override
+  Future<void> stop() async {}
+}
+
+class _FakeSpeechOutput implements SpeechOutput {
+  final spoken = <String>[];
+
+  @override
+  Future<void> speak(String text, {required String localeTag}) async =>
+      spoken.add(text);
+
+  @override
+  Future<void> stop() async {}
 }

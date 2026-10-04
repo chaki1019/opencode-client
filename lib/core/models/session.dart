@@ -71,6 +71,16 @@ abstract class TokenCache with _$TokenCache {
       _$TokenCacheFromJson(json);
 }
 
+/// A rewind the session has staged but not yet committed: [messageID] and
+/// everything after it are set aside.
+@freezed
+abstract class SessionRevert with _$SessionRevert {
+  const factory SessionRevert({required String messageID}) = _SessionRevert;
+
+  factory SessionRevert.fromJson(Map<String, dynamic> json) =>
+      _$SessionRevertFromJson(json);
+}
+
 /// A v2 session (`/api/session`). Times are epoch milliseconds.
 @freezed
 abstract class Session with _$Session {
@@ -91,6 +101,9 @@ abstract class Session with _$Session {
 
     /// Tokens used across the session.
     TokenUsage? tokens,
+
+    /// A staged rewind, if any.
+    SessionRevert? revert,
   }) = _Session;
 
   factory Session.fromJson(Map<String, dynamic> json) =>

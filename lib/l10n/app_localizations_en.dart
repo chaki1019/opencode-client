@@ -294,6 +294,24 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get rewindHere => 'Rewind to here';
+
+  @override
+  String get rewindHereHelp =>
+      'Undo this message, everything after it, and their file changes';
+
+  @override
+  String get rewoundNotice => 'Rewound. Sending a new message makes it final.';
+
+  @override
+  String get rewindUndo => 'Undo';
+
+  @override
+  String rewindFailed(Object error) {
+    return 'Could not rewind: $error';
+  }
+
+  @override
   String get forkFromHere => 'Fork from before this message';
 
   @override
@@ -351,15 +369,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String modelCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count models',
-      one: '1 model',
-    );
-    return '$_temp0';
-  }
+  String get noMatchingModels => 'No matching models';
 
   @override
   String get searchModels => 'Search models';
@@ -990,4 +1000,120 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pushComputerAdopted => 'Switched to the computer\'s key';
+
+  @override
+  String get diagnosticsTitle => 'Connection check';
+
+  @override
+  String get diagnosticsServer => 'Server';
+
+  @override
+  String get diagnosticsAddress => 'Address';
+
+  @override
+  String get diagnosticsHealth => 'OpenCode';
+
+  @override
+  String diagnosticsHealthOk(String version, int ms) {
+    return 'OpenCode $version · responded in $ms ms';
+  }
+
+  @override
+  String diagnosticsHealthFailed(Object error) {
+    return 'Failed: $error';
+  }
+
+  @override
+  String get diagnosticsLive => 'Live updates';
+
+  @override
+  String get diagnosticsLiveUpdates => 'Event stream';
+
+  @override
+  String get diagnosticsLiveConnected => 'Connected';
+
+  @override
+  String get diagnosticsLiveStopped => 'Stopped';
+
+  @override
+  String get diagnosticsPush => 'Notifications';
+
+  @override
+  String get diagnosticsPlugin => 'Push plugin on the computer';
+
+  @override
+  String get diagnosticsMcpNone => 'No MCP servers';
+
+  @override
+  String get diagnosticsApp => 'This app';
+
+  @override
+  String get diagnosticsAppVersion => 'Version';
+
+  @override
+  String get diagnosticsOs => 'OS';
+
+  @override
+  String get diagnosticsChecking => 'Checking…';
+
+  @override
+  String get diagnosticsRecheck => 'Check again';
+
+  @override
+  String get diagnosticsCopy => 'Copy the results';
+
+  @override
+  String get connectGuide => 'How to connect from home or away';
+
+  @override
+  String get conversationMode => 'Conversation mode';
+
+  @override
+  String get conversationPreparing => 'Getting ready…';
+
+  @override
+  String get conversationListening => 'Listening…';
+
+  @override
+  String get conversationSending => 'Sending';
+
+  @override
+  String get conversationWaiting => 'OpenCode is working…';
+
+  @override
+  String get conversationNeedsInput => 'Waiting for your answer on screen';
+
+  @override
+  String get conversationSpeaking => 'Reading the reply';
+
+  @override
+  String get conversationIdle => 'Tap the mic to speak';
+
+  @override
+  String get conversationUnavailable =>
+      'Speech recognition is unavailable. Allow the microphone and speech recognition for this app in Settings.';
+
+  @override
+  String get conversationListen => 'Speak';
+
+  @override
+  String get conversationDoneSpeaking => 'Done speaking';
+
+  @override
+  String get conversationEnd => 'End conversation mode';
+
+  @override
+  String get readAloud => 'Read aloud';
+
+  @override
+  String get readingAloud => 'Reading aloud…';
+
+  @override
+  String get stopReading => 'Stop';
+
+  @override
+  String get speechCodeSkipped => '(code omitted)';
+
+  @override
+  String get speechTruncated => 'The rest is omitted.';
 }

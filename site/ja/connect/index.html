@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>つなぎ方 | OpenCode Mobile</title>
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="/style.css">
+<script src="/site.js" defer></script>
+</head>
+<body class="doc">
+<div class="layout">
+<aside class="side">
+  <div class="side-bar">
+    <a class="brand" href="/ja/"><img src="/favicon.svg" alt="" width="28" height="28">OpenCode Mobile</a>
+    <button class="menu-toggle" type="button" aria-controls="side-nav" aria-expanded="false">メニュー</button>
+  </div>
+  <nav class="side-nav" id="side-nav" aria-label="サイトの目次">
+    <ul>
+      <li><a href="/ja/">トップ</a></li>
+      <li><a href="/ja/connect/" aria-current="page">つなぎ方</a></li>
+      <li><a href="/ja/support/">サポート</a></li>
+      <li><a href="/ja/privacy/">プライバシーポリシー</a></li>
+    </ul>
+    <div class="side-lang">
+      <p class="side-label">言語 / Language</p>
+      <a href="/en/connect/" hreflang="en"><svg class="flag" viewBox="0 0 38 20" aria-hidden="true"><rect width="38" height="20" fill="#fff"/><rect y="0.00" width="38" height="1.54" fill="#b22234"/><rect y="3.08" width="38" height="1.54" fill="#b22234"/><rect y="6.15" width="38" height="1.54" fill="#b22234"/><rect y="9.23" width="38" height="1.54" fill="#b22234"/><rect y="12.31" width="38" height="1.54" fill="#b22234"/><rect y="15.38" width="38" height="1.54" fill="#b22234"/><rect y="18.46" width="38" height="1.54" fill="#b22234"/><rect width="15.2" height="10.77" fill="#3c3b6e"/></svg>英語</a>
+    </div>
+  </nav>
+</aside>
+<main>
+<header>
+  <h1>つなぎ方</h1>
+  <p>PC や Mac で動かしている OpenCode に、スマートフォンからつなぐ方法をまとめています。家の中だけで使うなら「同じ Wi-Fi」、外出先からも使うなら「Tailscale」がおすすめです。</p>
+</header>
+
+<h2 id="server">まず、サーバーを起動する</h2>
+<p>どの方法でも、PC/Mac ではパスワードを付けて OpenCode を起動します。</p>
+<pre><code>export OPENCODE_SERVER_PASSWORD=好きなパスワード
+opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
+<p>Windows の PowerShell では <code class="copy">$env:OPENCODE_SERVER_PASSWORD="好きなパスワード"</code> で設定してから起動します。アプリの接続画面には、ここで決めたパスワードを入力します（ユーザー名は <code>opencode</code> のままで構いません）。</p>
+<p>パスワードなしで起動すると、同じネットワークにいる誰でもあなたの PC を操作できてしまいます。必ず設定してください。</p>
+
+<h2 id="wifi">同じ Wi-Fi でつなぐ</h2>
+<p>スマートフォンと PC が同じ Wi-Fi にあるときの、いちばん簡単な方法です。</p>
+<ol>
+  <li>上の手順でサーバーを起動します。</li>
+  <li>アプリの接続画面を開くと、同じネットワークのサーバーが自動で一覧に出ます。タップしてパスワードを入力します。</li>
+  <li>出てこないときは、PC の IP アドレスを調べて <code>http://192.168.1.10:4096</code> の形で入力します。<br>
+    Mac: <code class="copy">ipconfig getifaddr en0</code>　Windows: <code class="copy">ipconfig</code>　Linux: <code class="copy">hostname -I</code></li>
+</ol>
+<p>つながらないときは、PC のファイアウォールでポート 4096 への接続が許可されているかを確認してください。外出先からはこの方法ではつながりません。</p>
+
+<h2 id="tailscale">Tailscale でつなぐ（外出先からも使える）</h2>
+<p><a href="https://tailscale.com/">Tailscale</a> は、自分の端末どうしを安全な専用ネットワークでつなぐサービスです。個人利用は無料で、ポートをインターネットに開ける必要がありません。</p>
+<ol>
+  <li>PC/Mac とスマートフォンの両方に Tailscale を入れ、同じアカウントでログインします。</li>
+  <li>上の手順でサーバーを起動します。</li>
+  <li>PC で <code class="copy">tailscale ip -4</code> を実行し、表示された <code>100.</code> で始まるアドレスを確かめます。</li>
+  <li>アプリで <code>http://100.x.y.z:4096</code> の形で入力して接続します。MagicDNS が有効なら <code>http://PCの名前:4096</code> でもつながります。</li>
+</ol>
+<p>スマートフォンの Tailscale アプリがオンになっている間は、モバイル回線でもつながります。</p>
+<p><strong>HTTPS で使いたい場合</strong>は、OpenCode を <code>--hostname 127.0.0.1</code> で起動し、PC で <code class="copy">tailscale serve --bg 4096</code> を実行すると、<code>https://PCの名前.tailnet名.ts.net</code> でつながります。</p>
+
+<h2 id="cloudflare">Cloudflare Tunnel でつなぐ</h2>
+<p>Tailscale を入れられない環境向けです。PC から Cloudflare に向けてトンネルを張り、インターネット上の HTTPS のアドレスで公開します。</p>
+<ol>
+  <li>PC に <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/">cloudflared</a> を入れます。</li>
+  <li>上の手順でサーバーを起動します（<code>--hostname 127.0.0.1</code> でも構いません）。</li>
+  <li>別のターミナルで次を実行します。<pre><code>cloudflared tunnel --url http://localhost:4096</code></pre></li>
+  <li>表示された <code>https://〜.trycloudflare.com</code> のアドレスをアプリに入力して接続します。</li>
+</ol>
+<p>この方法では、アドレスを知っている人なら誰でもサーバーに届きます。<strong>パスワードは長く推測されにくいもの</strong>にしてください。アドレスは起動するたびに変わります。固定のアドレスで使い続けたい場合は、Cloudflare のアカウントで名前付きトンネルを作成してください。</p>
+
+<h2 id="ssh">SSH のポート転送でつなぐ</h2>
+<p>すでに PC へ SSH で入れる環境がある人向けです。スマートフォンの SSH アプリ（Termius など）でポート転送を設定します。</p>
+<ol>
+  <li>PC では OpenCode を <code>--hostname 127.0.0.1</code> で起動します。</li>
+  <li>SSH アプリでローカルポート転送を作ります。スマートフォン側のポート <code>4096</code> を、PC 側の <code>127.0.0.1:4096</code> に転送します。</li>
+  <li>転送を開始したまま、アプリで <code>http://127.0.0.1:4096</code> に接続します。</li>
+</ol>
+<p>SSH アプリがバックグラウンドに回ると転送が止まることがあります（特に iPhone）。普段使いには Tailscale のほうが安定します。</p>
+
+<h2 id="trouble">うまくいかないとき</h2>
+<p>アプリのメニューにある「接続の診断」で、サーバーの応答、リアルタイム更新、通知プラグイン、MCP の状態をまとめて確認できます。結果はコピーして<a href="/ja/support/">お問い合わせ</a>に貼り付けられます。</p>
+
+<footer>OpenCode Mobile は OpenCode の公式アプリではありません。</footer>
+</main>
+</div>
+</body>
+</html>

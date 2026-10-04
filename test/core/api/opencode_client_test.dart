@@ -434,6 +434,42 @@ void main() {
     });
   });
 
+  group('revert', () {
+    test('stage, clear and commit post to the session', () async {
+      final adapter = FakeAdapter({
+        '/api/session/s1/revert/stage': FakeRoute.json({
+          'data': {'messageID': 'msg_1', 'files': []},
+        }),
+        '/api/session/s1/revert/clear': const FakeRoute(204, ''),
+        '/api/session/s1/revert/commit': const FakeRoute(204, ''),
+      });
+      final client = clientFor(adapter);
+      expect(await client.stageRevert('s1', 'msg_1'), 'msg_1');
+      await client.clearRevert('s1');
+      await client.commitRevert('s1');
+      expect(jsonDecode(adapter.requests.first.data as String), {
+        'messageID': 'msg_1',
+        'files': true,
+      });
+      expect(adapter.requests.map((r) => r.path), [
+        '/api/session/s1/revert/stage',
+        '/api/session/s1/revert/clear',
+        '/api/session/s1/revert/commit',
+      ]);
+    });
+
+    test('the session record carries a staged rewind', () {
+      final session = Session.fromJson({
+        'id': 's1',
+        'projectID': 'p',
+        'location': {'directory': '/srv'},
+        'time': {'created': 1, 'updated': 2},
+        'revert': {'messageID': 'msg_1', 'snapshot': 'x'},
+      });
+      expect(session.revert?.messageID, 'msg_1');
+    });
+  });
+
   group('catalog', () {
     test('listModels keeps enabled models of available providers', () async {
       final adapter = FakeAdapter({

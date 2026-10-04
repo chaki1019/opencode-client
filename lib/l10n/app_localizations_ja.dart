@@ -288,6 +288,23 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get rewindHere => 'ここまで戻す';
+
+  @override
+  String get rewindHereHelp => 'このメッセージ以降の会話と、そのファイルの変更を取り消します';
+
+  @override
+  String get rewoundNotice => '巻き戻しました。新しく送信すると確定します。';
+
+  @override
+  String get rewindUndo => '元に戻す';
+
+  @override
+  String rewindFailed(Object error) {
+    return '巻き戻せませんでした: $error';
+  }
+
+  @override
   String get forkFromHere => 'このメッセージの前からフォーク';
 
   @override
@@ -344,14 +361,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String modelCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'モデル $count 個',
-    );
-    return '$_temp0';
-  }
+  String get noMatchingModels => '該当するモデルはありません';
 
   @override
   String get searchModels => 'モデルを検索';
@@ -970,4 +980,120 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pushComputerAdopted => 'PC と同じキーに切り替えました';
+
+  @override
+  String get diagnosticsTitle => '接続の診断';
+
+  @override
+  String get diagnosticsServer => 'サーバー';
+
+  @override
+  String get diagnosticsAddress => 'アドレス';
+
+  @override
+  String get diagnosticsHealth => 'OpenCode';
+
+  @override
+  String diagnosticsHealthOk(String version, int ms) {
+    return 'OpenCode $version・$ms ミリ秒で応答';
+  }
+
+  @override
+  String diagnosticsHealthFailed(Object error) {
+    return '失敗しました: $error';
+  }
+
+  @override
+  String get diagnosticsLive => 'リアルタイム更新';
+
+  @override
+  String get diagnosticsLiveUpdates => 'イベントの受信';
+
+  @override
+  String get diagnosticsLiveConnected => 'つながっています';
+
+  @override
+  String get diagnosticsLiveStopped => '止まっています';
+
+  @override
+  String get diagnosticsPush => '通知';
+
+  @override
+  String get diagnosticsPlugin => 'PC/Mac のプッシュ通知プラグイン';
+
+  @override
+  String get diagnosticsMcpNone => 'MCP サーバーはありません';
+
+  @override
+  String get diagnosticsApp => 'このアプリ';
+
+  @override
+  String get diagnosticsAppVersion => 'バージョン';
+
+  @override
+  String get diagnosticsOs => 'OS';
+
+  @override
+  String get diagnosticsChecking => '確認しています…';
+
+  @override
+  String get diagnosticsRecheck => 'もう一度確認';
+
+  @override
+  String get diagnosticsCopy => '結果をコピー';
+
+  @override
+  String get connectGuide => '外出先からのつなぎ方など';
+
+  @override
+  String get conversationMode => '会話モード';
+
+  @override
+  String get conversationPreparing => '準備しています…';
+
+  @override
+  String get conversationListening => '聞いています…';
+
+  @override
+  String get conversationSending => '送信しています';
+
+  @override
+  String get conversationWaiting => 'OpenCode が作業しています…';
+
+  @override
+  String get conversationNeedsInput => '画面での回答を待っています';
+
+  @override
+  String get conversationSpeaking => '返答を読み上げています';
+
+  @override
+  String get conversationIdle => 'マイクをタップして話してください';
+
+  @override
+  String get conversationUnavailable =>
+      '音声認識を使えません。端末の設定で、このアプリのマイクと音声認識を許可してください。';
+
+  @override
+  String get conversationListen => '話す';
+
+  @override
+  String get conversationDoneSpeaking => '話し終えた';
+
+  @override
+  String get conversationEnd => '会話モードを終える';
+
+  @override
+  String get readAloud => '読み上げる';
+
+  @override
+  String get readingAloud => '読み上げています…';
+
+  @override
+  String get stopReading => '停止';
+
+  @override
+  String get speechCodeSkipped => '（コードは省略します）';
+
+  @override
+  String get speechTruncated => '以下は省略します。';
 }

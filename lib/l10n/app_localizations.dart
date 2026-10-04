@@ -566,6 +566,36 @@ abstract class AppLocalizations {
   /// **'Couldn\'t load messages: {error}'**
   String messagesLoadFailed(Object error);
 
+  /// No description provided for @rewindHere.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewind to here'**
+  String get rewindHere;
+
+  /// No description provided for @rewindHereHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo this message, everything after it, and their file changes'**
+  String get rewindHereHelp;
+
+  /// No description provided for @rewoundNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Rewound. Sending a new message makes it final.'**
+  String get rewoundNotice;
+
+  /// No description provided for @rewindUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get rewindUndo;
+
+  /// No description provided for @rewindFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not rewind: {error}'**
+  String rewindFailed(Object error);
+
   /// No description provided for @forkFromHere.
   ///
   /// In en, this message translates to:
@@ -662,11 +692,11 @@ abstract class AppLocalizations {
   /// **'Couldn\'t load agents: {error}'**
   String agentsLoadFailed(Object error);
 
-  /// No description provided for @modelCount.
+  /// No description provided for @noMatchingModels.
   ///
   /// In en, this message translates to:
-  /// **'{count, plural, =1{1 model} other{{count} models}}'**
-  String modelCount(int count);
+  /// **'No matching models'**
+  String get noMatchingModels;
 
   /// No description provided for @searchModels.
   ///
@@ -1729,6 +1759,228 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Switched to the computer\'s key'**
   String get pushComputerAdopted;
+
+  /// No description provided for @diagnosticsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection check'**
+  String get diagnosticsTitle;
+
+  /// No description provided for @diagnosticsServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Server'**
+  String get diagnosticsServer;
+
+  /// No description provided for @diagnosticsAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get diagnosticsAddress;
+
+  /// No description provided for @diagnosticsHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenCode'**
+  String get diagnosticsHealth;
+
+  /// No description provided for @diagnosticsHealthOk.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenCode {version} · responded in {ms} ms'**
+  String diagnosticsHealthOk(String version, int ms);
+
+  /// No description provided for @diagnosticsHealthFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed: {error}'**
+  String diagnosticsHealthFailed(Object error);
+
+  /// No description provided for @diagnosticsLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Live updates'**
+  String get diagnosticsLive;
+
+  /// No description provided for @diagnosticsLiveUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Event stream'**
+  String get diagnosticsLiveUpdates;
+
+  /// No description provided for @diagnosticsLiveConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get diagnosticsLiveConnected;
+
+  /// No description provided for @diagnosticsLiveStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped'**
+  String get diagnosticsLiveStopped;
+
+  /// No description provided for @diagnosticsPush.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get diagnosticsPush;
+
+  /// No description provided for @diagnosticsPlugin.
+  ///
+  /// In en, this message translates to:
+  /// **'Push plugin on the computer'**
+  String get diagnosticsPlugin;
+
+  /// No description provided for @diagnosticsMcpNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No MCP servers'**
+  String get diagnosticsMcpNone;
+
+  /// No description provided for @diagnosticsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'This app'**
+  String get diagnosticsApp;
+
+  /// No description provided for @diagnosticsAppVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get diagnosticsAppVersion;
+
+  /// No description provided for @diagnosticsOs.
+  ///
+  /// In en, this message translates to:
+  /// **'OS'**
+  String get diagnosticsOs;
+
+  /// No description provided for @diagnosticsChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking…'**
+  String get diagnosticsChecking;
+
+  /// No description provided for @diagnosticsRecheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get diagnosticsRecheck;
+
+  /// No description provided for @diagnosticsCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy the results'**
+  String get diagnosticsCopy;
+
+  /// No description provided for @connectGuide.
+  ///
+  /// In en, this message translates to:
+  /// **'How to connect from home or away'**
+  String get connectGuide;
+
+  /// No description provided for @conversationMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Conversation mode'**
+  String get conversationMode;
+
+  /// No description provided for @conversationPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Getting ready…'**
+  String get conversationPreparing;
+
+  /// No description provided for @conversationListening.
+  ///
+  /// In en, this message translates to:
+  /// **'Listening…'**
+  String get conversationListening;
+
+  /// No description provided for @conversationSending.
+  ///
+  /// In en, this message translates to:
+  /// **'Sending'**
+  String get conversationSending;
+
+  /// No description provided for @conversationWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenCode is working…'**
+  String get conversationWaiting;
+
+  /// No description provided for @conversationNeedsInput.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for your answer on screen'**
+  String get conversationNeedsInput;
+
+  /// No description provided for @conversationSpeaking.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading the reply'**
+  String get conversationSpeaking;
+
+  /// No description provided for @conversationIdle.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the mic to speak'**
+  String get conversationIdle;
+
+  /// No description provided for @conversationUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Speech recognition is unavailable. Allow the microphone and speech recognition for this app in Settings.'**
+  String get conversationUnavailable;
+
+  /// No description provided for @conversationListen.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak'**
+  String get conversationListen;
+
+  /// No description provided for @conversationDoneSpeaking.
+  ///
+  /// In en, this message translates to:
+  /// **'Done speaking'**
+  String get conversationDoneSpeaking;
+
+  /// No description provided for @conversationEnd.
+  ///
+  /// In en, this message translates to:
+  /// **'End conversation mode'**
+  String get conversationEnd;
+
+  /// No description provided for @readAloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Read aloud'**
+  String get readAloud;
+
+  /// No description provided for @readingAloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Reading aloud…'**
+  String get readingAloud;
+
+  /// No description provided for @stopReading.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get stopReading;
+
+  /// No description provided for @speechCodeSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'(code omitted)'**
+  String get speechCodeSkipped;
+
+  /// No description provided for @speechTruncated.
+  ///
+  /// In en, this message translates to:
+  /// **'The rest is omitted.'**
+  String get speechTruncated;
 }
 
 class _AppLocalizationsDelegate
