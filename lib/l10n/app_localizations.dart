@@ -1759,6 +1759,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Switched to the computer\'s key'**
   String get pushComputerAdopted;
+
+  /// No description provided for @diagnosticsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection check'**
+  String get diagnosticsTitle;
+
+  /// No description provided for @diagnosticsServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Server'**
+  String get diagnosticsServer;
+
+  /// No description provided for @diagnosticsAddress.
+  ///
+  /// In en, this message translates to:
+  /// **'Address'**
+  String get diagnosticsAddress;
+
+  /// No description provided for @diagnosticsHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenCode'**
+  String get diagnosticsHealth;
+
+  /// No description provided for @diagnosticsHealthOk.
+  ///
+  /// In en, this message translates to:
+  /// **'OpenCode {version} · responded in {ms} ms'**
+  String diagnosticsHealthOk(String version, int ms);
+
+  /// No description provided for @diagnosticsHealthFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed: {error}'**
+  String diagnosticsHealthFailed(Object error);
+
+  /// No description provided for @diagnosticsLive.
+  ///
+  /// In en, this message translates to:
+  /// **'Live updates'**
+  String get diagnosticsLive;
+
+  /// No description provided for @diagnosticsLiveUpdates.
+  ///
+  /// In en, this message translates to:
+  /// **'Event stream'**
+  String get diagnosticsLiveUpdates;
+
+  /// No description provided for @diagnosticsLiveConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get diagnosticsLiveConnected;
+
+  /// No description provided for @diagnosticsLiveStopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped'**
+  String get diagnosticsLiveStopped;
+
+  /// No description provided for @diagnosticsPush.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get diagnosticsPush;
+
+  /// No description provided for @diagnosticsPlugin.
+  ///
+  /// In en, this message translates to:
+  /// **'Push plugin on the computer'**
+  String get diagnosticsPlugin;
+
+  /// No description provided for @diagnosticsMcpNone.
+  ///
+  /// In en, this message translates to:
+  /// **'No MCP servers'**
+  String get diagnosticsMcpNone;
+
+  /// No description provided for @diagnosticsApp.
+  ///
+  /// In en, this message translates to:
+  /// **'This app'**
+  String get diagnosticsApp;
+
+  /// No description provided for @diagnosticsAppVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version'**
+  String get diagnosticsAppVersion;
+
+  /// No description provided for @diagnosticsOs.
+  ///
+  /// In en, this message translates to:
+  /// **'OS'**
+  String get diagnosticsOs;
+
+  /// No description provided for @diagnosticsChecking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking…'**
+  String get diagnosticsChecking;
+
+  /// No description provided for @diagnosticsRecheck.
+  ///
+  /// In en, this message translates to:
+  /// **'Check again'**
+  String get diagnosticsRecheck;
+
+  /// No description provided for @diagnosticsCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy the results'**
+  String get diagnosticsCopy;
 }
 
 class _AppLocalizationsDelegate

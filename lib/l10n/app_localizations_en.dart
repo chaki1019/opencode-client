@@ -1000,4 +1000,65 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pushComputerAdopted => 'Switched to the computer\'s key';
+
+  @override
+  String get diagnosticsTitle => 'Connection check';
+
+  @override
+  String get diagnosticsServer => 'Server';
+
+  @override
+  String get diagnosticsAddress => 'Address';
+
+  @override
+  String get diagnosticsHealth => 'OpenCode';
+
+  @override
+  String diagnosticsHealthOk(String version, int ms) {
+    return 'OpenCode $version · responded in $ms ms';
+  }
+
+  @override
+  String diagnosticsHealthFailed(Object error) {
+    return 'Failed: $error';
+  }
+
+  @override
+  String get diagnosticsLive => 'Live updates';
+
+  @override
+  String get diagnosticsLiveUpdates => 'Event stream';
+
+  @override
+  String get diagnosticsLiveConnected => 'Connected';
+
+  @override
+  String get diagnosticsLiveStopped => 'Stopped';
+
+  @override
+  String get diagnosticsPush => 'Notifications';
+
+  @override
+  String get diagnosticsPlugin => 'Push plugin on the computer';
+
+  @override
+  String get diagnosticsMcpNone => 'No MCP servers';
+
+  @override
+  String get diagnosticsApp => 'This app';
+
+  @override
+  String get diagnosticsAppVersion => 'Version';
+
+  @override
+  String get diagnosticsOs => 'OS';
+
+  @override
+  String get diagnosticsChecking => 'Checking…';
+
+  @override
+  String get diagnosticsRecheck => 'Check again';
+
+  @override
+  String get diagnosticsCopy => 'Copy the results';
 }

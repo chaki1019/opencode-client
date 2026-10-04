@@ -107,6 +107,13 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
               title: Text(l10n.pushTitle),
               onTap: () => _open('/push'),
             ),
+            if (current != null)
+              ListTile(
+                key: const Key('diagnostics'),
+                leading: const Icon(Icons.monitor_heart_outlined),
+                title: Text(l10n.diagnosticsTitle),
+                onTap: () => _open('/diagnostics'),
+              ),
             ListTile(
               key: const Key('app-settings'),
               leading: const Icon(Icons.settings_outlined),
