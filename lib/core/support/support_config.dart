@@ -11,15 +11,15 @@ class SupportConfig {
   /// Where "Contact us" sends mail.
   final String email;
 
-  /// The public site holding the privacy policy (`/privacy/`, and
-  /// `/en/privacy/` in English).
+  /// The public site holding the privacy policy (`/ja/privacy/` and
+  /// `/en/privacy/`).
   final String siteUrl;
 
   Uri? privacyPolicy(String languageCode) {
     if (siteUrl.isEmpty) return null;
     final base = siteUrl.endsWith('/') ? siteUrl : '$siteUrl/';
     return Uri.parse(base)
-        .resolve(languageCode == 'ja' ? 'privacy/' : 'en/privacy/');
+        .resolve(languageCode == 'ja' ? 'ja/privacy/' : 'en/privacy/');
   }
 
   /// A new mail to support with [subject] and [body] filled in.
