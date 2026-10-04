@@ -13,7 +13,8 @@ app-store/
     description.txt        説明文（4000 文字まで）
     release_notes.txt      このバージョンの新機能
     screenshots/
-      iphone-6.9/          1290×2796 ×6（小さい iPhone には自動で縮小）
+      iphone-6.9/          6.9 インチ 1290×2796 ×6
+      iphone-6.5/          6.5 インチ 1284×2778 ×6（App Store Connect が 6.5 インチの枠を求める場合）
       ipad-13/             2064×2752 ×5（縦）
       ipad-13-landscape/   2752×2064 ×5（横）
 google-play/
