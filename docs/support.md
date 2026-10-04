@@ -23,7 +23,7 @@ flutter build ipa \
 
 ## 公開サイト（`site/`）
 
-ドメインは買わなくても、Cloudflare Pages の無料のサブドメイン（`<プロジェクト名>.pages.dev`）で足ります。push の中継で使っている Cloudflare アカウントをそのまま使えます。
+サイトは `https://opencodemobile.app` で公開します（Cloudflare Pages に独自ドメインを割り当て）。push の中継で使っている Cloudflare アカウントをそのまま使えます。
 
 | パス | 内容 |
 | --- | --- |
@@ -33,7 +33,7 @@ flutter build ipa \
 
 ### 公開前に直すところ
 
-1. `site/` 内の `support@example.com` を本当の宛先に置き換える（`grep -rn support@example.com site` で4ページ分見つかります）。
+1. お問い合わせ先は `support@opencodemobile.app` です。Cloudflare の Email Routing で、このアドレス宛てのメールを普段のメールボックスへ転送します（ドメインの DNS が Cloudflare にあることが前提です）。
 2. `site/app-ads.txt` の `pub-0000000000000000` を AdMob のパブリッシャー ID（AdMob の「設定」→「アカウント情報」）に置き換え、行頭の `#` を外す。
 3. プライバシーポリシーの内容が実際のアプリと合っているか読み直す。データの扱いを変えたら、ここも合わせて直す。
 
@@ -44,13 +44,13 @@ flutter build ipa \
 - **Git 連携（おすすめ）**: Cloudflare のダッシュボードで Workers & Pages → 作成 → Pages → Git に接続 → このリポジトリを選び、ビルドコマンドは空、出力ディレクトリは `site` にします。main に push するたびに自動で更新されます。
 - **手元から**: `npx wrangler pages deploy site --project-name opencode-mobile`
 
-公開した URL を `app.env.json` の `SITE_URL` に入れます。
+公開後、Pages プロジェクトの「カスタムドメイン」で `opencodemobile.app` を追加します。`app.env.json` の `SITE_URL` は `https://opencodemobile.app` にします。
 
 ### ストアに書く URL
 
 - App Store Connect: 「プライバシーポリシー URL」に `/privacy/`（英語ストアには `/en/privacy/`）、「サポート URL」に `/`、「マーケティング URL」は任意。
 - Play Console: 「アプリのコンテンツ」→「プライバシー ポリシー」に `/privacy/`。ストアの掲載情報の「ウェブサイト」にサイトの URL、「メールアドレス」にお問い合わせ先を書きます。
-- AdMob は、ストアの「ウェブサイト」に書いたドメインの直下で `app-ads.txt` を探します。`pages.dev` のサブドメインで認識されない場合は、独自ドメイン（年千数百円）を取って Pages に割り当てます。
+- AdMob は、ストアの「ウェブサイト」に書いたドメインの直下で `app-ads.txt` を探します。ストアのウェブサイト欄には `https://opencodemobile.app` を書きます。
 
 ### ストアのデータ開示
 

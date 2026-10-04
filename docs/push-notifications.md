@@ -37,8 +37,10 @@ npx wrangler login
 npx wrangler d1 create opencode-push       # 出力された database_id を wrangler.toml に貼る
 npx wrangler d1 migrations apply opencode-push --remote
 npx wrangler secret put FCM_SERVICE_ACCOUNT < /path/to/service-account.json
-npx wrangler deploy                        # https://opencode-push-relay.<account>.workers.dev
+npx wrangler deploy                        # https://relay.opencodemobile.app
 ```
+
+`wrangler.toml` の `routes` で `relay.opencodemobile.app` に割り当てます。ドメインの DNS が同じ Cloudflare アカウントにあれば、DNS レコードと証明書はデプロイ時に自動で作られます。`workers.dev` のアドレスも引き続き使えます。
 
 テスト: `node --test push/relay/test/*.test.js`
 
@@ -88,7 +90,7 @@ Android は同じ `push.env.json` を Gradle が読み、FCM がアプリの起�
   {
     "package": "opencode-mobile-push",
     "options": {
-      "relay": "https://opencode-push-relay.<account>.workers.dev",
+      "relay": "https://relay.opencodemobile.app",
       "key": "<アプリが表示するペアリングキー>",
       // 任意（既定はすべて true）
       "includeTitle": true,
