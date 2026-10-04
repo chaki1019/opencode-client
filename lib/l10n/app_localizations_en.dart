@@ -980,4 +980,14 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pushComputerRefresh => 'Check again';
+
+  @override
+  String get pushComputerAdopt => 'Use the key from the computer';
+
+  @override
+  String get pushComputerAdoptHint =>
+      'If another device set this up, switch this device to the same key and both will get notifications.';
+
+  @override
+  String get pushComputerAdopted => 'Switched to the computer\'s key';
 }

@@ -136,7 +136,15 @@ class _PairingViewState extends ConsumerState<_PairingView> {
             ),
           ),
           if (pairing.enabled) ...[
-            _ComputerStatus(serverId: widget.server.id),
+            _ComputerStatus(
+              serverId: widget.server.id,
+              onAdopt: _busy
+                  ? null
+                  : (key) => _run(
+                      () => ref.read(provider.notifier).adoptKey(key),
+                      done: context.l10n.pushComputerAdopted,
+                    ),
+            ),
             _Setup(relayUrl: widget.relayUrl, pairing: pairing),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -162,9 +170,12 @@ class _PairingViewState extends ConsumerState<_PairingView> {
 }
 
 class _ComputerStatus extends ConsumerWidget {
-  const _ComputerStatus({required this.serverId});
+  const _ComputerStatus({required this.serverId, this.onAdopt});
 
   final String serverId;
+
+  /// Switches this device to the key `opencode.json` already uses.
+  final void Function(String key)? onAdopt;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -207,7 +218,11 @@ class _ComputerStatus extends ConsumerWidget {
         l10n.pushComputerUnknown,
       ),
     };
-    return ListTile(
+    final sharedKey = switch (check) {
+      AsyncData(value: ComputerPluginCheck(:final sharedKey?)) => sharedKey,
+      _ => null,
+    };
+    final tile = ListTile(
       key: const Key('push-computer'),
       leading: icon == null
           ? const SizedBox.square(
@@ -223,6 +238,29 @@ class _ComputerStatus extends ConsumerWidget {
         icon: const Icon(Icons.refresh),
         onPressed: () => ref.invalidate(provider),
       ),
+    );
+    if (sharedKey == null) return tile;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        tile,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: Text(
+            l10n.pushComputerAdoptHint,
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          child: FilledButton.tonalIcon(
+            key: const Key('push-computer-adopt'),
+            icon: const Icon(Icons.key_outlined),
+            label: Text(l10n.pushComputerAdopt),
+            onPressed: onAdopt == null ? null : () => onAdopt!(sharedKey),
+          ),
+        ),
+      ],
     );
   }
 }

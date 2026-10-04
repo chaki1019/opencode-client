@@ -512,5 +512,8 @@
   "pushComputerNotLoaded": "It is configured but not loaded yet. Restart OpenCode.",
   "pushComputerMissing": "Not set up yet. Add it with the steps below.",
   "pushComputerUnknown": "Couldn't check",
-  "pushComputerRefresh": "Check again"
+  "pushComputerRefresh": "Check again",
+  "pushComputerAdopt": "Use the key from the computer",
+  "pushComputerAdoptHint": "If another device set this up, switch this device to the same key and both will get notifications.",
+  "pushComputerAdopted": "Switched to the computer's key"
 }

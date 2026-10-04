@@ -3,6 +3,9 @@
 const pushPluginPackage = 'opencode-mobile-push';
 const pushPluginFileName = 'opencode-mobile-push.js';
 
+/// The relay refuses shorter keys.
+const minPairingKeyLength = 32;
+
 // Names used before the npm package was renamed.
 const _pluginIds = {pushPluginPackage, 'opencode-push'};
 const _pluginFiles = {pushPluginFileName, 'opencode-push.js'};
@@ -114,10 +117,15 @@ enum ComputerPluginStatus {
 }
 
 class ComputerPluginCheck {
-  const ComputerPluginCheck(this.status, {this.error});
+  const ComputerPluginCheck(this.status, {this.error, this.sharedKey});
 
   final ComputerPluginStatus status;
   final String? error;
+
+  /// With [ComputerPluginStatus.otherKey]: the pairing key `opencode.json`
+  /// passes for this relay, which this device can switch to so that it
+  /// gets the same notifications as the device that set it up.
+  final String? sharedKey;
 }
 
 ComputerPluginCheck checkComputerPlugin({
@@ -126,8 +134,11 @@ ComputerPluginCheck checkComputerPlugin({
   required String relayUrl,
   required String key,
 }) {
-  ComputerPluginCheck result(ComputerPluginStatus status, {String? error}) =>
-      ComputerPluginCheck(status, error: error);
+  ComputerPluginCheck result(
+    ComputerPluginStatus status, {
+    String? error,
+    String? sharedKey,
+  }) => ComputerPluginCheck(status, error: error, sharedKey: sharedKey);
 
   final loaded = plugins.where((p) => p.isPush).toList();
   final explicit = config.entries.where((e) => e.key != null).toList();
@@ -139,7 +150,12 @@ ComputerPluginCheck checkComputerPlugin({
     return result(ComputerPluginStatus.failed, error: failed.error);
   }
   if (explicit.isNotEmpty && !matches) {
-    return result(ComputerPluginStatus.otherKey);
+    final shared = explicit
+        .where((e) => _sameRelay(e.relay, relayUrl))
+        .map((e) => e.key!.trim())
+        .where((k) => k.length >= minPairingKeyLength)
+        .firstOrNull;
+    return result(ComputerPluginStatus.otherKey, sharedKey: shared);
   }
   if (loaded.isNotEmpty) return result(ComputerPluginStatus.active);
   if (config.entries.isNotEmpty) return result(ComputerPluginStatus.notLoaded);

@@ -100,6 +100,27 @@ void main() {
     );
   });
 
+  test('another key for this relay can be shared, one for another cannot', () {
+    final shared = 'S' * 43;
+    ComputerPluginCheck check(String relay, String key) => checkComputerPlugin(
+      plugins: const [],
+      config: ComputerConfig.fromEntries([
+        _doc([
+          {
+            'package': 'opencode-mobile-push',
+            'options': {'relay': relay, 'key': key},
+          },
+        ]),
+      ]),
+      relayUrl: _relay,
+      key: _key,
+    );
+    expect(check('$_relay/', shared).sharedKey, shared);
+    expect(check('https://elsewhere.test', shared).sharedKey, isNull);
+    // Too short for the relay to accept.
+    expect(check(_relay, 'old').sharedKey, isNull);
+  });
+
   test('a load failure carries its error', () {
     final check = checkComputerPlugin(
       plugins: [
