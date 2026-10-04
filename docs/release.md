@@ -59,7 +59,7 @@ keytool -genkey -v -keystore upload-keystore.jks -keyalg RSA -keysize 2048 \
   -validity 10000 -alias upload
 ```
 
-Codemagic の「Code signing identities」→「Android keystores」に、参照名 **`upload_keystore`** で上げます（パスワードとエイリアスも入力）。
+Codemagic の「Code signing identities」→「Android keystores」に、参照名 **`opencode_android`** で上げます（パスワードとエイリアスも入力）。
 
 手元でリリースビルドに署名したいときは、`android/key.properties`（git に入りません）を置きます。
 

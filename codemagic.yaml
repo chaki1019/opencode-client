@@ -24,7 +24,7 @@ workflows:
         # GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
         - google_play
       android_signing:
-        - upload_keystore
+        - opencode_android
       ios_signing:
         distribution_type: app_store
         bundle_identifier: app.opencodemobile
@@ -117,7 +117,7 @@ workflows:
       groups:
         - app_config
       android_signing:
-        - upload_keystore
+        - opencode_android
     scripts:
       - *write_settings
       - *pub_get
