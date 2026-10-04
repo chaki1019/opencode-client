@@ -94,6 +94,8 @@ workflows:
       - /tmp/xcodebuild_logs/*.log
       - build/app/outputs/bundle/release/*.aab
       - build/app/outputs/mapping/release/mapping.txt
+    # release_notes.json at the repository root fills App Store "What's New",
+    # TestFlight "What to Test" and the Google Play release notes.
     publishing:
       app_store_connect:
         auth: integration
