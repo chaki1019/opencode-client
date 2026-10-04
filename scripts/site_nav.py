@@ -22,7 +22,8 @@ PAGES = [
     ('support/', {'ja': 'サポート', 'en': 'Support'}),
     ('privacy/', {'ja': 'プライバシーポリシー', 'en': 'Privacy policy'}),
 ]
-TOGGLE = {'ja': 'セクションの表示を切り替え: ', 'en': 'Show or hide sections: '}
+# First entry of each group: the top of the page, above its first heading.
+OVERVIEW = {'ja': '概要', 'en': 'Overview'}
 NAV = re.compile(r'(<nav class="side-nav" id="side-nav"[^>]*>\n)(.*?)(\n    <div class="side-lang">)', re.S)
 H2 = re.compile(r'<h2 id="([^"]+)"(?: data-toc="([^"]*)")?[^>]*>(.*?)</h2>', re.S)
 TAG = re.compile(r'<[^>]+>')
@@ -52,11 +53,13 @@ def menu(lang, current):
         here = page == current
         items = list(sections(SITE / lang / page / 'index.html'))
         label = labels[lang]
-        attr = ' aria-current="page"' if here else ''
-        lines.append(f'      <li class="group{" open" if here else ""}" data-key="{href}">')
-        lines.append(f'        <div class="nav-row"><a href="{href}"{attr}>{label}</a>'
-                     f'<button type="button" class="nav-toggle" aria-label="{TOGGLE[lang]}{label}"></button></div>')
+        # The page's name only opens and closes its group; the entries under
+        # it lead to the page.
+        lines.append(f'      <li class="group{" current open" if here else ""}" data-key="{href}">')
+        lines.append(f'        <button type="button" class="nav-head">{label}</button>')
         lines.append('        <div class="nav-sub"><ul class="toc">')
+        top = ' aria-current="page"' if here else ''
+        lines.append(f'          <li><a href="{"#" if here else href}"{top}>{OVERVIEW[lang]}</a></li>')
         for id_, text in items:
             target = f'#{id_}' if here else f'{href}#{id_}'
             lines.append(f'          <li><a href="{target}">{html.escape(text, quote=False)}</a></li>')

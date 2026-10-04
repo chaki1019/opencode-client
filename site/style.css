@@ -108,27 +108,26 @@ html { scroll-padding-top: 16px; }
 .side-nav li { margin: 0; }
 .side-nav a { display: block; padding: 5px 10px; border-radius: 6px; color: var(--muted); text-decoration: none; font-size: 1.05rem; line-height: 1.45; }
 .side-nav a:hover { color: var(--fg); background: var(--card); }
-.side-nav a[aria-current="page"] { color: var(--fg); font-weight: 600; }
 .side-nav .toc { margin: 2px 0 6px 10px; padding: 2px 0 2px 8px; border-left: 1px solid var(--line); }
 .side-nav .toc a { font-size: 0.97rem; padding: 5px 10px; }
 .side-nav .toc a.active { color: var(--fg); font-weight: 600; background: var(--nav-active); }
 /* Collapsible groups (menu written by scripts/site_nav.py; without JS
    every group stays open) */
-.nav-row { display: flex; align-items: center; gap: 2px; }
-.nav-row > a { flex: 1; min-width: 0; }
-.nav-toggle { display: none; }
-.js .nav-toggle {
-  flex: none; width: 30px; height: 30px; padding: 0; border: 0; border-radius: 6px;
-  background: transparent; color: var(--muted); cursor: pointer;
-  display: grid; place-items: center;
+.nav-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: 100%; padding: 5px 10px; border: 0; border-radius: 6px;
+  background: transparent; color: var(--muted); font: inherit; font-size: 1.05rem; line-height: 1.45;
+  text-align: left; cursor: default;
 }
-.nav-toggle:hover { color: var(--fg); background: var(--card); }
-.nav-toggle::before {
-  content: ""; width: 7px; height: 7px;
+.group.current > .nav-head { color: var(--fg); font-weight: 600; }
+.js .nav-head { cursor: pointer; }
+.js .nav-head:hover { color: var(--fg); background: var(--card); }
+.js .nav-head::after {
+  content: ""; flex: none; width: 7px; height: 7px; margin-right: 4px;
   border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
-  transform: translateX(-2px) rotate(-45deg);
+  transform: rotate(-45deg);
 }
-.group.open > .nav-row > .nav-toggle::before { transform: translateY(-2px) rotate(45deg); }
+.js .group.open > .nav-head::after { transform: translateY(-2px) rotate(45deg); }
 .js .nav-sub { display: grid; grid-template-rows: 0fr; }
 .js .group.open > .nav-sub { grid-template-rows: 1fr; }
 .js .nav-sub > .toc { overflow: hidden; min-height: 0; visibility: hidden; }
@@ -137,9 +136,9 @@ html { scroll-padding-top: 16px; }
    does not slide in. */
 .side-nav.ready .nav-sub { transition: grid-template-rows 0.22s ease-out; }
 .side-nav.ready .nav-sub > .toc { transition: visibility 0.22s; }
-.side-nav.ready .nav-toggle::before { transition: transform 0.22s ease-out; }
+.side-nav.ready .nav-head::after { transition: transform 0.22s ease-out; }
 @media (prefers-reduced-motion: reduce) {
-  .side-nav.ready .nav-sub, .side-nav.ready .nav-sub > .toc, .side-nav.ready .nav-toggle::before { transition: none; }
+  .side-nav.ready .nav-sub, .side-nav.ready .nav-sub > .toc, .side-nav.ready .nav-head::after { transition: none; }
 }
 /* Page to page, the menu is swapped in place without moving and only the
    content fades. */
