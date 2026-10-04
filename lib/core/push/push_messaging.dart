@@ -85,7 +85,7 @@ Future<void> showPushNotification(PushMessage message) async {
 }
 
 const _initSettings = InitializationSettings(
-  android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+  android: AndroidInitializationSettings('@drawable/ic_notification'),
 );
 
 Locale _deviceLocale() {
