@@ -1,0 +1,34 @@
+OpenCode Mobile is a client app that connects your phone to the OpenCode server running on your own computer. Away from your desk, you can still give your AI agent instructions, check on its progress, and approve its requests on the spot.
+
+WHAT YOU CAN DO
+• Chat: send instructions, watch responses stream in live, interrupt at any time
+• See tool activity: commands, file reads and edits, todo progress
+• Answer permissions and questions: allow or deny right from your phone when the agent asks
+• Notifications: know when a response finishes, stops with an error, or waits for your approval or answer (requires a plugin on your computer)
+• Switch models and agents
+• Git: branch, changed files and diffs
+• Browse and search files, attach images
+• Terminal: use a shell on your server
+• Manage sessions: create, rename, fork, summarize, delete
+• Find OpenCode servers on your local network automatically
+• Side-by-side list and chat on tablets
+• Dark mode, English and Japanese
+
+GETTING STARTED
+1. Run opencode serve on your computer, listening on an address your phone can reach and protected with a password.
+2. Enter the server address and password in the app and connect.
+For notifications, add the opencode-mobile-push plugin to your OpenCode config and pair it in the app.
+
+PRIVACY
+Your password is stored in the Android Keystore, and your conversations travel only between your server and your device. Project and session names sent through the notification relay are encrypted.
+
+PRICING
+The app is free and shows a banner ad on list screens. You can send 10 messages a day for free; after that, watch a short video ad to add more. A one-time "Remove Ads" purchase hides ads.
+
+PLEASE NOTE
+• OpenCode Mobile is not built by the OpenCode team and is not affiliated with OpenCode in any way. It is an unofficial client.
+• You need your own server (such as a PC or Mac) running OpenCode v2.
+• AI model usage is billed by the provider you configure on your server.
+
+Support: https://opencodemobile.app/en/support/
+Privacy policy: https://opencodemobile.app/en/privacy/
