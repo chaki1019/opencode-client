@@ -28,6 +28,7 @@ import 'package:opencode_mobile/core/storage/server_store.dart';
 import 'package:opencode_mobile/features/connection/connection_providers.dart';
 import 'package:opencode_mobile/features/git/git_screen.dart';
 import 'package:opencode_mobile/features/live/live_providers.dart';
+import 'package:opencode_mobile/features/voice/speech.dart';
 import 'package:opencode_mobile/l10n/app_localizations.dart';
 import 'package:opencode_mobile/main.dart';
 
@@ -150,7 +151,9 @@ class Copy {
     required this.permDescription,
     required this.preAsk,
     required this.preReply,
+    required this.heard,
   });
+  final String heard;
   final String preAsk;
   final String preReply;
   final String server;
@@ -181,6 +184,7 @@ const ja = Copy(
   permIntro: 'パッケージを更新してからテストを実行します。',
   permDescription: '依存パッケージを更新',
   preAsk: 'ログイン画面のテストってある？',
+  heard: 'ログイン画面のテストを全部実行して',
   preReply: '`test/auth/login_form_test.dart` に 3 件あります。メールアドレスの形式は確認していますが、パスワードが空のケースはまだありません。',
 );
 
@@ -202,6 +206,7 @@ const en = Copy(
   permIntro: 'I will update the packages and then run the tests.',
   permDescription: 'Update dependencies',
   preAsk: 'Do we have tests for the login screen?',
+  heard: 'Run all the login screen tests',
   preReply: 'There are 3 in `test/auth/login_form_test.dart`. They check the email format, but nothing covers an empty password yet.',
 );
 
@@ -403,6 +408,9 @@ FakeAdapter adapterFor(Copy c, String lang) => FakeAdapter({
     ],
   }),
   '/api/session/s0/form': FakeRoute.json({'data': []}),
+  '/api/session/s0/revert/stage': FakeRoute.json({
+    'data': {'messageID': 'u1'},
+  }),
   '/api/session/s1/form': FakeRoute.json({'data': []}),
   '/api/agent': FakeRoute.json({
     'data': [
@@ -438,9 +446,39 @@ FakeAdapter adapterFor(Copy c, String lang) => FakeAdapter({
 });
 
 class Harness {
-  Harness(this.adapter, this.discovered);
+  Harness(this.adapter, this.discovered, {this.heard = ''});
   final FakeAdapter adapter;
   final List<DiscoveredServer> discovered;
+  final String heard;
+}
+
+/// Shows [heard] as the words being heard and keeps listening.
+class _ListeningSpeech implements SpeechInput {
+  _ListeningSpeech(this.heard);
+  final String heard;
+
+  @override
+  Future<bool> available() async => true;
+
+  @override
+  Future<String?> listen({
+    required String localeTag,
+    void Function(String words)? onPartial,
+  }) {
+    onPartial?.call(heard);
+    return Completer<String?>().future;
+  }
+
+  @override
+  Future<void> stop() async {}
+}
+
+class _SilentSpeech implements SpeechOutput {
+  @override
+  Future<void> speak(String text, {required String localeTag}) async {}
+
+  @override
+  Future<void> stop() async {}
 }
 
 Future<void> pumpApp(
@@ -461,6 +499,8 @@ Future<void> pumpApp(
           ),
           lanScanProvider.overrideWithValue(FakeDiscovery(finished: const [])),
           serverStoreProvider.overrideWithValue(ServerStore()),
+          speechInputProvider.overrideWithValue(_ListeningSpeech(h.heard)),
+          speechOutputProvider.overrideWithValue(_SilentSpeech()),
           eventStreamProvider.overrideWith((ref) {
             if (ref.watch(connectionProvider) == null) return null;
             final stream = EventStream(open: (_) async => events.stream)
@@ -547,8 +587,34 @@ void main() {
         // Model picker.
         await tester.tap(find.text('claude-sonnet-5-5').last);
         await settle(tester);
-        await tapText(tester, 'Anthropic');
         await shoot(tester, '$p-model');
+        await finish(tester);
+      });
+
+      testWidgets('$p rewind', (tester) async {
+        setDevice(tester, d, lang);
+        final h = Harness(adapterFor(c, lang), const []);
+        await pumpApp(tester, h, serverName: c.server);
+        await tapText(tester, 'todo-app');
+        await tapText(tester, c.sessions[0]);
+        await tester.longPress(find.text(c.ask).first);
+        await settle(tester);
+        await shoot(tester, '$p-rewind-menu');
+        await tester.tap(find.byKey(const Key('rewind-here')));
+        await settle(tester);
+        await shoot(tester, '$p-rewind');
+        await finish(tester);
+      });
+
+      testWidgets('$p voice', (tester) async {
+        setDevice(tester, d, lang);
+        final h = Harness(adapterFor(c, lang), const [], heard: c.heard);
+        await pumpApp(tester, h, serverName: c.server);
+        await tapText(tester, 'todo-app');
+        await tapText(tester, c.sessions[0]);
+        await tester.tap(find.byKey(const Key('conversation')));
+        await settle(tester);
+        await shoot(tester, '$p-voice');
         await finish(tester);
       });
 

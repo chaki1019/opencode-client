@@ -75,10 +75,24 @@
   </div>
 </div>
 <div class="feature">
+  <img src="/img/en/7-rewind.webp" alt="Screenshot: Rewind from any message" width="540" height="1170" loading="lazy">
+  <div>
+    <h3>Rewind from any message</h3>
+    <p>Long-press a message you sent and choose Rewind to here to undo the conversation and the file changes after it. Its text goes back into the input, so you can reword it and send again. Undo puts everything back.</p>
+  </div>
+</div>
+<div class="feature">
+  <img src="/img/en/8-voice.webp" alt="Screenshot: Talk to it, hear the reply" width="540" height="1170" loading="lazy">
+  <div>
+    <h3>Talk to it, hear the reply</h3>
+    <p>In conversation mode, what you say is sent, and the reply is read aloud when the work is done. Long-press any reply to hear it. Listening and reading aloud use your phone's own speech features.</p>
+  </div>
+</div>
+<div class="feature">
   <img src="/img/en/5-model.webp" alt="Screenshot: Switch models and agents in a tap" width="540" height="1170" loading="lazy">
   <div>
     <h3>Switch models and agents in a tap</h3>
-    <p>Change the model or agent on the spot, attach images, or stop a running reply.</p>
+    <p>Pick a model from one list grouped by provider and filter it by name. You can also switch agents, attach images, or stop a running reply.</p>
   </div>
 </div>
 </section>
@@ -98,7 +112,7 @@ opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
   <li>
     <span class="step-num">2</span>
     <h3>Choose how to reach it</h3>
-    <p>At home or at work, put your phone on the same Wi-Fi as your computer. From outside, we recommend a VPN such as Tailscale rather than exposing the server to the internet.</p>
+    <p>At home or at work, put your phone on the same Wi-Fi as your computer. From outside, we recommend a VPN such as Tailscale rather than exposing the server to the internet. The <a href="/en/connect/">connection guide</a> walks through each option.</p>
   </li>
   <li>
     <span class="step-num">3</span>
@@ -153,7 +167,11 @@ opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
   </details>
   <details>
     <summary>Can I connect from outside my home?</summary>
-    <p>Yes. We recommend a VPN such as Tailscale that puts your computer and phone on the same network. Please don't expose the server directly to the internet.</p>
+    <p>Yes. We recommend a VPN such as Tailscale that puts your computer and phone on the same network. Please don't expose the server directly to the internet. The <a href="/en/connect/">connection guide</a> covers Tailscale, Cloudflare Tunnel and SSH forwarding.</p>
+  </details>
+  <details>
+    <summary>What if it won't connect?</summary>
+    <p>Open Connection check from the app menu. It shows the server version and response time, whether events are coming in, and the state of the notification plugin. You can copy the results as text, which helps when you contact support.</p>
   </details>
   <details>
     <summary>Where do my chats and code go?</summary>
