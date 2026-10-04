@@ -24,7 +24,7 @@ workflows:
         # GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
         - google_play
       android_signing:
-        - upload_keystore
+        - opencode_android
       ios_signing:
         distribution_type: app_store
         bundle_identifier: app.opencodemobile
@@ -39,28 +39,39 @@ workflows:
         - pattern: "v*"
       cancel_previous_builds: true
     scripts:
-      - name: Write build settings
+      - &write_settings
+        name: Write build settings
         script: |
           set -e
-          printf '%s' "$PUSH_ENV_JSON" > push.env.json
-          printf '%s' "$ADS_ENV_JSON" > ads.env.json
-          printf '%s' "$APP_ENV_JSON" > app.env.json
-          echo "ADMOB_IOS_APP_ID = $ADMOB_IOS_APP_ID" > ios/Flutter/Ads.xcconfig
+          # Files whose variable is unset are skipped; the app then builds
+          # with that feature off (see docs/release.md).
+          DEFINES=""
+          write() { if [ -n "$2" ]; then printf '%s' "$2" > "$1"; DEFINES="$DEFINES --dart-define-from-file=$1"; fi; }
+          write push.env.json "$PUSH_ENV_JSON"
+          write ads.env.json "$ADS_ENV_JSON"
+          write app.env.json "$APP_ENV_JSON"
+          if [ -n "$ADMOB_IOS_APP_ID" ]; then
+            echo "ADMOB_IOS_APP_ID = $ADMOB_IOS_APP_ID" > ios/Flutter/Ads.xcconfig
+          fi
           if [ -n "$FIREBASE_APP_ID_FILE_JSON" ]; then
             printf '%s' "$FIREBASE_APP_ID_FILE_JSON" > ios/firebase_app_id_file.json
           fi
+          echo "DART_DEFINES=$DEFINES" >> "$CM_ENV"
       - name: Set version from tag
         script: |
           set -e
-          # v1.2.3 -> 1.2.3. The build number is one past the highest one
-          # already on TestFlight or Google Play, so both stores accept it.
+          # v1.2.3 -> 1.2.3 (pubspec.yaml's version when started without a
+          # tag). The build number is one past the highest one already on
+          # TestFlight or Google Play, so both stores accept it.
           BUILD_NAME="${CM_TAG#v}"
+          if [ -z "$CM_TAG" ]; then BUILD_NAME=$(sed -n 's/^version: *\([^+]*\).*/\1/p' pubspec.yaml); fi
           IOS_LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" || echo 0)
           ANDROID_LATEST=$(google-play get-latest-build-number --package-name "$PACKAGE_NAME" || echo 0)
           LATEST=$(( IOS_LATEST > ANDROID_LATEST ? IOS_LATEST : ANDROID_LATEST ))
           echo "BUILD_NAME=$BUILD_NAME" >> "$CM_ENV"
           echo "BUILD_NUMBER=$(( LATEST + 1 ))" >> "$CM_ENV"
-      - name: Install dependencies
+      - &pub_get
+        name: Install dependencies
         script: flutter pub get
       - name: Apply iOS signing profiles
         script: xcode-project use-profiles
@@ -69,18 +80,14 @@ workflows:
           flutter build ipa --release \
             --build-name="$BUILD_NAME" \
             --build-number="$BUILD_NUMBER" \
-            --dart-define-from-file=push.env.json \
-            --dart-define-from-file=ads.env.json \
-            --dart-define-from-file=app.env.json \
+            $DART_DEFINES \
             --export-options-plist=/Users/builder/export_options.plist
       - name: Build Android
         script: |
           flutter build appbundle --release \
             --build-name="$BUILD_NAME" \
             --build-number="$BUILD_NUMBER" \
-            --dart-define-from-file=push.env.json \
-            --dart-define-from-file=ads.env.json \
-            --dart-define-from-file=app.env.json
+            $DART_DEFINES
     artifacts:
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
@@ -96,3 +103,27 @@ workflows:
         # Play only accepts draft releases until the app's first release
         # is out. Set to false after that so builds go live on the track.
         submit_as_draft: true
+
+  # Builds only a signed Android App Bundle, without uploading it. Start it
+  # by hand from Codemagic ("Start new build") for the first upload to Google
+  # Play, which has to be done manually (see docs/release.md).
+  android-aab:
+    name: Android AAB (manual upload)
+    instance_type: mac_mini_m2
+    max_build_duration: 30
+    environment:
+      flutter: stable
+      java: 17
+      groups:
+        - app_config
+      android_signing:
+        - opencode_android
+    scripts:
+      - *write_settings
+      - *pub_get
+      - name: Build Android
+        script: |
+          flutter build appbundle --release $DART_DEFINES
+    artifacts:
+      - build/app/outputs/bundle/release/*.aab
+      - build/app/outputs/mapping/release/mapping.txt
