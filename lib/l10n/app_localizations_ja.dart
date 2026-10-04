@@ -1029,22 +1029,23 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diagnosticsLiveStopped => '止まっています';
 
   @override
-  String get diagnosticsPush => '通知';
+  String get diagnosticsPlugin => 'プッシュ通知プラグイン';
 
   @override
-  String get diagnosticsPlugin => 'PC/Mac のプッシュ通知プラグイン';
+  String get diagnosticsPluginOtherKey =>
+      '別の端末のキーで設定されています。タップすると、この端末を同じキーに切り替えられます。';
 
   @override
   String get diagnosticsMcpNone => 'MCP サーバーはありません';
 
   @override
-  String get diagnosticsApp => 'このアプリ';
+  String get settingsAbout => 'このアプリ';
 
   @override
-  String get diagnosticsAppVersion => 'バージョン';
+  String get settingsVersion => 'バージョン';
 
   @override
-  String get diagnosticsOs => 'OS';
+  String get settingsOs => 'OS';
 
   @override
   String get diagnosticsChecking => '確認しています…';

@@ -10,6 +10,8 @@ import 'package:opencode_mobile/core/storage/settings_store.dart';
 import 'package:opencode_mobile/core/support/support_config.dart';
 import 'package:opencode_mobile/features/settings/settings_providers.dart';
 import 'package:opencode_mobile/features/settings/support_section.dart';
+import 'package:opencode_mobile/features/update/update_providers.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:opencode_mobile/main.dart';
 
 import '../../support/fake_discovery.dart';
@@ -159,5 +161,30 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('OpenCode サーバーに接続'), findsOneWidget);
     expect(GoRouter.maybeOf(tester.element(find.byType(Scaffold))), isNotNull);
+  });
+
+  testWidgets('shows the app version and OS', (tester) async {
+    await pumpSettings(
+      tester,
+      overrides: [
+        packageInfoProvider.overrideWithValue(
+          Future.value(
+            PackageInfo(
+              appName: 'OpenCode Mobile',
+              packageName: 'app.opencodemobile',
+              version: '1.2.0',
+              buildNumber: '7',
+            ),
+          ),
+        ),
+      ],
+    );
+    final version = find.byKey(const Key('app-version'));
+    await tester.scrollUntilVisible(find.byKey(const Key('app-os')), 100);
+    expect(
+      find.descendant(of: version, matching: find.text('1.2.0 (7)')),
+      findsOneWidget,
+    );
+    expect(find.byKey(const Key('app-os')), findsOneWidget);
   });
 }

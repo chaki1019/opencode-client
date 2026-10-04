@@ -1838,17 +1838,17 @@ abstract class AppLocalizations {
   /// **'Stopped'**
   String get diagnosticsLiveStopped;
 
-  /// No description provided for @diagnosticsPush.
-  ///
-  /// In en, this message translates to:
-  /// **'Notifications'**
-  String get diagnosticsPush;
-
   /// No description provided for @diagnosticsPlugin.
   ///
   /// In en, this message translates to:
-  /// **'Push plugin on the computer'**
+  /// **'Push notification plugin'**
   String get diagnosticsPlugin;
+
+  /// No description provided for @diagnosticsPluginOtherKey.
+  ///
+  /// In en, this message translates to:
+  /// **'Set up with another device\'s key. Tap to switch this device to the same key.'**
+  String get diagnosticsPluginOtherKey;
 
   /// No description provided for @diagnosticsMcpNone.
   ///
@@ -1856,23 +1856,23 @@ abstract class AppLocalizations {
   /// **'No MCP servers'**
   String get diagnosticsMcpNone;
 
-  /// No description provided for @diagnosticsApp.
+  /// No description provided for @settingsAbout.
   ///
   /// In en, this message translates to:
   /// **'This app'**
-  String get diagnosticsApp;
+  String get settingsAbout;
 
-  /// No description provided for @diagnosticsAppVersion.
+  /// No description provided for @settingsVersion.
   ///
   /// In en, this message translates to:
   /// **'Version'**
-  String get diagnosticsAppVersion;
+  String get settingsVersion;
 
-  /// No description provided for @diagnosticsOs.
+  /// No description provided for @settingsOs.
   ///
   /// In en, this message translates to:
   /// **'OS'**
-  String get diagnosticsOs;
+  String get settingsOs;
 
   /// No description provided for @diagnosticsChecking.
   ///

@@ -1049,22 +1049,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diagnosticsLiveStopped => 'Stopped';
 
   @override
-  String get diagnosticsPush => 'Notifications';
+  String get diagnosticsPlugin => 'Push notification plugin';
 
   @override
-  String get diagnosticsPlugin => 'Push plugin on the computer';
+  String get diagnosticsPluginOtherKey =>
+      'Set up with another device\'s key. Tap to switch this device to the same key.';
 
   @override
   String get diagnosticsMcpNone => 'No MCP servers';
 
   @override
-  String get diagnosticsApp => 'This app';
+  String get settingsAbout => 'This app';
 
   @override
-  String get diagnosticsAppVersion => 'Version';
+  String get settingsVersion => 'Version';
 
   @override
-  String get diagnosticsOs => 'OS';
+  String get settingsOs => 'OS';
 
   @override
   String get diagnosticsChecking => 'Checking…';
