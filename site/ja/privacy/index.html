@@ -10,7 +10,7 @@
 <link rel="stylesheet" href="/style.css">
 <script src="/site.js" defer></script>
 </head>
-<body>
+<body class="doc">
 <div class="layout">
 <aside class="side">
   <div class="side-bar">
@@ -34,7 +34,7 @@
 
 <p>本アプリは、利用者が自分で用意した OpenCode サーバーにスマートフォンから接続するためのアプリです。このポリシーでは、本アプリが扱う情報と、その送り先を説明します。</p>
 
-<h2 id="s1">1. 端末の中だけに保存する情報</h2>
+<h2 id="s1" data-toc="1. 端末の中だけに保存する情報"><span class="num">1</span>端末の中だけに保存する情報</h2>
 <ul>
   <li>接続先サーバーの URL、ユーザー名、パスワード</li>
   <li>表示言語やテーマなどの設定、その日の無料メッセージ数、「広告を外す」の購入状態</li>
@@ -42,11 +42,11 @@
 </ul>
 <p>これらは端末の安全な保存領域（iOS のキーチェーン、Android の暗号化ストレージ）に保存し、開発者には送信しません。</p>
 
-<h2 id="s2">2. 利用者の OpenCode サーバーとの通信</h2>
+<h2 id="s2" data-toc="2. 利用者の OpenCode サーバーとの通信"><span class="num">2</span>利用者の OpenCode サーバーとの通信</h2>
 <p>チャットの内容、添付した画像、ファイル、ターミナルの入出力は、本アプリから利用者が指定したサーバーへ直接送受信します。開発者のサーバーを経由することはなく、開発者がこれらを見ることはできません。</p>
 <p>同じネットワーク内のサーバーを探すため、ローカルネットワーク（mDNS）を検索することがあります。検索結果は端末の外に送りません。</p>
 
-<h2 id="s3">3. プッシュ通知</h2>
+<h2 id="s3" data-toc="3. プッシュ通知"><span class="num">3</span>プッシュ通知</h2>
 <p>通知を有効にすると、次の情報を開発者が運営する通知中継サーバー（Cloudflare Workers 上で動作）に登録します。</p>
 <ul>
   <li>端末の通知トークン（Firebase Cloud Messaging が発行するもの）</li>
@@ -57,7 +57,7 @@
 <p>登録は、アプリで通知をオフにしたとき、ペアリングを解除したとき、またはアプリの削除などで通知トークンが無効になったときに削除されます。</p>
 <p>通知の配信には Google の Firebase Cloud Messaging と、iOS では Apple Push Notification service を利用します。</p>
 
-<h2 id="s4">4. 広告</h2>
+<h2 id="s4" data-toc="4. 広告"><span class="num">4</span>広告</h2>
 <p>本アプリは Google AdMob による広告を表示します。AdMob は広告の表示と効果測定のため、広告 ID（iOS の IDFA、Android の広告 ID）、IP アドレス（およその地域の推定に使われます）、端末やアプリの情報、広告の表示・タップの状況などを収集することがあります。</p>
 <ul>
   <li>欧州経済領域・英国などでは、起動時に Google のツールで同意を確認します。「設定」→「広告のプライバシー設定」から選択をやり直せます。</li>
@@ -66,10 +66,10 @@
 </ul>
 <p>詳しくは <a href="https://policies.google.com/technologies/partner-sites?hl=ja">Google のパートナーのサイトやアプリでのデータ使用</a> をご覧ください。</p>
 
-<h2 id="s5">5. アプリ内課金</h2>
+<h2 id="s5" data-toc="5. アプリ内課金"><span class="num">5</span>アプリ内課金</h2>
 <p>「広告を外す」の購入は App Store または Google Play を通じて行われます。支払い情報は Apple または Google が扱い、開発者は受け取りません。</p>
 
-<h2 id="s6">6. クラッシュレポート</h2>
+<h2 id="s6" data-toc="6. クラッシュレポート"><span class="num">6</span>クラッシュレポート</h2>
 <p>本アプリが異常終了したとき、原因を調べるために Google の Firebase Crashlytics へ次の情報を送ります。</p>
 <ul>
   <li>エラーの内容とスタックトレース</li>
@@ -78,10 +78,10 @@
 </ul>
 <p>チャットの内容やサーバーの接続情報は含めません。「設定」→「クラッシュレポートを送信」をオフにすると送信を止められます。</p>
 
-<h2 id="s7">7. アップデートの確認</h2>
+<h2 id="s7" data-toc="7. アップデートの確認"><span class="num">7</span>アップデートの確認</h2>
 <p>起動時に、利用できる最低バージョンを通知中継サーバーに問い合わせます。この通信で送るのは通常のインターネット通信に伴う情報（IP アドレスなど）だけで、利用者を特定する情報は送りません。</p>
 
-<h2 id="s8">8. 第三者への提供</h2>
+<h2 id="s8" data-toc="8. 第三者への提供"><span class="num">8</span>第三者への提供</h2>
 <p>上記のサービス提供者（Google、Apple、Cloudflare）による処理を除き、法令に基づく場合を除いて、取得した情報を第三者に提供しません。</p>
 <ul>
   <li><a href="https://policies.google.com/privacy?hl=ja">Google プライバシーポリシー</a>（AdMob、Firebase）</li>
@@ -89,13 +89,13 @@
   <li><a href="https://www.cloudflare.com/ja-jp/privacypolicy/">Cloudflare プライバシーポリシー</a></li>
 </ul>
 
-<h2 id="s9">9. 子どもの利用</h2>
+<h2 id="s9" data-toc="9. 子どもの利用"><span class="num">9</span>子どもの利用</h2>
 <p>本アプリは開発者向けのツールであり、13歳未満の子どもを対象としていません。</p>
 
-<h2 id="s10">10. このポリシーの変更</h2>
+<h2 id="s10" data-toc="10. このポリシーの変更"><span class="num">10</span>このポリシーの変更</h2>
 <p>内容を変更する場合は、このページで告知します。</p>
 
-<h2 id="s11">11. お問い合わせ</h2>
+<h2 id="s11" data-toc="11. お問い合わせ"><span class="num">11</span>お問い合わせ</h2>
 <p>このポリシーについてのご質問は <a href="mailto:support@opencodemobile.app">support@opencodemobile.app</a> までお送りください。</p>
 
 <footer><a href="/ja/support/">サポートページへ戻る</a> · <a href="/ja/">トップへ</a></footer>

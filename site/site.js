@@ -52,4 +52,43 @@
       if (e.target.closest('a')) setOpen(false);
     });
   }
+
+  // Copy buttons on code blocks and on inline strings marked `.copy`.
+  var ja = document.documentElement.lang === 'ja';
+  var label = ja ? 'コピー' : 'Copy';
+  var done = ja ? 'コピーしました' : 'Copied';
+  function copyButton(text) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'copy-btn';
+    b.setAttribute('aria-label', label);
+    b.title = label;
+    b.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var ok = function () {
+        b.classList.add('copied');
+        b.title = done;
+        setTimeout(function () { b.classList.remove('copied'); b.title = label; }, 1500);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text()).then(ok, function () {});
+      }
+    });
+    return b;
+  }
+  if (navigator.clipboard) {
+    document.querySelectorAll('main pre').forEach(function (pre) {
+      var code = pre.querySelector('code') || pre;
+      pre.classList.add('has-copy');
+      pre.appendChild(copyButton(function () { return code.textContent; }));
+    });
+    document.querySelectorAll('main .copy').forEach(function (el) {
+      var wrap = document.createElement('span');
+      wrap.className = 'copy-wrap';
+      el.parentNode.insertBefore(wrap, el);
+      wrap.appendChild(el);
+      wrap.appendChild(copyButton(function () { return el.textContent; }));
+    });
+  }
 })();

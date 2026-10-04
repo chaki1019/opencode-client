@@ -44,35 +44,35 @@
     </div>
     <ul class="chips"><li>Free to use</li><li>English and Japanese</li><li>Your data stays with your server</li></ul>
   </div>
-  <img class="hero-shot" src="/img/en/1-chat.webp" alt="Screenshot: Chat screen" width="540" height="960">
+  <img class="hero-shot" src="/img/en/1-chat.webp" alt="Screenshot: Chat screen" width="540" height="1170">
 </section>
 <section class="sec" aria-labelledby="features">
 <p class="eyebrow">01 / Features</p>
 <h2 id="features" data-toc="Features">Step away. The work keeps moving.</h2>
 <p class="sec-lead">More than watching the chat: answer permission requests and questions, and check the changes, all from your phone.</p>
 <div class="feature">
-  <img src="/img/en/2-permission.webp" alt="Screenshot: Answer requests on the spot" width="540" height="960" loading="lazy">
+  <img src="/img/en/2-permission.webp" alt="Screenshot: Answer requests on the spot" width="540" height="1170" loading="lazy">
   <div>
     <h3>Answer requests on the spot</h3>
     <p>Approve file edits and commands, and answer the agent's questions from your phone, so the work moves on without waiting for you to get back to your desk.</p>
   </div>
 </div>
 <div class="feature">
-  <img src="/img/en/3-notify.webp" alt="Screenshot: Get notified when it's done" width="540" height="960" loading="lazy">
+  <img src="/img/en/3-notify.webp" alt="Screenshot: Get notified when it's done" width="540" height="1170" loading="lazy">
   <div>
     <h3>Get notified when it's done</h3>
     <p>Get notified when a reply finishes, fails, waits for permission or asks a question. Notifications are decrypted on your phone, so the relay can't read project names or titles.</p>
   </div>
 </div>
 <div class="feature">
-  <img src="/img/en/4-diff.webp" alt="Screenshot: Review changes on the go" width="540" height="960" loading="lazy">
+  <img src="/img/en/4-diff.webp" alt="Screenshot: Review changes on the go" width="540" height="1170" loading="lazy">
   <div>
     <h3>Review changes on the go</h3>
     <p>Check changed files, diffs and branches. Browse and search files, or open a terminal.</p>
   </div>
 </div>
 <div class="feature">
-  <img src="/img/en/5-model.webp" alt="Screenshot: Switch models and agents in a tap" width="540" height="960" loading="lazy">
+  <img src="/img/en/5-model.webp" alt="Screenshot: Switch models and agents in a tap" width="540" height="1170" loading="lazy">
   <div>
     <h3>Switch models and agents in a tap</h3>
     <p>Change the model or agent on the spot, attach images, or stop a running reply.</p>
@@ -89,8 +89,8 @@
     <span class="step-num">1</span>
     <h3>Start the server</h3>
     <p>Update OpenCode, choose a password, and start the server so other devices can connect.</p>
-    <pre><code>OPENCODE_SERVER_PASSWORD=your-password \
-  opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
+    <pre><code>export OPENCODE_SERVER_PASSWORD=your-password
+opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
   </li>
   <li>
     <span class="step-num">2</span>
@@ -101,12 +101,12 @@
     <span class="step-num">3</span>
     <h3>Connect in the app</h3>
     <p>Servers on the same network show up automatically. Enter the username (<code>opencode</code> by default) and the password, tap Connect, and your projects and sessions appear.</p>
-    <img class="step-shot" src="/img/en/6-connect.webp" alt="Screenshot: Connect in the app" width="540" height="960" loading="lazy">
+    <img class="step-shot" src="/img/en/6-projects.webp" alt="Screenshot: project list" width="540" height="1170" loading="lazy">
   </li>
 </ol>
 <div class="callout">
   <h3>To get notifications too</h3>
-  <p>Tap the bell at the top right of the project list, turn notifications on, paste the settings it shows into <code>~/.config/opencode/opencode.json</code> on your computer, and restart OpenCode. The <code>opencode-mobile-push</code> plugin is installed from npm automatically.</p>
+  <p>Tap the bell at the top right of the project list, turn notifications on, paste the settings it shows into <code class="copy">~/.config/opencode/opencode.json</code> on your computer, and restart OpenCode. The <code class="copy">opencode-mobile-push</code> plugin is installed from npm automatically.</p>
 </div>
 </section>
 
@@ -114,7 +114,7 @@
 <p class="eyebrow">03 / Tablets</p>
 <h2 id="tablet" data-toc="Tablets">Two panes on a bigger screen.</h2>
 <p class="sec-lead">On an iPad or Android tablet, projects and sessions sit on the left and the chat on the right, in portrait or landscape.</p>
-<img class="tablet-shot" src="/img/en/tablet-chat.webp" alt="Screenshot: Chat screen on a tablet" width="720" height="960" loading="lazy">
+<img class="tablet-shot" src="/img/en/tablet-chat.webp" alt="Screenshot: Chat screen on a tablet" width="960" height="1280" loading="lazy">
 </section>
 
 <section class="sec" aria-labelledby="price">
