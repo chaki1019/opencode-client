@@ -110,4 +110,36 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('No matching models'), findsOneWidget);
   });
+
+  testWidgets('a provider heading stays pinned until the next one comes', (
+    tester,
+  ) async {
+    List<ModelOption> many(String provider, String name) => [
+      for (var i = 0; i < 20; i++)
+        ModelOption(
+          providerID: provider,
+          providerName: provider,
+          id: '$name$i',
+          name: '$name $i',
+        ),
+    ];
+    await _open(tester, [
+      ...many('Anthropic', 'Model'),
+      ...many('OpenAI', 'GPT'),
+    ]);
+    final listTop = tester.getTopLeft(find.byType(CustomScrollView)).dy;
+    double top(String text) => tester.getTopLeft(find.text(text)).dy;
+
+    await tester.drag(find.text('Model 3'), const Offset(0, -300));
+    await tester.pumpAndSettle();
+    // Scrolled past, yet still on top of the list.
+    expect(find.text('Model 0').hitTestable(), findsNothing);
+    expect(top('Anthropic'), lessThan(listTop + 20));
+
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -1100));
+    await tester.pumpAndSettle();
+    // The next heading took its place.
+    expect(find.text('Anthropic').hitTestable(), findsNothing);
+    expect(top('OpenAI'), lessThan(listTop + 20));
+  });
 }

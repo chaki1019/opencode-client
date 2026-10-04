@@ -66,14 +66,10 @@ class _ModelPickerState extends State<ModelPicker> {
   @override
   Widget build(BuildContext context) {
     final providers = _providers;
-    // One flat item list: a heading followed by its models.
-    final items = <Object>[
-      for (final p in providers) ...[p, ...p.models],
-    ];
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
           child: TextField(
             controller: _search,
             decoration: InputDecoration(
@@ -85,7 +81,7 @@ class _ModelPickerState extends State<ModelPicker> {
           ),
         ),
         Expanded(
-          child: items.isEmpty
+          child: providers.isEmpty
               ? Padding(
                   padding: const EdgeInsets.all(24),
                   child: Text(
@@ -93,18 +89,29 @@ class _ModelPickerState extends State<ModelPicker> {
                     textAlign: TextAlign.center,
                   ),
                 )
-              : ListView.builder(
+              : CustomScrollView(
                   controller: widget.scrollController,
                   primary: false,
-                  itemCount: items.length,
-                  itemBuilder: (context, index) => switch (items[index]) {
-                    final _Provider p => _ProviderHeading(name: p.name),
-                    final ModelOption m => _ModelTile(
-                      option: m,
-                      current: widget.current,
-                    ),
-                    _ => const SizedBox.shrink(),
-                  },
+                  slivers: [
+                    // Each heading stays pinned under the filter field until
+                    // the next provider's heading pushes it out.
+                    for (final p in providers)
+                      SliverMainAxisGroup(
+                        key: ValueKey(p.id),
+                        slivers: [
+                          PinnedHeaderSliver(
+                            child: _ProviderHeading(name: p.name),
+                          ),
+                          SliverList.builder(
+                            itemCount: p.models.length,
+                            itemBuilder: (context, index) => _ModelTile(
+                              option: p.models[index],
+                              current: widget.current,
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
                 ),
         ),
       ],
@@ -120,14 +127,21 @@ class _ProviderHeading extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-      child: Text(
-        name,
-        style: theme.textTheme.titleSmall?.copyWith(
-          color: theme.colorScheme.primary,
+    // Opaque, so models scrolling under the pinned heading don't show
+    // through. Matches the bottom sheet's own background.
+    return ColoredBox(
+      color:
+          theme.bottomSheetTheme.backgroundColor ??
+          theme.colorScheme.surfaceContainerLow,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+        child: Text(
+          name,
+          style: theme.textTheme.titleSmall?.copyWith(
+            color: theme.colorScheme.primary,
+          ),
+          overflow: TextOverflow.ellipsis,
         ),
-        overflow: TextOverflow.ellipsis,
       ),
     );
   }

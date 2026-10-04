@@ -382,6 +382,8 @@ class _SettingsRow extends ConsumerWidget {
       context: context,
       showDragHandle: true,
       isScrollControlled: true,
+      // Keeps the sheet below the status bar when dragged to full height.
+      useSafeArea: true,
       builder: (_) => _ModelSheet(
         directory: session.location.directory,
         current: ref.read(sessionSettingsProvider(session)).model,
