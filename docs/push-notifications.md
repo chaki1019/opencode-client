@@ -74,7 +74,7 @@ Android は同じ `push.env.json` を Gradle が読み、FCM がアプリの起�
 
 1. `ios/Runner.xcworkspace` を開き、File → New → Target → Notification Service Extension を選ぶ。Product Name は `NotificationService`、言語は Swift。「Activate scheme」は Cancel でかまいません。
 2. Xcode が作った `NotificationService.swift` と `Info.plist` を削除し、`ios/NotificationService/` の同名ファイルをターゲットに追加する。
-3. NotificationService ターゲットの Build Settings で `CODE_SIGN_ENTITLEMENTS` を `NotificationService/NotificationService.entitlements` にし、Deployment Target を Runner と同じ 15.0 にする。
+3. NotificationService ターゲットの Build Settings で `CODE_SIGN_ENTITLEMENTS` を `NotificationService/NotificationService.entitlements` にし、iOS Deployment Target を Runner と同じ 18.0 にする（アプリの対応は iOS 18 以降）。
 4. Runner と NotificationService の両方で Signing & Capabilities を開き、Push Notifications（Runner のみ）と App Groups（`group.app.opencodemobile`）が有効になっていることを確認する。Bundle ID を変えたときは App Group 名も `ios/Runner/AppDelegate.swift` と `NotificationService.swift` で合わせて変える。
 
 この設定をしなくても通知は届きますが、iOS では中身が「OpenCode」だけになります。
