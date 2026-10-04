@@ -44,35 +44,35 @@
     </div>
     <ul class="chips"><li>無料で使える</li><li>日本語・英語</li><li>データは自分のサーバーとだけ</li></ul>
   </div>
-  <img class="hero-shot" src="/img/ja/1-chat.webp" alt="スクリーンショット: チャット画面" width="540" height="960">
+  <img class="hero-shot" src="/img/ja/1-chat.webp" alt="スクリーンショット: チャット画面" width="540" height="1170">
 </section>
 <section class="sec" aria-labelledby="features">
 <p class="eyebrow">01 / 特長</p>
 <h2 id="features" data-toc="特長">席を離れても、作業は手元で進む。</h2>
 <p class="sec-lead">チャットの流れを見るだけでなく、許可や質問に答えたり、変更を確かめたりするところまでスマートフォンでできます。</p>
 <div class="feature">
-  <img src="/img/ja/2-permission.webp" alt="スクリーンショット: 許可と質問にその場で答える" width="540" height="960" loading="lazy">
+  <img src="/img/ja/2-permission.webp" alt="スクリーンショット: 許可と質問にその場で答える" width="540" height="1170" loading="lazy">
   <div>
     <h3>許可と質問にその場で答える</h3>
     <p>ファイルの編集やコマンドの実行の許可、エージェントからの質問に、スマートフォンから答えられます。PC の前に戻るのを待たずに、作業を先へ進められます。</p>
   </div>
 </div>
 <div class="feature">
-  <img src="/img/ja/3-notify.webp" alt="スクリーンショット: 終わったら通知で知らせる" width="540" height="960" loading="lazy">
+  <img src="/img/ja/3-notify.webp" alt="スクリーンショット: 終わったら通知で知らせる" width="540" height="1170" loading="lazy">
   <div>
     <h3>終わったら通知で知らせる</h3>
     <p>応答の完了、エラー、許可待ち、質問を通知します。通知の中身は端末で復号するので、中継サーバーはプロジェクト名やタイトルを読めません。</p>
   </div>
 </div>
 <div class="feature">
-  <img src="/img/ja/4-diff.webp" alt="スクリーンショット: 変更をスマートフォンでレビュー" width="540" height="960" loading="lazy">
+  <img src="/img/ja/4-diff.webp" alt="スクリーンショット: 変更をスマートフォンでレビュー" width="540" height="1170" loading="lazy">
   <div>
     <h3>変更をスマートフォンでレビュー</h3>
     <p>Git の変更ファイルと差分、ブランチを確認できます。ファイルの閲覧と検索、ターミナルも使えます。</p>
   </div>
 </div>
 <div class="feature">
-  <img src="/img/ja/5-model.webp" alt="スクリーンショット: モデルもエージェントもすぐ切り替え" width="540" height="960" loading="lazy">
+  <img src="/img/ja/5-model.webp" alt="スクリーンショット: モデルもエージェントもすぐ切り替え" width="540" height="1170" loading="lazy">
   <div>
     <h3>モデルもエージェントもすぐ切り替え</h3>
     <p>モデルやエージェントをその場で切り替えられます。画像の添付や、実行中の応答の中断もできます。</p>
@@ -89,8 +89,8 @@
     <span class="step-num">1</span>
     <h3>サーバーを起動する</h3>
     <p>OpenCode を最新版にして、パスワードを決めてから、ほかの端末からの接続を受け付けるように起動します。</p>
-    <pre><code>OPENCODE_SERVER_PASSWORD=好きなパスワード \
-  opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
+    <pre><code>export OPENCODE_SERVER_PASSWORD=好きなパスワード
+opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
   </li>
   <li>
     <span class="step-num">2</span>
@@ -101,12 +101,12 @@
     <span class="step-num">3</span>
     <h3>アプリで接続する</h3>
     <p>同じネットワークにあるサーバーは自動で一覧に出ます。ユーザー名（既定は <code>opencode</code>）とパスワードを入れて「接続」を押せば、プロジェクトとセッションが並びます。</p>
-    <img class="step-shot" src="/img/ja/6-connect.webp" alt="スクリーンショット: アプリで接続する" width="540" height="960" loading="lazy">
+    <img class="step-shot" src="/img/ja/6-projects.webp" alt="スクリーンショット: プロジェクト一覧" width="540" height="1170" loading="lazy">
   </li>
 </ol>
 <div class="callout">
   <h3>通知も受け取るには</h3>
-  <p>プロジェクト一覧右上のベルから通知をオンにし、表示される設定を PC の <code>~/.config/opencode/opencode.json</code> に貼って OpenCode を再起動します。プラグイン <code>opencode-mobile-push</code> は npm から自動で入ります。</p>
+  <p>プロジェクト一覧右上のベルから通知をオンにし、表示される設定を PC の <code class="copy">~/.config/opencode/opencode.json</code> に貼って OpenCode を再起動します。プラグイン <code class="copy">opencode-mobile-push</code> は npm から自動で入ります。</p>
 </div>
 </section>
 
@@ -114,7 +114,7 @@
 <p class="eyebrow">03 / タブレット</p>
 <h2 id="tablet" data-toc="タブレット">大きな画面では 2 画面で。</h2>
 <p class="sec-lead">iPad や Android タブレットでは、左にプロジェクトとセッション、右にチャットを並べて表示します。縦向きでも横向きでも使えます。</p>
-<img class="tablet-shot" src="/img/ja/tablet-chat.webp" alt="スクリーンショット: タブレットのチャット画面" width="720" height="960" loading="lazy">
+<img class="tablet-shot" src="/img/ja/tablet-chat.webp" alt="スクリーンショット: タブレットのチャット画面" width="960" height="1280" loading="lazy">
 </section>
 
 <section class="sec" aria-labelledby="price">
