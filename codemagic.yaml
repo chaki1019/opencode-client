@@ -31,7 +31,7 @@ workflows:
       vars:
         PACKAGE_NAME: app.opencodemobile
         # The app's Apple ID from App Store Connect (App Information page).
-        APP_STORE_APPLE_ID: "0000000000"
+        APP_STORE_APPLE_ID: "6818950202"
     triggering:
       events:
         - tag
