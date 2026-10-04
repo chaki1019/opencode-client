@@ -81,14 +81,17 @@ class _ConversationPanelState extends ConsumerState<ConversationPanel>
   /// Bumped to cancel the running loop.
   var _run = 0;
 
-  late final SpeechInput _input = ref.read(speechInputProvider);
-  late final SpeechOutput _output = ref.read(speechOutputProvider);
+  // Read up front: dispose() must not touch ref.
+  late final SpeechInput _input;
+  late final SpeechOutput _output;
 
   String get _sessionId => widget.session.id;
 
   @override
   void initState() {
     super.initState();
+    _input = ref.read(speechInputProvider);
+    _output = ref.read(speechOutputProvider);
     WidgetsBinding.instance.addObserver(this);
     unawaited(_start());
   }

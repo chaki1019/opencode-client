@@ -603,6 +603,15 @@ void main() {
     expect(find.byKey(const Key('conversation-panel')), findsNothing);
     expect(find.byKey(const Key('composer')), findsOneWidget);
 
+    // Closing before anything was read aloud is fine too.
+    await tester.tap(find.byKey(const Key('conversation')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.text('マイクをタップして話してください'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('conversation-close')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('conversation-panel')), findsNothing);
+
     // Back on the list, swiping a session right renames it.
     await tester.tap(find.byType(BackButton));
     await tester.pumpAndSettle();
