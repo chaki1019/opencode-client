@@ -22,7 +22,7 @@ import UIKit
 /// Extension can read them: the keychain, shared through the app group.
 /// The extension (ios/NotificationService) reads the same items.
 enum PushKeyStore {
-  static let accessGroup = "group.dev.opencodemobile.opencodeMobile"
+  static let accessGroup = "group.app.opencodemobile"
   static let service = "opencode-push"
 
   static func register(messenger: FlutterBinaryMessenger) {
