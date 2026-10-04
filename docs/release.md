@@ -31,7 +31,7 @@ git push origin v1.0.1
 ### 2. App Store Connect API キー
 
 1. App Store Connect の「ユーザとアクセス」→「統合」→「App Store Connect API」で、アクセス権「App Manager」のキーを作り、`.p8` をダウンロードする。
-2. Codemagic の Team settings →「Team integrations」→「Developer Portal」→「Manage keys」で、名前を **`opencode-mobile`** にしてキーを登録する（Issuer ID、Key ID、`.p8`）。
+2. Codemagic の Settings（個人アカウントでは「Personal account settings」、チームでは「Team settings」）→「Integrations」→「Developer Portal」の「Connect」か「Manage keys」で、名前を **`opencode-mobile`** にしてキーを登録する（Issuer ID、Key ID、`.p8`）。
 3. App Store Connect でアプリ（バンドル ID `app.opencodemobile`）を作り、「App 情報」の Apple ID（数字）を `codemagic.yaml` の `APP_STORE_APPLE_ID` に書く。
 
 ### 3. iOS の署名
@@ -43,7 +43,7 @@ Apple Developer の「Identifiers」で、次の 2 つの App ID に機能が付
 | `app.opencodemobile` | Push Notifications、App Groups（`group.app.opencodemobile`） |
 | `app.opencodemobile.NotificationService` | App Groups（`group.app.opencodemobile`） |
 
-そのうえで Codemagic の Team settings →「codemagic.yaml settings」→「Code signing identities」で次を行います。
+そのうえで Codemagic の Settings（上と同じページ）→「codemagic.yaml settings」→「Code signing identities」で次を行います。
 
 1. 「iOS certificates」で Apple Distribution 証明書を作る（「Generate certificate」）か、手元の `.p12` を上げる。
 2. 「iOS provisioning profiles」→「Fetch profiles」で、上の 2 つの App ID の App Store 用プロファイルを取り込む。なければ Apple Developer で作ってから取り込む。
