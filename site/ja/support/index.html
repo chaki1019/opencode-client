@@ -8,6 +8,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="/style.css">
+<script>document.documentElement.classList.add("js")</script>
 <script src="/site.js" defer></script>
 </head>
 <body class="doc">
@@ -19,16 +20,58 @@
   </div>
   <nav class="side-nav" id="side-nav" aria-label="サイトの目次">
     <ul>
-      <li><a href="/ja/">トップ</a></li>
-      <li><a href="/ja/connect/">つなぎ方</a></li>
-      <li><a href="/ja/support/" aria-current="page">サポート</a></li>
-      <li><a href="/ja/privacy/">プライバシーポリシー</a></li>
+      <li class="group" data-key="/ja/">
+        <div class="nav-row"><a href="/ja/">トップ</a><button type="button" class="nav-toggle" aria-label="セクションの表示を切り替え: トップ"></button></div>
+        <div class="nav-sub"><ul class="toc">
+          <li><a href="/ja/#features">特長</a></li>
+          <li><a href="/ja/#setup">はじめ方</a></li>
+          <li><a href="/ja/#tablet">タブレット</a></li>
+          <li><a href="/ja/#price">料金</a></li>
+          <li><a href="/ja/#faq">よくある質問</a></li>
+        </ul></div>
+      </li>
+      <li class="group" data-key="/ja/connect/">
+        <div class="nav-row"><a href="/ja/connect/">つなぎ方</a><button type="button" class="nav-toggle" aria-label="セクションの表示を切り替え: つなぎ方"></button></div>
+        <div class="nav-sub"><ul class="toc">
+          <li><a href="/ja/connect/#server">まず、サーバーを起動する</a></li>
+          <li><a href="/ja/connect/#wifi">同じ Wi-Fi でつなぐ</a></li>
+          <li><a href="/ja/connect/#tailscale">Tailscale でつなぐ（外出先からも使える）</a></li>
+          <li><a href="/ja/connect/#cloudflare">Cloudflare Tunnel でつなぐ</a></li>
+          <li><a href="/ja/connect/#ssh">SSH のポート転送でつなぐ</a></li>
+          <li><a href="/ja/connect/#trouble">うまくいかないとき</a></li>
+        </ul></div>
+      </li>
+      <li class="group open" data-key="/ja/support/">
+        <div class="nav-row"><a href="/ja/support/" aria-current="page">サポート</a><button type="button" class="nav-toggle" aria-label="セクションの表示を切り替え: サポート"></button></div>
+        <div class="nav-sub"><ul class="toc">
+          <li><a href="#contact">お問い合わせ</a></li>
+          <li><a href="#faq">よくある質問</a></li>
+          <li><a href="#privacy">プライバシー</a></li>
+        </ul></div>
+      </li>
+      <li class="group" data-key="/ja/privacy/">
+        <div class="nav-row"><a href="/ja/privacy/">プライバシーポリシー</a><button type="button" class="nav-toggle" aria-label="セクションの表示を切り替え: プライバシーポリシー"></button></div>
+        <div class="nav-sub"><ul class="toc">
+          <li><a href="/ja/privacy/#s1">1. 端末の中だけに保存する情報</a></li>
+          <li><a href="/ja/privacy/#s2">2. 利用者の OpenCode サーバーとの通信</a></li>
+          <li><a href="/ja/privacy/#s3">3. プッシュ通知</a></li>
+          <li><a href="/ja/privacy/#s4">4. 広告</a></li>
+          <li><a href="/ja/privacy/#s5">5. アプリ内課金</a></li>
+          <li><a href="/ja/privacy/#s6">6. クラッシュレポート</a></li>
+          <li><a href="/ja/privacy/#s7">7. アップデートの確認</a></li>
+          <li><a href="/ja/privacy/#s8">8. 第三者への提供</a></li>
+          <li><a href="/ja/privacy/#s9">9. 子どもの利用</a></li>
+          <li><a href="/ja/privacy/#s10">10. このポリシーの変更</a></li>
+          <li><a href="/ja/privacy/#s11">11. お問い合わせ</a></li>
+        </ul></div>
+      </li>
     </ul>
     <div class="side-lang">
       <p class="side-label">言語</p>
       <a href="/en/support/" hreflang="en"><svg class="flag" viewBox="0 0 38 20" aria-hidden="true"><rect width="38" height="20" fill="#fff"/><rect y="0.00" width="38" height="1.54" fill="#b22234"/><rect y="3.08" width="38" height="1.54" fill="#b22234"/><rect y="6.15" width="38" height="1.54" fill="#b22234"/><rect y="9.23" width="38" height="1.54" fill="#b22234"/><rect y="12.31" width="38" height="1.54" fill="#b22234"/><rect y="15.38" width="38" height="1.54" fill="#b22234"/><rect y="18.46" width="38" height="1.54" fill="#b22234"/><rect width="15.2" height="10.77" fill="#3c3b6e"/></svg>英語</a>
     </div>
   </nav>
+<script>(function(){var n=document.getElementById("side-nav"),s={};try{s=JSON.parse(localStorage.getItem("nav-open")||"{}");n.scrollTop=+sessionStorage.getItem("nav-scroll")||0}catch(e){}n.querySelectorAll(".group").forEach(function(g){var k=g.dataset.key;if(k in s)g.classList.toggle("open",!!s[k])})})()</script>
 </aside>
 <main>
 <header>

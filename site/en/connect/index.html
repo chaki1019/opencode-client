@@ -8,6 +8,7 @@
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="stylesheet" href="/style.css">
+<script>document.documentElement.classList.add("js")</script>
 <script src="/site.js" defer></script>
 </head>
 <body class="doc">
@@ -19,16 +20,58 @@
   </div>
   <nav class="side-nav" id="side-nav" aria-label="Site contents">
     <ul>
-      <li><a href="/en/">Home</a></li>
-      <li><a href="/en/connect/" aria-current="page">Connecting</a></li>
-      <li><a href="/en/support/">Support</a></li>
-      <li><a href="/en/privacy/">Privacy policy</a></li>
+      <li class="group" data-key="/en/">
+        <div class="nav-row"><a href="/en/">Home</a><button type="button" class="nav-toggle" aria-label="Show or hide sections: Home"></button></div>
+        <div class="nav-sub"><ul class="toc">
+          <li><a href="/en/#features">Features</a></li>
+          <li><a href="/en/#setup">Setup</a></li>
+          <li><a href="/en/#tablet">Tablets</a></li>
+          <li><a href="/en/#price">Price</a></li>
+          <li><a href="/en/#faq">FAQ</a></li>
+        </ul></div>
+      </li>
+      <li class="group open" data-key="/en/connect/">
+        <div class="nav-row"><a href="/en/connect/" aria-current="page">Connecting</a><button type="button" class="nav-toggle" aria-label="Show or hide sections: Connecting"></button></div>
+        <div class="nav-sub"><ul class="toc">
+          <li><a href="#server">First, start the server</a></li>
+          <li><a href="#wifi">On the same Wi-Fi</a></li>
+          <li><a href="#tailscale">With Tailscale (works from anywhere)</a></li>
+          <li><a href="#cloudflare">With Cloudflare Tunnel</a></li>
+          <li><a href="#ssh">With SSH port forwarding</a></li>
+          <li><a href="#trouble">If something doesn't work</a></li>
+        </ul></div>
+      </li>
+      <li class="group" data-key="/en/support/">
+        <div class="nav-row"><a href="/en/support/">Support</a><button type="button" class="nav-toggle" aria-label="Show or hide sections: Support"></button></div>
+        <div class="nav-sub"><ul class="toc">
+          <li><a href="/en/support/#contact">Contact</a></li>
+          <li><a href="/en/support/#faq">Common questions</a></li>
+          <li><a href="/en/support/#privacy">Privacy</a></li>
+        </ul></div>
+      </li>
+      <li class="group" data-key="/en/privacy/">
+        <div class="nav-row"><a href="/en/privacy/">Privacy policy</a><button type="button" class="nav-toggle" aria-label="Show or hide sections: Privacy policy"></button></div>
+        <div class="nav-sub"><ul class="toc">
+          <li><a href="/en/privacy/#s1">1. Information kept only on your device</a></li>
+          <li><a href="/en/privacy/#s2">2. Talking to your OpenCode server</a></li>
+          <li><a href="/en/privacy/#s3">3. Push notifications</a></li>
+          <li><a href="/en/privacy/#s4">4. Ads</a></li>
+          <li><a href="/en/privacy/#s5">5. In-app purchase</a></li>
+          <li><a href="/en/privacy/#s6">6. Crash reports</a></li>
+          <li><a href="/en/privacy/#s7">7. Update check</a></li>
+          <li><a href="/en/privacy/#s8">8. Sharing with others</a></li>
+          <li><a href="/en/privacy/#s9">9. Children</a></li>
+          <li><a href="/en/privacy/#s10">10. Changes to this policy</a></li>
+          <li><a href="/en/privacy/#s11">11. Contact</a></li>
+        </ul></div>
+      </li>
     </ul>
     <div class="side-lang">
       <p class="side-label">Language</p>
       <a href="/ja/connect/" hreflang="ja"><svg class="flag" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#fff"/><circle cx="15" cy="10" r="6" fill="#bc002d"/></svg>Japanese</a>
     </div>
   </nav>
+<script>(function(){var n=document.getElementById("side-nav"),s={};try{s=JSON.parse(localStorage.getItem("nav-open")||"{}");n.scrollTop=+sessionStorage.getItem("nav-scroll")||0}catch(e){}n.querySelectorAll(".group").forEach(function(g){var k=g.dataset.key;if(k in s)g.classList.toggle("open",!!s[k])})})()</script>
 </aside>
 <main>
 <header>
