@@ -2,6 +2,12 @@ name = "opencode-push-relay"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
 
+# Served at relay.opencodemobile.app (the domain's DNS must be on Cloudflare).
+# The workers.dev address keeps working for builds made before the switch.
+routes = [{ pattern = "relay.opencodemobile.app", custom_domain = true }]
+workers_dev = true
+preview_urls = false
+
 # Create with `npx wrangler d1 create opencode-push` and paste the id, then
 # `npx wrangler d1 migrations apply opencode-push --remote`.
 [[d1_databases]]
