@@ -32,86 +32,161 @@
 </aside>
 <main>
 <section class="hero">
-  <img class="icon" src="/favicon.svg" alt="" width="72" height="72">
-  <h1>Your OpenCode,<br>from your phone.</h1>
-  <p class="lead">OpenCode Mobile connects your iPhone or Android phone to the <a href="https://opencode.ai">OpenCode</a> server running on your own PC or Mac. Away from your desk, you can still send instructions, follow progress and approve what the agent wants to do.</p>
-  <!-- Replace with store badges once the store URLs are known -->
-  <p class="stores">
-    <span class="store">App Store (coming soon)</span>
-    <span class="store">Google Play (coming soon)</span>
-  </p>
+  <div class="hero-text">
+    <p class="eyebrow"><img src="/favicon.svg" alt="" width="20" height="20">An OpenCode client for iPhone and Android</p>
+    <h1>Your OpenCode,<br>from your phone.</h1>
+    <p class="lead">Connect your iPhone or Android phone to the <a href="https://opencode.ai">OpenCode</a> server running on your own PC or Mac. Away from your desk, you can still send instructions, follow progress and approve what the agent wants to do.</p>
+    <!-- ストアの URL が決まったら a 要素に変えてリンクする -->
+    <div class="cta-row">
+      <span class="btn btn-store" aria-disabled="true">App Store<small>Coming soon</small></span>
+      <span class="btn btn-store" aria-disabled="true">Google Play<small>Coming soon</small></span>
+      <a class="btn btn-ghost" href="#setup">See how to set it up →</a>
+    </div>
+    <ul class="chips"><li>Free to use</li><li>English and Japanese</li><li>Your data stays with your server</li></ul>
+  </div>
+  <img class="hero-shot" src="/img/en/1-chat.webp" alt="Screenshot: Chat screen" width="540" height="960">
 </section>
-
-<h2 id="features">What it does</h2>
+<section class="sec" aria-labelledby="features">
+<p class="eyebrow">01 / Features</p>
+<h2 id="features" data-toc="Features">Step away. The work keeps moving.</h2>
+<p class="sec-lead">More than watching the chat: answer permission requests and questions, and check the changes, all from your phone.</p>
 <div class="feature">
-  <img src="/img/en/1-chat.webp" alt="Screenshot: Chat" width="540" height="960" loading="lazy">
+  <img src="/img/en/2-permission.webp" alt="Screenshot: Answer requests on the spot" width="540" height="960" loading="lazy">
   <div>
-    <h3>Chat</h3>
-    <p>Pick a session and send instructions. Replies and tool runs stream in live, along with todo progress and command output.</p>
+    <h3>Answer requests on the spot</h3>
+    <p>Approve file edits and commands, and answer the agent's questions from your phone, so the work moves on without waiting for you to get back to your desk.</p>
   </div>
 </div>
 <div class="feature">
-  <img src="/img/en/2-permission.webp" alt="Screenshot: Permissions and questions" width="540" height="960" loading="lazy">
+  <img src="/img/en/3-notify.webp" alt="Screenshot: Get notified when it's done" width="540" height="960" loading="lazy">
   <div>
-    <h3>Permissions and questions</h3>
-    <p>Approve file edits and commands, and answer the agent's questions from your phone, so work doesn't stall until you are back at your desk.</p>
-  </div>
-</div>
-<div class="feature">
-  <img src="/img/en/3-notify.webp" alt="Screenshot: Push notifications" width="540" height="960" loading="lazy">
-  <div>
-    <h3>Push notifications</h3>
+    <h3>Get notified when it's done</h3>
     <p>Get notified when a reply finishes, fails, waits for permission or asks a question. Notifications are decrypted on your phone, so the relay can't read project names or titles.</p>
   </div>
 </div>
 <div class="feature">
-  <img src="/img/en/4-diff.webp" alt="Screenshot: Review changes" width="540" height="960" loading="lazy">
+  <img src="/img/en/4-diff.webp" alt="Screenshot: Review changes on the go" width="540" height="960" loading="lazy">
   <div>
-    <h3>Review changes</h3>
+    <h3>Review changes on the go</h3>
     <p>Check changed files, diffs and branches. Browse and search files, or open a terminal.</p>
   </div>
 </div>
 <div class="feature">
-  <img src="/img/en/5-model.webp" alt="Screenshot: Switch models and agents" width="540" height="960" loading="lazy">
+  <img src="/img/en/5-model.webp" alt="Screenshot: Switch models and agents in a tap" width="540" height="960" loading="lazy">
   <div>
-    <h3>Switch models and agents</h3>
+    <h3>Switch models and agents in a tap</h3>
     <p>Change the model or agent on the spot, attach images, or stop a running reply.</p>
   </div>
 </div>
-<ul class="features">
-  <li><strong>Several servers</strong>Save your home PC and work Mac and switch between them.</li>
-  <li><strong>Your data stays with your server</strong>Chats and files travel only between the app and your server. The developer never receives them.</li>
-</ul>
+</section>
 
-<h2 id="usage">How to use it</h2>
-<ol class="steps">
+<section class="sec" aria-labelledby="setup">
+<p class="eyebrow">02 / Setup</p>
+<h2 id="setup" data-toc="Setup">Connected in three steps.</h2>
+<p class="sec-lead">All you need is a PC or Mac running OpenCode.</p>
+<ol class="step-cards">
   <li>
-    <strong>Start the OpenCode server on your PC or Mac</strong>
+    <span class="step-num">1</span>
+    <h3>Start the server</h3>
     <p>Update OpenCode, choose a password, and start the server so other devices can connect.</p>
     <pre><code>OPENCODE_SERVER_PASSWORD=your-password \
   opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
   </li>
   <li>
-    <strong>Connect from the app</strong>
-    <p>Servers on the same network show up in the list automatically. If yours doesn't, enter its URL (for example <code>http://192.168.1.10:4096</code>). Enter the username (<code>opencode</code> by default) and the password, then tap Connect. The password is kept in the Keychain / Keystore.</p>
-    <img class="step-shot" src="/img/en/6-connect.webp" alt="Screenshot: connect screen" width="540" height="960" loading="lazy">
+    <span class="step-num">2</span>
+    <h3>Choose how to reach it</h3>
+    <p>At home or at work, put your phone on the same Wi-Fi as your computer. From outside, we recommend a VPN such as Tailscale rather than exposing the server to the internet.</p>
   </li>
   <li>
-    <strong>Pick a project and a session</strong>
-    <p>Projects you have opened in OpenCode are listed. Open a session to carry on, or start a new one.</p>
-  </li>
-  <li>
-    <strong>Turn on notifications (optional)</strong>
-    <p>Tap the bell at the top right of the project list, turn notifications on, paste the settings it shows into <code>~/.config/opencode/opencode.json</code> on your PC, and restart OpenCode. The <code>opencode-mobile-push</code> plugin is installed from npm automatically.</p>
+    <span class="step-num">3</span>
+    <h3>Connect in the app</h3>
+    <p>Servers on the same network show up automatically. Enter the username (<code>opencode</code> by default) and the password, tap Connect, and your projects and sessions appear.</p>
+    <img class="step-shot" src="/img/en/6-connect.webp" alt="Screenshot: Connect in the app" width="540" height="960" loading="lazy">
   </li>
 </ol>
-<p class="note">To connect from outside your home, we recommend a VPN such as Tailscale rather than exposing the server to the internet. The app works with servers that have the OpenCode v2 API.</p>
+<div class="callout">
+  <h3>To get notifications too</h3>
+  <p>Tap the bell at the top right of the project list, turn notifications on, paste the settings it shows into <code>~/.config/opencode/opencode.json</code> on your computer, and restart OpenCode. The <code>opencode-mobile-push</code> plugin is installed from npm automatically.</p>
+</div>
+</section>
 
-<h2 id="price">Price</h2>
-<p>Free to use. A banner ad appears on the project and session lists (never in chat). After 10 messages in a day, watching a video ad lets you send 10 more. A one-time "Remove ads" purchase turns off both.</p>
+<section class="sec" aria-labelledby="tablet">
+<p class="eyebrow">03 / Tablets</p>
+<h2 id="tablet" data-toc="Tablets">Two panes on a bigger screen.</h2>
+<p class="sec-lead">On an iPad or Android tablet, projects and sessions sit on the left and the chat on the right, in portrait or landscape.</p>
+<img class="tablet-shot" src="/img/en/tablet-chat.webp" alt="Screenshot: Chat screen on a tablet" width="720" height="960" loading="lazy">
+</section>
 
-<footer>
-  <p><a href="/en/support/">Support and contact</a> · <a href="/en/privacy/">Privacy policy</a></p>
+<section class="sec" aria-labelledby="price">
+<p class="eyebrow">04 / Price</p>
+<h2 id="price" data-toc="Price">Every feature, free.</h2>
+<div class="price-cards">
+  <div class="card">
+    <h3>Free</h3>
+    <p>No feature limits. A banner ad appears on the project and session lists (never in chat). After 10 messages in a day, watching a video ad lets you send 10 more.</p>
+  </div>
+  <div class="card">
+    <h3>Remove ads</h3>
+    <p>A one-time purchase that turns off both the banner and video ads. Restore it on other devices signed in with the same Apple ID or Google account.</p>
+  </div>
+</div>
+</section>
+
+<section class="sec" aria-labelledby="faq">
+<p class="eyebrow">05 / FAQ</p>
+<h2 id="faq" data-toc="FAQ">Before you install.</h2>
+<div class="faq">
+  <details>
+    <summary>Which devices are supported?</summary>
+    <p>iPhone and iPad on iOS 18 or later, and Android phones and tablets.</p>
+  </details>
+  <details>
+    <summary>What do I need?</summary>
+    <p>A PC or Mac running OpenCode. The app works with servers that have the OpenCode v2 API, so keep OpenCode up to date.</p>
+  </details>
+  <details>
+    <summary>Can I connect from outside my home?</summary>
+    <p>Yes. We recommend a VPN such as Tailscale that puts your computer and phone on the same network. Please don't expose the server directly to the internet.</p>
+  </details>
+  <details>
+    <summary>Where do my chats and code go?</summary>
+    <p>Only between the app and your server. The developer never receives them. See the <a href="/en/privacy/">privacy policy</a> for details.</p>
+  </details>
+  <details>
+    <summary>Is this an official OpenCode app?</summary>
+    <p>No. It is an unofficial client made by an individual with no connection to the OpenCode team. It doesn't replace OpenCode itself.</p>
+  </details>
+  <details>
+    <summary>How do I report a problem?</summary>
+    <p>Email the address on the <a href="/en/support/">support page</a>, or use Settings → Contact us in the app.</p>
+  </details>
+</div>
+</section>
+
+<section class="final-cta">
+  <h2>Ready when your server is.</h2>
+  <p>Take your next OpenCode session with you.</p>
+  <div class="cta-row">
+    <span class="btn btn-store" aria-disabled="true">App Store<small>Coming soon</small></span>
+    <span class="btn btn-store" aria-disabled="true">Google Play<small>Coming soon</small></span>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="footer-cols">
+    <div>
+      <h3>App</h3>
+      <ul><li><a href="#features">Features</a></li><li><a href="#setup">Setup</a></li><li><a href="#price">Price</a></li><li><a href="#faq">FAQ</a></li></ul>
+    </div>
+    <div>
+      <h3>Support</h3>
+      <ul><li><a href="/en/support/">Support and contact</a></li><li><a href="/en/privacy/">Privacy policy</a></li><li><a href="mailto:support@opencodemobile.app">support@opencodemobile.app</a></li></ul>
+    </div>
+    <div>
+      <h3>Language</h3>
+      <ul><li><a href="/ja/">日本語</a></li><li><a href="/en/">English</a></li></ul>
+    </div>
+  </div>
   <p>OpenCode Mobile is not an official OpenCode app. It is made by an individual with no connection to the OpenCode team.</p>
 </footer>
 </main>
