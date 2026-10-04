@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/support/support_config.dart';
+import '../../core/support/web_sheet.dart';
 import '../../l10n/l10n.dart';
 import '../update/update_providers.dart';
 import 'settings_providers.dart';
@@ -86,13 +87,13 @@ class SupportSection extends ConsumerWidget {
   Future<void> _open(BuildContext context, Uri uri) async {
     final messenger = ScaffoldMessenger.of(context);
     final failed = context.l10n.linkOpenFailed;
-    // Web pages open in an in-app browser; mail goes to the mail app.
-    final opened = await launchUrl(
-      uri,
-      mode: uri.scheme.startsWith('http')
-          ? LaunchMode.inAppBrowserView
-          : LaunchMode.externalApplication,
-    ).catchError((_) => false);
+    // Web pages open in a sheet over the app; mail goes to the mail app.
+    final opened = uri.scheme.startsWith('http')
+        ? await openWebSheet(context, uri)
+        : await launchUrl(
+            uri,
+            mode: LaunchMode.externalApplication,
+          ).catchError((_) => false);
     if (!opened) {
       messenger.showSnackBar(SnackBar(content: Text('$failed\n$uri')));
     }
