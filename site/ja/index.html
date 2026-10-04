@@ -76,10 +76,24 @@
   </div>
 </div>
 <div class="feature">
+  <img src="/img/ja/7-rewind.webp" alt="スクリーンショット: メッセージから巻き戻す" width="540" height="1170" loading="lazy">
+  <div>
+    <h3>メッセージから巻き戻す</h3>
+    <p>送ったメッセージを長押しして「ここまで戻す」を選ぶと、そこから先の会話とファイルの変更を取り消せます。メッセージの文面は入力欄に戻るので、言い直してそのまま送れます。間違えたら「元に戻す」で元どおりです。</p>
+  </div>
+</div>
+<div class="feature">
+  <img src="/img/ja/8-voice.webp" alt="スクリーンショット: 声で頼んで、返答を聞く" width="540" height="1170" loading="lazy">
+  <div>
+    <h3>声で頼んで、返答を聞く</h3>
+    <p>会話モードでは、話しかけた内容を送り、作業が終わると返答を読み上げます。返答を長押しすれば、いつでも読み上げを聞けます。音声の聞き取りと読み上げには端末の機能を使います。</p>
+  </div>
+</div>
+<div class="feature">
   <img src="/img/ja/5-model.webp" alt="スクリーンショット: モデルもエージェントもすぐ切り替え" width="540" height="1170" loading="lazy">
   <div>
     <h3>モデルもエージェントもすぐ切り替え</h3>
-    <p>モデルやエージェントをその場で切り替えられます。画像の添付や、実行中の応答の中断もできます。</p>
+    <p>モデルはプロバイダごとの一覧から、名前で絞り込んですぐに選べます。エージェントの切り替え、画像の添付、実行中の応答の中断もできます。</p>
   </div>
 </div>
 </section>
@@ -99,7 +113,7 @@ opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
   <li>
     <span class="step-num">2</span>
     <h3>つなぎ方を決める</h3>
-    <p>家や職場では、スマートフォンを PC と同じ Wi-Fi につなぐだけです。外出先から使うときは、Tailscale などの VPN を通し、サーバーをインターネットに直接公開しないことをおすすめします。</p>
+    <p>家や職場では、スマートフォンを PC と同じ Wi-Fi につなぐだけです。外出先から使うときは、Tailscale などの VPN を通し、サーバーをインターネットに直接公開しないことをおすすめします。くわしい手順は<a href="/ja/connect/">つなぎ方</a>にまとめています。</p>
   </li>
   <li>
     <span class="step-num">3</span>
@@ -154,7 +168,11 @@ opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
   </details>
   <details>
     <summary>外出先からつなげますか？</summary>
-    <p>つなげます。Tailscale などの VPN を使い、PC とスマートフォンを同じネットワークに入れる方法をおすすめします。サーバーをインターネットにそのまま公開するのは避けてください。</p>
+    <p>つなげます。Tailscale などの VPN を使い、PC とスマートフォンを同じネットワークに入れる方法をおすすめします。サーバーをインターネットにそのまま公開するのは避けてください。Tailscale、Cloudflare Tunnel、SSH 転送の手順は<a href="/ja/connect/">つなぎ方</a>にまとめています。</p>
+  </details>
+  <details>
+    <summary>つながらないときは？</summary>
+    <p>アプリのメニューにある「接続の診断」で、サーバーのバージョンと応答時間、イベントの受信、通知プラグインの状態をまとめて確かめられます。結果はテキストでコピーできるので、お問い合わせのときに添えてください。</p>
   </details>
   <details>
     <summary>会話やコードはどこに送られますか？</summary>
