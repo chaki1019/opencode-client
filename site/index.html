@@ -3,34 +3,81 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>OpenCode Mobile サポート</title>
+<title>OpenCode Mobile | PC の OpenCode をスマートフォンから</title>
+<meta name="description" content="自分の PC や Mac で動かしている OpenCode に、iPhone と Android からつなぐ非公式クライアントアプリです。">
+<link rel="alternate" hreflang="ja" href="https://opencodemobile.app/">
+<link rel="alternate" hreflang="en" href="https://opencodemobile.app/en/">
 <link rel="stylesheet" href="/style.css">
 </head>
-<body>
+<body class="lp">
 <main>
-<header>
-  <a class="lang" href="/en/">English</a>
-  <h1>OpenCode Mobile</h1>
-  <p>自分の OpenCode サーバーにスマートフォンからつなぐ、非公式のクライアントアプリです。</p>
-</header>
+<nav class="top">
+  <a class="brand" href="/">OpenCode Mobile</a>
+  <span>
+    <a href="/support/">サポート</a>
+    <a href="/en/">English</a>
+  </span>
+</nav>
 
-<h2>お問い合わせ</h2>
-<p>不具合の報告、ご質問、ご要望はメールでお送りください。アプリの「設定」→「お問い合わせ」からも、アプリのバージョンと OS を添えたメールを作成できます。</p>
-<p><a href="mailto:support@opencodemobile.app">support@opencodemobile.app</a></p>
-<p>個人で開発しているため、お返事に数日かかることがあります。</p>
+<section class="hero">
+  <!-- アプリアイコンができたら差し替える: <img class="icon" src="/img/icon.png" alt=""> -->
+  <div class="icon placeholder" aria-hidden="true"></div>
+  <h1>PC の OpenCode を、<br>スマートフォンから。</h1>
+  <p class="lead">OpenCode Mobile は、自分の PC や Mac で動かしている <a href="https://opencode.ai">OpenCode</a> に iPhone・Android からつなぐクライアントアプリです。席を離れていても、エージェントへの指示、進み具合の確認、許可の判断ができます。</p>
+  <!-- ストアの URL が決まったらバッジに差し替える -->
+  <p class="stores">
+    <span class="store">App Store（近日公開）</span>
+    <span class="store">Google Play（近日公開）</span>
+  </p>
+</section>
 
-<h2>よくある質問</h2>
-<p><strong>サーバーにつながりません。</strong><br>
-スマートフォンと OpenCode サーバーが同じネットワークにあるか、サーバーが外部からの接続を受け付ける設定（<code>opencode serve --hostname 0.0.0.0</code> など）で起動しているかをご確認ください。</p>
-<p><strong>通知が届きません。</strong><br>
-サーバー側に通知用プラグイン <code>opencode-mobile-push</code> を入れ、アプリでペアリングしたかをご確認ください。端末の設定でアプリの通知が許可されている必要があります。</p>
-<p><strong>「広告を外す」を別の端末でも使いたい。</strong><br>
-同じ Apple ID または Google アカウントでログインした端末で、「設定」→「購入を復元」をお試しください。</p>
+<!-- ストア用のスクリーンショットができたら /img/ に置いて差し替える -->
+<section class="shots" aria-label="スクリーンショット">
+  <div class="shot placeholder">プロジェクト</div>
+  <div class="shot placeholder">チャット</div>
+  <div class="shot placeholder">通知</div>
+</section>
 
-<h2>プライバシー</h2>
-<p><a href="/privacy/">プライバシーポリシー</a></p>
+<h2>できること</h2>
+<ul class="features">
+  <li><strong>チャット</strong>セッションを選んで指示を送り、返答やツールの実行をリアルタイムで見られます。モデルやエージェントの切り替え、画像の添付、中断もできます。</li>
+  <li><strong>許可と質問</strong>ファイルの編集やコマンドの実行の許可、エージェントからの質問に、その場で答えられます。</li>
+  <li><strong>プッシュ通知</strong>応答の完了、エラー、許可待ち、質問を通知します。通知の中身は端末で復号するので、中継サーバーはプロジェクト名やタイトルを読めません。</li>
+  <li><strong>Git・ファイル・ターミナル</strong>変更ファイルと差分、ブランチ、ファイルの閲覧と検索、ターミナルまで手元で確認できます。</li>
+  <li><strong>複数のサーバー</strong>自宅の PC と仕事の Mac など、つなぎ先を保存して切り替えられます。</li>
+  <li><strong>データは自分のサーバーとだけ</strong>チャットやファイルは、アプリとあなたのサーバーの間だけでやり取りします。開発者は受け取りません。</li>
+</ul>
 
-<footer>OpenCode Mobile は OpenCode の公式アプリではありません。</footer>
+<h2>使い方</h2>
+<ol class="steps">
+  <li>
+    <strong>PC / Mac で OpenCode サーバーを起動する</strong>
+    <p>OpenCode を最新版にして、パスワードを決めてから、ほかの端末からの接続を受け付けるように起動します。</p>
+    <pre><code>OPENCODE_SERVER_PASSWORD=好きなパスワード \
+  opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
+  </li>
+  <li>
+    <strong>アプリでサーバーに接続する</strong>
+    <p>サーバー URL（例: <code>http://192.168.1.10:4096</code>）、ユーザー名（既定は <code>opencode</code>）、パスワードを入れて「接続」を押します。パスワードは端末の Keychain / Keystore に保存します。</p>
+  </li>
+  <li>
+    <strong>プロジェクトとセッションを選ぶ</strong>
+    <p>OpenCode で開いたことのあるプロジェクトが並びます。セッションを開いて続きを指示するか、新しいセッションを始めます。</p>
+  </li>
+  <li>
+    <strong>通知を受け取る（任意）</strong>
+    <p>プロジェクト一覧右上のベルから通知をオンにし、表示される設定を PC の <code>~/.config/opencode/opencode.json</code> に貼って OpenCode を再起動します。プラグイン <code>opencode-mobile-push</code> は npm から自動で入ります。</p>
+  </li>
+</ol>
+<p class="note">外出先からつなぐときは、Tailscale などの VPN を使って、サーバーをインターネットに直接公開しないことをおすすめします。対応しているのは OpenCode v2 の API を持つサーバーです。</p>
+
+<h2>料金</h2>
+<p>無料で使えます。プロジェクトとセッションの一覧にバナー広告が出ます（チャット画面には出しません）。送信が1日10回を超えると、動画広告を見るとさらに10回送れます。買い切りの「広告を外す」を購入すると、どちらの広告も出なくなります。</p>
+
+<footer>
+  <p><a href="/support/">サポート・お問い合わせ</a> · <a href="/privacy/">プライバシーポリシー</a></p>
+  <p>OpenCode Mobile は OpenCode の公式アプリではなく、OpenCode チームとは関係のない個人が開発しています。</p>
+</footer>
 </main>
 </body>
 </html>

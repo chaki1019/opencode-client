@@ -27,7 +27,8 @@ flutter build ipa \
 
 | パス | 内容 |
 | --- | --- |
-| `/` , `/en/` | サポートページ（お問い合わせ先、よくある質問） |
+| `/` , `/en/` | アプリの紹介と使い方（LP） |
+| `/support/` , `/en/support/` | サポートページ（お問い合わせ先、よくある質問） |
 | `/privacy/` , `/en/privacy/` | プライバシーポリシー |
 | `/app-ads.txt` | AdMob の app-ads.txt |
 
@@ -36,6 +37,7 @@ flutter build ipa \
 1. お問い合わせ先は `support@opencodemobile.app` です。Cloudflare の Email Routing で、このアドレス宛てのメールを普段のメールボックスへ転送します（ドメインの DNS が Cloudflare にあることが前提です）。
 2. `site/app-ads.txt` には AdMob のパブリッシャー ID（AdMob の「設定」→「アカウント情報」）を書いてあります。アカウントを変えたらここも直す。
 3. プライバシーポリシーの内容が実際のアプリと合っているか読み直す。データの扱いを変えたら、ここも合わせて直す。
+4. LP（`site/index.html` と `site/en/index.html`）のアプリアイコン、スクリーンショット、ストアのボタンは仮置きです。素材とストアの URL ができたら、画像を `site/img/` に置いて、HTML のコメントがある箇所を差し替えます。
 
 ### デプロイ
 
@@ -48,7 +50,7 @@ flutter build ipa \
 
 ### ストアに書く URL
 
-- App Store Connect: 「プライバシーポリシー URL」に `/privacy/`（英語ストアには `/en/privacy/`）、「サポート URL」に `/`、「マーケティング URL」は任意。
+- App Store Connect: 「プライバシーポリシー URL」に `/privacy/`（英語ストアには `/en/privacy/`）、「サポート URL」に `/support/`（英語ストアには `/en/support/`）、「マーケティング URL」に `/`（英語は `/en/`）。
 - Play Console: 「アプリのコンテンツ」→「プライバシー ポリシー」に `/privacy/`。ストアの掲載情報の「ウェブサイト」にサイトの URL、「メールアドレス」にお問い合わせ先を書きます。
 - AdMob は、ストアの「ウェブサイト」に書いたドメインの直下で `app-ads.txt` を探します。ストアのウェブサイト欄には `https://opencodemobile.app` を書きます。
 
