@@ -14,6 +14,10 @@ bool get _storePlatform =>
 
 /// The relay's version check, for builds without Remote Config. Null when
 /// this build has no relay, or on a platform without a store.
+/// The App Store listing, fixed by the app's Apple ID in App Store Connect
+/// (also `APP_STORE_APPLE_ID` in codemagic.yaml).
+const appStoreUrl = 'https://apps.apple.com/app/id6818950202';
+
 final updateCheckerProvider = Provider<UpdateChecker?>((ref) {
   if (!_storePlatform) return null;
   final url = updateCheckUrl();
@@ -108,13 +112,11 @@ class RequiredUpdateNotifier extends Notifier<RequiredUpdate?> {
     state = RequiredUpdate(
       installed: required.installed,
       minimum: required.minimum,
-      // Play's listing can be built from the package name; the App Store
-      // needs the numeric id, so iOS relies on the server.
       storeUrl:
           required.storeUrl ??
           (android
               ? 'https://play.google.com/store/apps/details?id=${info.packageName}'
-              : null),
+              : appStoreUrl),
     );
   }
 }

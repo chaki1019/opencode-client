@@ -11,12 +11,13 @@
 
 Firebase コンソールの Remote Config で、次のパラメータを追加・変更して公開します。広告の切り替え（[ads.md](ads.md)）も同じ画面です。
 
-| パラメータ | 内容 |
-|---|---|
-| `app_version` | これより古いバージョンをブロックする（未設定や空ならブロックしない） |
-| `store_url` | 「ストアを開く」ボタンの行き先。iOS は App Store のページ（例 `https://apps.apple.com/app/id1234567890`）を入れ、未設定だとボタンを出さず「App Store から更新してください」とだけ表示します。Android は未設定なら `https://play.google.com/store/apps/details?id=<applicationId>` を使います |
+| パラメータ | 型 | 内容 |
+|---|---|---|
+| `app_version` | 文字列 | これより古いバージョンをブロックする（未設定や空ならブロックしない） |
 
-型はどちらも文字列です。iOS と Android で値を変えるときは、パラメータにプラットフォームの条件を付けて出し分けます。
+iOS と Android で値を変えるときは、パラメータにプラットフォームの条件を付けて出し分けます。
+
+「ストアを開く」ボタンの行き先はアプリに固定です。iOS は `https://apps.apple.com/app/id6818950202`（App Store Connect の Apple ID、`codemagic.yaml` の `APP_STORE_APPLE_ID` と同じ）、Android は `https://play.google.com/store/apps/details?id=<applicationId>` です。
 
 新しい版がストアの審査を通って公開されてから最低バージョンを上げてください。先に上げると、更新先がないまま使えなくなります。
 
@@ -31,7 +32,7 @@ Remote Config 対応版がストアに出たら、中継サーバーの最低バ
 | 変数 | 内容 |
 |---|---|
 | `MIN_VERSION_IOS` / `MIN_VERSION_ANDROID` | Remote Config の `app_version` と同じ |
-| `STORE_URL_IOS` / `STORE_URL_ANDROID` | Remote Config の `store_url` と同じ |
+| `STORE_URL_IOS` / `STORE_URL_ANDROID` | 「ストアを開く」の行き先。古いビルドは iOS の URL をここからしか知らないので、`STORE_URL_IOS` には上の App Store の URL を入れておく |
 
 応答は 5 分キャッシュされるので、反映まで最大 5 分ほどかかります。
 

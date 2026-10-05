@@ -93,14 +93,14 @@ void main() {
     await pumpApp(tester, remote: remote);
     expect(find.byType(UpdateRequiredScreen), findsNothing);
 
-    remote.push({
-      'app_version': '1.1.0',
-      'store_url': 'https://example.com/store',
-    });
+    remote.push({'app_version': '1.1.0'});
     await tester.pumpAndSettle();
     final screen = tester.widget<UpdateRequiredScreen>(
       find.byType(UpdateRequiredScreen),
     );
-    expect(screen.update.storeUrl, 'https://example.com/store');
+    expect(
+      screen.update.storeUrl,
+      'https://play.google.com/store/apps/details?id=dev.example.app',
+    );
   });
 }

@@ -79,8 +79,8 @@ void main() {
 
   test('Remote Config values read like the relay response', () {
     expect(remoteSettingsJson({}), {
-      'ios': {'minimum': null, 'storeUrl': null},
-      'android': {'minimum': null, 'storeUrl': null},
+      'ios': {'minimum': null},
+      'android': {'minimum': null},
       'ads': {
         'rewarded': null,
         'freeMessages': null,
@@ -89,20 +89,13 @@ void main() {
     });
     final json = remoteSettingsJson({
       'app_version': ' 1.2.0 ',
-      'store_url': 'https://apps.apple.com/app/id1',
       'ads_rewarded': 'FALSE',
       'ads_free_messages': '20',
       'ads_messages_per_reward': 'ten',
     });
-    expect(json['ios'], {
-      'minimum': '1.2.0',
-      'storeUrl': 'https://apps.apple.com/app/id1',
-    });
+    expect(json['ios'], {'minimum': '1.2.0'});
     expect(json['android'], json['ios']);
-    expect(remoteSettingsJson({'app_version': ''})['ios'], {
-      'minimum': null,
-      'storeUrl': null,
-    });
+    expect(remoteSettingsJson({'app_version': ''})['ios'], {'minimum': null});
     expect(json['ads'], {
       'rewarded': false,
       'freeMessages': 20,
