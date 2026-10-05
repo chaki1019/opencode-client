@@ -96,8 +96,8 @@ final serverDiscoveryProvider = Provider<ServerDiscovery>(
 final lanScanProvider = Provider<ServerDiscovery>((ref) => LanScanDiscovery());
 
 /// OpenCode servers found on the local network, by mDNS and by scanning.
-/// Both run only while something (the connect screen) is listening;
-/// invalidate to scan again.
+/// Both run only while something (the connect screen, after the user taps
+/// search) is listening; invalidate to scan again.
 final discoveredServersProvider = StreamProvider.autoDispose<DiscoverySnapshot>(
   (ref) => mergeDiscoveries(
     browse: ref.watch(serverDiscoveryProvider).watch(),

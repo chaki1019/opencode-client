@@ -141,6 +141,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get discoveryNoneFound => '見つかりませんでした';
 
   @override
+  String get scanNetwork => 'ネットワークを探す';
+
+  @override
   String get rescanNetwork => 'もう一度探す';
 
   @override

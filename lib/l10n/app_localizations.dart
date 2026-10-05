@@ -302,6 +302,12 @@ abstract class AppLocalizations {
   /// **'No servers found'**
   String get discoveryNoneFound;
 
+  /// No description provided for @scanNetwork.
+  ///
+  /// In en, this message translates to:
+  /// **'Search the network'**
+  String get scanNetwork;
+
   /// No description provided for @rescanNetwork.
   ///
   /// In en, this message translates to:
