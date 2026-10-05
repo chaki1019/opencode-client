@@ -94,18 +94,34 @@ void main() {
     expect((await SettingsStore().load()).languageCode, isNull);
   });
 
-  testWidgets('haptics are on by default and can be turned off', (
+  testWidgets('haptics start light and can be set strong or off', (
     tester,
   ) async {
     await pumpSettings(tester);
-    final toggle = find.byKey(const Key('haptics'));
-    await tester.scrollUntilVisible(toggle, 100);
-    expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
-
-    await tester.tap(toggle);
+    HapticsLevel shown() => tester
+        .widget<RadioGroup<HapticsLevel>>(find.byType(RadioGroup<HapticsLevel>))
+        .groupValue!;
+    final strong = find.byKey(const Key('haptics-strong'));
+    await tester.scrollUntilVisible(strong, 100);
+    await tester.ensureVisible(find.byKey(const Key('haptics-off')));
     await tester.pumpAndSettle();
-    expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
-    expect((await SettingsStore().load()).haptics, isFalse);
+    expect(shown(), HapticsLevel.light);
+
+    await tester.tap(strong);
+    await tester.pumpAndSettle();
+    expect(shown(), HapticsLevel.strong);
+    expect((await SettingsStore().load()).haptics, HapticsLevel.strong);
+
+    await tester.tap(find.byKey(const Key('haptics-off')));
+    await tester.pumpAndSettle();
+    expect((await SettingsStore().load()).haptics, HapticsLevel.off);
+  });
+
+  test('the old on/off haptics value still loads', () {
+    expect(HapticsLevel.fromJson(true), HapticsLevel.light);
+    expect(HapticsLevel.fromJson(false), HapticsLevel.off);
+    expect(HapticsLevel.fromJson(null), HapticsLevel.light);
+    expect(HapticsLevel.fromJson('strong'), HapticsLevel.strong);
   });
 
   testWidgets('support rows are hidden when the build has none', (
