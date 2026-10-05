@@ -517,6 +517,8 @@
   "messagesToday": "Sent today",
   "messagesTodayValue": "{sent}/{allowance}",
   "@messagesTodayValue": {"placeholders": {"sent": {"type": "int"}, "allowance": {"type": "int"}}},
+  "messagesLeft": "{left} messages left today",
+  "@messagesLeft": {"placeholders": {"left": {"type": "int"}}},
   "rewardEarnMore": "Watch an ad for more messages",
   "rewardEarnMoreSubtitle": "A short ad adds {more} messages for today",
   "@rewardEarnMoreSubtitle": {"placeholders": {"more": {"type": "int"}}},

@@ -7,6 +7,7 @@ import 'package:opencode_mobile/features/ads/ad_widgets.dart';
 import 'package:opencode_mobile/features/ads/ads_providers.dart';
 import 'package:opencode_mobile/features/ads/ads_service.dart';
 import 'package:opencode_mobile/features/ads/ads_settings_section.dart';
+import 'package:opencode_mobile/features/ads/message_quota_ring.dart';
 import 'package:opencode_mobile/features/config/remote_values.dart';
 import 'package:opencode_mobile/l10n/app_localizations.dart';
 
@@ -216,6 +217,58 @@ void main() {
 
     await send(tester, 3);
     expect(find.text('3/10回'), findsOneWidget);
+  });
+
+  testWidgets('the ring by the send button shows what is left', (tester) async {
+    final (container, _) = await pumpGate(
+      tester,
+      extra: const Center(child: MessageQuotaRing()),
+    );
+    final ring = find.byKey(const Key('message-quota'));
+    expect(find.descendant(of: ring, matching: find.text('10')), findsOne);
+    expect(find.bySemanticsLabel('本日の残り10回'), findsOneWidget);
+
+    await send(tester, 3);
+    expect(find.descendant(of: ring, matching: find.text('7')), findsOne);
+
+    // Tapping it shows the count and earns more from the sheet.
+    await tester.tap(ring);
+    await tester.pumpAndSettle();
+    expect(find.text('3/10回'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('earn-messages')));
+    await tester.pumpAndSettle();
+    expect(container.read(messageQuotaProvider).remaining, 17);
+    expect(find.text('3/20回'), findsOneWidget);
+  });
+
+  testWidgets('the ring is hidden while sending is not limited', (
+    tester,
+  ) async {
+    remote = FakeRemoteSettings({
+      ...tenAndTen,
+      'rewarded_ads_enabled': 'false',
+    });
+    await pumpGate(tester, extra: const Center(child: MessageQuotaRing()));
+    expect(find.byKey(const Key('message-quota')), findsNothing);
+  });
+
+  testWidgets('setting the clock back does not restore the count', (
+    tester,
+  ) async {
+    final (container, _) = await pumpGate(tester);
+    now = DateTime(2026, 10, 4, 0, 0);
+    await send(tester, 10);
+    expect(container.read(messageQuotaProvider).remaining, 0);
+
+    // 23:59 the day before, then midnight again.
+    now = DateTime(2026, 10, 3, 23, 59);
+    await send(tester);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.tap(find.text('キャンセル'));
+    await tester.pumpAndSettle();
+    now = DateTime(2026, 10, 4, 0, 0);
+    await send(tester);
+    expect(find.byType(AlertDialog), findsOneWidget);
   });
 
   testWidgets('with rewarded ads switched off, sending is never limited', (

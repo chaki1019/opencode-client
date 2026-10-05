@@ -960,6 +960,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String messagesLeft(int left) {
+    return '$left messages left today';
+  }
+
+  @override
   String get rewardEarnMore => 'Watch an ad for more messages';
 
   @override

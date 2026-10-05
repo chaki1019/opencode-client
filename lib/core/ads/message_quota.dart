@@ -4,7 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Messages sent today against today's allowance. The allowance starts at
 /// the free count and grows with each rewarded ad; both reset when the
-/// local date changes.
+/// local date moves forward, at midnight in the phone's time zone.
 class MessageQuota {
   const MessageQuota({
     required this.day,
@@ -24,12 +24,16 @@ class MessageQuota {
     return '${time.year}-${two(time.month)}-${two(time.day)}';
   }
 
-  /// This quota if it is for [now]'s date, otherwise a fresh one. A free
-  /// count raised during the day applies at once; a lowered one waits for
-  /// the next day, so nobody loses messages they were promised.
+  /// This quota, or a fresh one once [now]'s date is past it. A clock set
+  /// back keeps the quota as it is, so winding it to 23:59 and letting it
+  /// pass midnight again earns nothing; a clock set ahead spends the days
+  /// it skips. A free count raised during the day applies at once; a
+  /// lowered one waits for the next day, so nobody loses messages they
+  /// were promised.
   MessageQuota on(DateTime now, {required int freeMessages}) {
     final today = dayOf(now);
-    if (today != day) {
+    // `yyyy-mm-dd` sorts by date; an empty day (nothing stored) sorts first.
+    if (today.compareTo(day) > 0) {
       return MessageQuota(day: today, sent: 0, allowance: freeMessages);
     }
     return allowance < freeMessages ? withAllowance(freeMessages) : this;

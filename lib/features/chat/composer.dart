@@ -10,6 +10,7 @@ import '../../core/models/session.dart';
 import '../../l10n/l10n.dart';
 import '../ads/ad_widgets.dart';
 import '../ads/ads_providers.dart';
+import '../ads/message_quota_ring.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
 import '../settings/haptics.dart';
@@ -213,6 +214,7 @@ class _ComposerState extends ConsumerState<Composer> {
                         ),
                       ),
                     ),
+                    const MessageQuotaRing(),
                     const SizedBox(width: 4),
                     if (busy && !canSend)
                       IconButton.filledTonal(

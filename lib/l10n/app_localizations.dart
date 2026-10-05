@@ -1682,6 +1682,12 @@ abstract class AppLocalizations {
   /// **'{sent}/{allowance}'**
   String messagesTodayValue(int sent, int allowance);
 
+  /// No description provided for @messagesLeft.
+  ///
+  /// In en, this message translates to:
+  /// **'{left} messages left today'**
+  String messagesLeft(int left);
+
   /// No description provided for @rewardEarnMore.
   ///
   /// In en, this message translates to:
