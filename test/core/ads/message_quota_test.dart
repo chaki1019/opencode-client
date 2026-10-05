@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/core/ads/ads_policy.dart';
 import 'package:opencode_mobile/core/ads/message_quota.dart';
 import 'package:opencode_mobile/core/config/remote_settings.dart';
+import 'package:opencode_mobile/features/ads/ads_settings_section.dart';
 
 void main() {
   MessageQuota at(
@@ -64,6 +65,36 @@ void main() {
     expect(at(ahead, DateTime(2026, 10, 6, 0, 1)).remaining, 10);
   });
 
+  test('today counts free and earned messages together', () {
+    var quota = const MessageQuota(
+      day: '2026-10-03',
+      sent: 2,
+      free: 5,
+      earned: 7,
+    );
+    expect((quota.sentToday, quota.allowance, quota.earnedToday), (2, 12, 7));
+    expect(quotaRingFraction(quota), closeTo(2 / 12, 1e-9));
+
+    for (var i = 0; i < 4; i++) {
+      quota = quota.spend();
+    }
+    // Three free, then one earned: still 6 of 12, of which 7 earned.
+    expect((quota.sentToday, quota.allowance, quota.earnedToday), (6, 12, 7));
+    expect((quota.sent, quota.earned, quota.earnedSent), (5, 6, 1));
+
+    for (var i = 0; i < 6; i++) {
+      quota = quota.spend();
+    }
+    expect(quota.remaining, 0);
+    expect(quotaRingFraction(quota), 1.0);
+
+    // The next day starts its own count.
+    final next = quota
+        .earn(3)
+        .on(DateTime(2026, 10, 4), freeMessages: 5, carryOver: 20);
+    expect((next.sentToday, next.allowance, next.earnedToday), (0, 8, 3));
+  });
+
   test('remaining never goes below zero', () {
     const quota = MessageQuota(day: '2026-10-03', sent: 11, free: 10);
     expect(quota.remaining, 0);
@@ -77,14 +108,20 @@ void main() {
     expect(await store.loadRemoved(), isFalse);
 
     await store.saveQuota(
-      const MessageQuota(day: '2026-10-03', sent: 3, free: 5, earned: 9),
+      const MessageQuota(
+        day: '2026-10-03',
+        sent: 3,
+        free: 5,
+        earned: 9,
+        earnedSent: 2,
+      ),
     );
     await store.saveRemoved(true);
 
     final quota = (await AdsStore().loadQuota())!;
     expect(
-      (quota.day, quota.sent, quota.free, quota.earned),
-      ('2026-10-03', 3, 5, 9),
+      (quota.day, quota.sent, quota.free, quota.earned, quota.earnedSent),
+      ('2026-10-03', 3, 5, 9, 2),
     );
     expect(await AdsStore().loadRemoved(), isTrue);
   });

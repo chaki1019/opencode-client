@@ -212,12 +212,12 @@ void main() {
       extra: AdsSettingsSection(header: (title) => Text(title)),
     );
     expect(find.text('メッセージ回数'), findsOneWidget);
-    expect(find.text('通常 0/10回・広告獲得分 残り0回'), findsOneWidget);
+    expect(find.text('0/10回'), findsOneWidget);
     // The purchase stays hidden until the store has the product.
     expect(find.byKey(const Key('remove-ads')), findsNothing);
 
     await send(tester, 3);
-    expect(find.text('通常 3/10回・広告獲得分 残り0回'), findsOneWidget);
+    expect(find.text('3/10回'), findsOneWidget);
   });
 
   testWidgets('the ring by the send button shows what is left', (tester) async {
@@ -235,11 +235,11 @@ void main() {
     // Tapping it shows the count and earns more from the sheet.
     await tester.tap(ring);
     await tester.pumpAndSettle();
-    expect(find.text('通常 3/10回・広告獲得分 残り0回'), findsOneWidget);
+    expect(find.text('3/10回'), findsOneWidget);
     await tester.tap(find.byKey(const Key('earn-messages')));
     await tester.pumpAndSettle();
     expect(container.read(messageQuotaProvider).remaining, 17);
-    expect(find.text('通常 3/10回・広告獲得分 残り10回'), findsOneWidget);
+    expect(find.text('3/20回（内、広告獲得分 10回）'), findsOneWidget);
   });
 
   testWidgets('the ring is hidden while sending is not limited', (
@@ -347,7 +347,7 @@ void main() {
     await tester.tap(find.byKey(const Key('earn-messages')));
     await tester.pumpAndSettle();
     expect(ads.rewardedShown, 1);
-    expect(find.text('通常 2/10回・広告獲得分 残り10回'), findsOneWidget);
+    expect(find.text('2/20回（内、広告獲得分 10回）'), findsOneWidget);
     expect(find.text('送信回数を10回増やしました'), findsOneWidget);
 
     // Closing early or a missing ad earns nothing here.
@@ -372,7 +372,7 @@ void main() {
     now = DateTime(2026, 10, 4, 9);
     await send(tester);
     // The new day's regular ones go first; the earned eight wait.
-    expect(find.text('通常 1/10回・広告獲得分 残り8回'), findsOneWidget);
+    expect(find.text('1/18回（内、広告獲得分 8回）'), findsOneWidget);
     expect(find.textContaining('20回まで翌日に持ち越せます'), findsOneWidget);
   });
 }

@@ -955,8 +955,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messagesToday => 'Sent today';
 
   @override
-  String messagesTodayDetail(int sent, int free, int earned) {
-    return 'Regular $sent/$free · Earned $earned left';
+  String messagesTodayValue(int sent, int allowance) {
+    return '$sent/$allowance';
+  }
+
+  @override
+  String messagesTodayEarned(int sent, int allowance, int earned) {
+    return '$sent/$allowance ($earned earned from ads)';
   }
 
   @override

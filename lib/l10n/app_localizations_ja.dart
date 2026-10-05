@@ -936,8 +936,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get messagesToday => '本日の送信回数';
 
   @override
-  String messagesTodayDetail(int sent, int free, int earned) {
-    return '通常 $sent/$free回・広告獲得分 残り$earned回';
+  String messagesTodayValue(int sent, int allowance) {
+    return '$sent/$allowance回';
+  }
+
+  @override
+  String messagesTodayEarned(int sent, int allowance, int earned) {
+    return '$sent/$allowance回（内、広告獲得分 $earned回）';
   }
 
   @override

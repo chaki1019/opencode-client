@@ -1676,11 +1676,17 @@ abstract class AppLocalizations {
   /// **'Sent today'**
   String get messagesToday;
 
-  /// No description provided for @messagesTodayDetail.
+  /// No description provided for @messagesTodayValue.
   ///
   /// In en, this message translates to:
-  /// **'Regular {sent}/{free} · Earned {earned} left'**
-  String messagesTodayDetail(int sent, int free, int earned);
+  /// **'{sent}/{allowance}'**
+  String messagesTodayValue(int sent, int allowance);
+
+  /// No description provided for @messagesTodayEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'{sent}/{allowance} ({earned} earned from ads)'**
+  String messagesTodayEarned(int sent, int allowance, int earned);
 
   /// No description provided for @messagesLeft.
   ///
