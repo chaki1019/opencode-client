@@ -207,9 +207,15 @@ void main() {
         .widget<SelectableText>(find.byKey(const Key('push-snippet')))
         .data!;
     final entry = jsonDecode('{$snippet}') as Map<String, Object?>;
-    final key =
-        (((entry['plugins']! as List).single as Map)['options'] as Map)['key']
-            as String;
+    // The plugin makes its own key; only a non-public relay is passed.
+    expect(entry['plugins'], [
+      {
+        'package': 'opencode-mobile-push',
+        'options': {'relay': 'https://relay.test'},
+      },
+    ]);
+    final saved = (await ServerStore().loadServers()).single;
+    final key = (await PushStore().load(saved.id))!.key;
     expect(key, hasLength(43));
     expect(find.text('まだ設定されていません。下の手順で追加してください。'), findsOneWidget);
 
@@ -242,12 +248,6 @@ void main() {
     await tester.tap(find.byKey(const Key('push-computer-refresh')));
     await tester.pumpAndSettle();
     expect(find.text('プラグインが動いています'), findsOneWidget);
-    expect(entry['plugins'], [
-      {
-        'package': 'opencode-mobile-push',
-        'options': {'relay': 'https://relay.test', 'key': key},
-      },
-    ]);
     // The relay only ever gets the derived auth key, and the iOS extension
     // gets the decryption key.
     final keys = await tester.runAsync(() => PushKeys.derive(key));
@@ -285,7 +285,7 @@ void main() {
     expect(find.byKey(const Key('push-snippet')), findsNothing);
   });
 
-  testWidgets('a second device switches to the key opencode.json uses', (
+  testWidgets('the key the plugin made on the computer is adopted', (
     tester,
   ) async {
     await pumpConnected(tester);
@@ -297,8 +297,54 @@ void main() {
     await tester.pumpAndSettle();
     final ownAuth = body(relay.requests.single)['key'];
 
-    // Another phone set OpenCode up with its own key.
+    // OpenCode loads the plugin by name only; it saved its own key next to
+    // opencode.json.
     final shared = 'S' * 43;
+    server.routes['/api/plugin'] = FakeRoute.json({
+      'location': {'directory': '/home/me'},
+      'data': [
+        {
+          'id': 'opencode-mobile-push',
+          'source': {'type': 'package', 'target': 'opencode-mobile-push'},
+          'features': {'server': true},
+          'state': {'status': 'active'},
+        },
+      ],
+    });
+    server.routes['/api/config'] = FakeRoute.json([
+      {
+        'type': 'document',
+        'path': '/home/me/.config/opencode/opencode.json',
+        'info': {
+          'plugins': ['opencode-mobile-push'],
+        },
+      },
+    ]);
+    server.routes['/api/fs/read/opencode-mobile-push.json'] = (request) =>
+        request.queryParameters['location[directory]'] ==
+            '/home/me/.config/opencode'
+        ? FakeRoute.json({'relay': 'https://relay.test', 'key': shared})
+        : const FakeRoute(404, 'Not Found', contentType: 'text/plain');
+    await tester.tap(find.byKey(const Key('push-computer-refresh')));
+    await tester.pumpAndSettle();
+
+    final sharedKeys = await tester.runAsync(() => PushKeys.derive(shared));
+    final unregister = relay.requests[relay.requests.length - 2];
+    final register = relay.requests.last;
+    expect(unregister.method, 'DELETE');
+    expect(body(unregister)['key'], ownAuth);
+    expect(register.method, 'POST');
+    expect(body(register)['key'], sharedKeys!.auth);
+    expect(messaging.shared, {sharedKeys.keyId});
+    expect(find.text('プラグインが動いています'), findsOneWidget);
+    final saved = (await ServerStore().loadServers()).single;
+    expect((await PushStore().load(saved.id))!.key, shared);
+  });
+
+  testWidgets('a key in opencode.json is adopted before turning it on', (
+    tester,
+  ) async {
+    final shared = 'T' * 43;
     server.routes['/api/config'] = FakeRoute.json([
       {
         'type': 'document',
@@ -312,22 +358,17 @@ void main() {
         },
       },
     ]);
-    await tester.tap(find.byKey(const Key('push-computer-refresh')));
+    await pumpConnected(tester);
+    await tester.tap(find.byKey(const Key('open-drawer')));
     await tester.pumpAndSettle();
-    expect(find.byKey(const Key('push-computer-adopt')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('push-settings')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('push-switch')));
+    await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('push-computer-adopt')));
-    await tester.pumpAndSettle();
+    // Registered once, straight with the computer's key.
     final sharedKeys = await tester.runAsync(() => PushKeys.derive(shared));
-    final unregister = relay.requests[relay.requests.length - 2];
-    final register = relay.requests.last;
-    expect(unregister.method, 'DELETE');
-    expect(body(unregister)['key'], ownAuth);
-    expect(register.method, 'POST');
-    expect(body(register)['key'], sharedKeys!.auth);
-    expect(messaging.shared, {sharedKeys.keyId});
-    expect(find.text('PC と同じキーに切り替えました'), findsOneWidget);
-    expect(find.byKey(const Key('push-computer-adopt')), findsNothing);
+    expect(body(relay.requests.single)['key'], sharedKeys!.auth);
     expect(
       find.text('設定はありますが、まだ読み込まれていません。OpenCode を再起動してください。'),
       findsOneWidget,

@@ -154,4 +154,56 @@ void main() {
       ComputerPluginStatus.notLoaded,
     );
   });
+
+  test('the settings file fills in what opencode.json leaves out', () {
+    final config = ComputerConfig.fromEntries([
+      _doc(['opencode-mobile-push']),
+    ]);
+    expect(config.directories, ['/Users/me/.config/opencode']);
+    expect(config.needsSettings, isTrue);
+
+    final filled = config.withSettings(
+      PushSettingsFile.tryParse('{"key": " ${'K' * 43} "}'),
+    );
+    expect(filled.entries.single.relay, defaultPushRelayUrl);
+    expect(filled.entries.single.key, 'K' * 43);
+    final check = checkComputerPlugin(
+      plugins: const [],
+      config: filled,
+      relayUrl: defaultPushRelayUrl,
+      key: _key,
+    );
+    expect(check.status, ComputerPluginStatus.otherKey);
+    expect(check.sharedKey, 'K' * 43);
+
+    // Unreadable: the relay still defaults, the key stays unknown.
+    expect(config.withSettings(null).entries.single.key, isNull);
+    expect(PushSettingsFile.tryParse('not json'), isNull);
+  });
+
+  test('a copied plugin file counts its settings file on its own', () {
+    final plugin = ServerPlugin.tryParse(
+      _plugin({
+        'type': 'local',
+        'path': '/Users/me/.config/opencode/plugins/opencode-mobile-push.js',
+      }),
+    )!;
+    const config = ComputerConfig();
+    expect(pushSettingsDirectories(config, [plugin]), [
+      '/Users/me/.config/opencode',
+    ]);
+    final filled = config.withSettings(
+      const PushSettingsFile(relay: _relay, key: 'k'),
+      loadedFromFolder: true,
+    );
+    expect(
+      checkComputerPlugin(
+        plugins: [plugin],
+        config: filled,
+        relayUrl: _relay,
+        key: _key,
+      ).status,
+      ComputerPluginStatus.active,
+    );
+  });
 }

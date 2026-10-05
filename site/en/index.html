@@ -171,7 +171,7 @@ opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
 </ol>
 <div class="callout">
   <h3>To get notifications too</h3>
-  <p>Tap the bell at the top right of the project list, turn notifications on, paste the settings it shows into <code class="copy">~/.config/opencode/opencode.json</code> on your computer, and restart OpenCode. The <code class="copy">opencode-mobile-push</code> plugin is installed from npm automatically.</p>
+  <p>Add <code class="copy">"plugins": ["opencode-mobile-push"]</code> to <code class="copy">~/.config/opencode/opencode.json</code> on your computer, restart OpenCode, then tap the bell at the top right of the project list and turn notifications on. OpenCode installs the plugin from npm, and the plugin makes its own pairing key on the computer. The app reads that key by itself, so there is nothing to copy.</p>
 </div>
 </section>
 

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/router.dart';
+import '../../core/api/opencode_client.dart';
 import '../../core/push/computer_plugin.dart';
 import '../../core/push/push_config.dart';
 import '../../core/push/push_crypto.dart';
@@ -46,8 +47,9 @@ class PushSetupException implements Exception {
   final PushSetupError error;
 }
 
-/// One saved server's notification pairing. The key is created the first
-/// time the screen opens so the plugin snippet stays the same afterwards.
+/// One saved server's notification pairing. A key is made up the first
+/// time the screen opens; it gives way to the computer's own key as soon as
+/// [computerPluginProvider] finds one.
 class PushPairingNotifier extends AsyncNotifier<PushPairing> {
   PushPairingNotifier(this.serverId);
 
@@ -105,8 +107,8 @@ class PushPairingNotifier extends AsyncNotifier<PushPairing> {
     state = AsyncData(updated);
   }
 
-  /// Switches this server's pairing to [key], the one `opencode.json`
-  /// already uses, so this device receives what the plugin sends there.
+  /// Switches this server's pairing to [key], the one the plugin on the
+  /// computer uses, so this device receives what it sends.
   /// Re-registers with the relay when notifications were on.
   Future<void> adoptKey(String key) async {
     final pairing = await future;
@@ -141,26 +143,74 @@ final pushPairingProvider = AsyncNotifierProvider.autoDispose
 /// Whether OpenCode on the connected computer runs the push plugin with
 /// this server's pairing. Null when the server can't tell (an older
 /// version, or the request failed).
+///
+/// The computer's key is the one that counts: when the plugin uses another
+/// key with this relay (one it created, or one another device set up), this
+/// device switches to it, so every device connected to that computer gets
+/// its notifications.
 final computerPluginProvider = FutureProvider.autoDispose
     .family<ComputerPluginCheck?, String>((ref, serverId) async {
       final client = ref.watch(connectionProvider)?.client;
       if (client == null) return null;
       final pairing = await ref.watch(pushPairingProvider(serverId).future);
+      final relayUrl = ref.watch(pushConfigProvider).relayUrl;
+      final ComputerPluginCheck check;
       try {
-        final (plugins, config) = await (
+        final (plugins, raw) = await (
           client.listPlugins(),
           client.readConfig(),
         ).wait;
-        return checkComputerPlugin(
+        var config = raw;
+        final fromFolder =
+            config.entries.isEmpty && plugins.any((p) => p.isPush);
+        if (config.needsSettings || fromFolder) {
+          final settings = await _readPushSettings(
+            client,
+            pushSettingsDirectories(config, plugins),
+          );
+          config = config.withSettings(settings, loadedFromFolder: fromFolder);
+        }
+        check = checkComputerPlugin(
           plugins: plugins,
           config: config,
-          relayUrl: ref.watch(pushConfigProvider).relayUrl,
+          relayUrl: relayUrl,
           key: pairing.key,
         );
       } on Object {
         return null;
       }
+      final shared = check.sharedKey;
+      if (shared == null) return check;
+      try {
+        // Rebuilds this check with the new key once it is saved.
+        await ref.read(pushPairingProvider(serverId).notifier).adoptKey(shared);
+      } on Object {
+        // Saved, but the relay or the permission prompt failed; the switch
+        // shows it off and turning it on again registers the new key.
+      }
+      return check;
     });
+
+/// The first settings file found in [directories], read through the
+/// OpenCode server.
+Future<PushSettingsFile?> _readPushSettings(
+  OpenCodeClient client,
+  List<String> directories,
+) async {
+  for (final directory in directories) {
+    try {
+      final file = await client.readFile(
+        directory: directory,
+        path: pushSettingsFileName,
+      );
+      final settings = PushSettingsFile.tryParse(file.text);
+      if (settings?.key != null) return settings;
+    } on Object {
+      // Not there, or the server can't read outside a project.
+    }
+  }
+  return null;
+}
 
 Future<void> _unregister({
   required RelayClient relay,

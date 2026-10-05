@@ -783,7 +783,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pushSetupSteps =>
-      '1. ~/.config/opencode/opencode.json に下の項目を追加\n2. OpenCode を再起動（プラグイン opencode-mobile-push は npm から自動で入ります）';
+      '1. ~/.config/opencode/opencode.json に下の項目を追加\n2. OpenCode を再起動\n\nプラグインは npm から自動で入り、通知用のキーも PC 側で作られます。アプリはそのキーを自動で読み取るので、コピーは不要です。';
 
   @override
   String get pushSendTest => 'テスト通知を送る';
@@ -969,7 +969,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pushComputerOtherKey =>
-      '別のキーで設定されています。opencode.json の項目を下の内容に置き換えてください。';
+      'PC のプラグインが別のリレーかキーを使っています。opencode.json のプラグインの項目を下の内容にしてください。';
 
   @override
   String get pushComputerNotLoaded =>
@@ -983,16 +983,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pushComputerRefresh => 'もう一度確認';
-
-  @override
-  String get pushComputerAdopt => 'PC の設定のキーを使う';
-
-  @override
-  String get pushComputerAdoptHint =>
-      '別の端末で設定したキーなら、この端末も同じキーに切り替えると、両方に通知が届きます。';
-
-  @override
-  String get pushComputerAdopted => 'PC と同じキーに切り替えました';
 
   @override
   String get diagnosticsTitle => '接続の診断';
@@ -1033,7 +1023,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get diagnosticsPluginOtherKey =>
-      '別の端末のキーで設定されています。タップすると、この端末を同じキーに切り替えられます。';
+      'PC のプラグインが別のリレーかキーを使っています。タップして確認してください。';
 
   @override
   String get diagnosticsMcpNone => 'MCP サーバーはありません';

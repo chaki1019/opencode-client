@@ -1,8 +1,14 @@
 // OpenCode v2 plugin: forwards "agent finished / needs you" events to the
 // opencode-mobile push relay, which delivers them to the phone over FCM.
 //
-// Install from npm (package "opencode-mobile-push") and add to
-// ~/.config/opencode/opencode.json (the app shows this snippet with your key):
+// Install from npm by adding one line to ~/.config/opencode/opencode.json:
+//
+//   "plugins": ["opencode-mobile-push"]
+//
+// On first start the plugin creates a pairing key and saves it to
+// ~/.config/opencode/opencode-mobile-push.json; the app reads it from there
+// through the OpenCode server, so nothing has to be copied by hand. The
+// relay defaults to the public one. Both can still be passed as options:
 //
 //   "plugins": [{
 //     "package": "opencode-mobile-push",
@@ -10,8 +16,7 @@
 //   }]
 //
 // Or drop this file into ~/.config/opencode/plugins/, which OpenCode loads
-// without options; relay and key then come from
-// ~/.config/opencode/opencode-mobile-push.json ({"relay": ..., "key": ...}).
+// without options; the settings file works the same way.
 //
 // The file has no package imports on purpose: plugins load from a folder
 // without node_modules, and a failed import makes OpenCode skip the plugin
@@ -25,6 +30,7 @@
 
 const PLUGIN_ID = "opencode-mobile-push";
 const SETTINGS_FILE = "opencode-mobile-push.json";
+const DEFAULT_RELAY = "https://relay.opencodemobile.app";
 const DEDUPE_MS = 15_000;
 const BACKOFFS_MS = [2_000, 5_000, 10_000, 30_000];
 
@@ -60,15 +66,63 @@ function readOptions(raw) {
   };
 }
 
+/** The settings file in OpenCode's global config folder, where a new key is saved. */
+function homeSettingsPath(env) {
+  if (env.OPENCODE_MOBILE_PUSH_SETTINGS) return env.OPENCODE_MOBILE_PUSH_SETTINGS;
+  const base = env.XDG_CONFIG_HOME || (env.HOME ? `${env.HOME}/.config` : "");
+  return base ? `${base}/opencode/${SETTINGS_FILE}` : null;
+}
+
 /** Where relay and key are read from when the plugin gets no options. */
 function settingsPaths(env) {
   const paths = [];
   if (env.OPENCODE_MOBILE_PUSH_SETTINGS) paths.push(env.OPENCODE_MOBILE_PUSH_SETTINGS);
   // Next to the plugins folder this file was loaded from.
   if (import.meta.url.startsWith("file:")) paths.push(new URL(`../${SETTINGS_FILE}`, import.meta.url));
-  const base = env.XDG_CONFIG_HOME || (env.HOME ? `${env.HOME}/.config` : "");
-  if (base) paths.push(`${base}/opencode/${SETTINGS_FILE}`);
+  const home = homeSettingsPath(env);
+  if (home && !paths.includes(home)) paths.push(home);
   return paths;
+}
+
+function newKey() {
+  // 32 random bytes, base64url without padding, like the app makes them.
+  return base64url(crypto.getRandomValues(new Uint8Array(32)));
+}
+
+// One key per settings file, even when several locations start at once.
+const createdKeys = new Map();
+
+/**
+ * Creates a pairing key and adds it to the settings file, keeping what the
+ * file already holds. Readable only by the user, since anyone holding the
+ * key can read the notifications.
+ */
+function createKey() {
+  const path = homeSettingsPath(globalThis.process?.env ?? {});
+  if (!path) return Promise.resolve(null);
+  if (!createdKeys.has(path)) {
+    createdKeys.set(path, (async () => {
+      const { readFile, writeFile, mkdir } = await import("node:fs/promises");
+      const { dirname } = await import("node:path");
+      let settings = {};
+      try {
+        settings = JSON.parse(await readFile(path, "utf8")) ?? {};
+      } catch {
+        // No file yet.
+      }
+      if (typeof settings.key === "string" && settings.key.trim()) return settings.key.trim();
+      const key = newKey();
+      await mkdir(dirname(path), { recursive: true });
+      await writeFile(path, `${JSON.stringify({ ...settings, key }, null, 2)}\n`, { mode: 0o600 });
+      console.error(`[${PLUGIN_ID}] created a pairing key in ${path}; turn on notifications in the app to use it.`);
+      return key;
+    })().catch((error) => {
+      createdKeys.delete(path);
+      console.error(`[${PLUGIN_ID}] could not save a pairing key: ${error?.message ?? error}`);
+      return null;
+    }));
+  }
+  return createdKeys.get(path);
 }
 
 async function readSettings() {
@@ -88,11 +142,17 @@ async function readSettings() {
   return {};
 }
 
-/** Options from the config, falling back to the settings file for relay and key. */
+/**
+ * Options from the config, falling back to the settings file for relay and
+ * key, then to the public relay and a newly created key.
+ */
 async function resolveOptions(raw) {
   const options = readOptions(raw);
   if (options.relay && options.key) return options;
-  return readOptions({ ...(await readSettings()), ...(raw ?? {}) });
+  const merged = readOptions({ ...(await readSettings()), ...(raw ?? {}) });
+  if (!merged.relay) merged.relay = DEFAULT_RELAY;
+  if (!merged.key) merged.key = (await createKey()) ?? "";
+  return merged;
 }
 
 /** Maps a v2 event to a notification kind and its session, or null. */
@@ -242,7 +302,7 @@ export default {
     // late subscription misses the first turn.
     const ready = resolveOptions(ctx.options).then((options) => {
       if (options.relay && options.key) return options;
-      console.error(`[${PLUGIN_ID}] "relay" and "key" options are required; notifications are off.`);
+      console.error(`[${PLUGIN_ID}] no pairing key; notifications are off.`);
       controller.abort();
       return null;
     });
