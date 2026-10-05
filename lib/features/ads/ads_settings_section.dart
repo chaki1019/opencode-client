@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/ads/message_quota.dart';
 import '../../l10n/l10n.dart';
 import '../chat/context_sheet.dart' show UsageRing;
+import '../settings/haptics.dart';
 import 'ads_providers.dart';
 import 'ads_service.dart';
 import 'remove_ads.dart';
@@ -154,7 +157,11 @@ class MessageCountTile extends ConsumerWidget {
 
 /// Watches a rewarded ad on request, before the day's messages run out.
 class EarnMessagesTile extends ConsumerStatefulWidget {
-  const EarnMessagesTile({super.key});
+  const EarnMessagesTile({super.key, this.closeWhenDone = false});
+
+  /// Closes the sheet this sits in once the ad is over, so the result
+  /// shows on the screen underneath instead of hidden behind the sheet.
+  final bool closeWhenDone;
 
   @override
   ConsumerState<EarnMessagesTile> createState() => _EarnMessagesTileState();
@@ -170,16 +177,22 @@ class _EarnMessagesTileState extends ConsumerState<EarnMessagesTile> {
     // Unlike sending, a missing ad earns nothing here: nothing is blocked.
     if (outcome == RewardOutcome.earned) {
       await ref.read(messageQuotaProvider.notifier).addReward();
+      unawaited(ref.read(hapticsProvider).play(HapticCue.reward));
     }
     if (!mounted) return;
-    setState(() => _loading = false);
     final l10n = context.l10n;
+    final messenger = ScaffoldMessenger.of(context);
     final text = switch (outcome) {
       RewardOutcome.earned => l10n.rewardAdded(more),
       RewardOutcome.skipped => l10n.rewardEarnSkipped,
       RewardOutcome.unavailable => l10n.rewardUnavailable,
     };
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+    if (widget.closeWhenDone) {
+      Navigator.of(context).pop();
+    } else {
+      setState(() => _loading = false);
+    }
+    messenger.showSnackBar(SnackBar(content: Text(text)));
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -263,10 +264,25 @@ void main() {
     await tester.tap(ring);
     await tester.pumpAndSettle();
     expect(find.text('3/10回'), findsOneWidget);
+    final vibrations = <Object?>[];
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async {
+        if (call.method == 'HapticFeedback.vibrate') {
+          vibrations.add(call.arguments);
+        }
+        return null;
+      },
+    );
     await tester.tap(find.byKey(const Key('earn-messages')));
     await tester.pumpAndSettle();
     expect(container.read(messageQuotaProvider).remaining, 17);
-    expect(find.text('3/20回（内、広告獲得分 10回）'), findsOneWidget);
+    expect(find.descendant(of: ring, matching: find.text('17')), findsOne);
+    // The sheet closes so the result is not hidden behind it, with a tap
+    // of the phone to go with it.
+    expect(find.byKey(const Key('earn-messages')), findsNothing);
+    expect(find.text('送信回数を10回増やしました'), findsOneWidget);
+    expect(vibrations, ['HapticFeedbackType.mediumImpact']);
   });
 
   testWidgets('the ring is hidden while sending is not limited', (

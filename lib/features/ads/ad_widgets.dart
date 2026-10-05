@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
+import '../settings/haptics.dart';
 import 'ads_providers.dart';
 import 'ads_service.dart';
 
@@ -38,6 +41,9 @@ Future<bool> admitMessage(BuildContext context, WidgetRef ref) async {
   );
   switch (outcome) {
     case RewardOutcome.earned || RewardOutcome.unavailable:
+      if (outcome == RewardOutcome.earned) {
+        unawaited(ref.read(hapticsProvider).play(HapticCue.reward));
+      }
       await quota.addReward();
       return true;
     case RewardOutcome.skipped:

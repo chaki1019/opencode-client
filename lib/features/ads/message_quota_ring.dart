@@ -36,7 +36,10 @@ class MessageQuotaRing extends ConsumerWidget {
             builder: (_) => const SafeArea(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: [MessageCountTile(), EarnMessagesTile()],
+                children: [
+                  MessageCountTile(),
+                  EarnMessagesTile(closeWhenDone: true),
+                ],
               ),
             ),
           ),

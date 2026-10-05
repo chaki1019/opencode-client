@@ -19,6 +19,9 @@ enum HapticCue {
   /// The AI finished its reply.
   replyDone,
 
+  /// A rewarded ad was watched to the end and added messages.
+  reward,
+
   /// The AI is waiting on a permission or a question.
   attention,
 
@@ -50,6 +53,7 @@ class Haptics {
             ? HapticFeedback.lightImpact()
             : HapticFeedback.selectionClick());
       case HapticCue.replyDone:
+      case HapticCue.reward:
         await (strong
             ? HapticFeedback.heavyImpact()
             : HapticFeedback.mediumImpact());
