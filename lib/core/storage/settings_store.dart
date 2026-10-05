@@ -3,12 +3,30 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+/// How much the app vibrates.
+enum HapticsLevel {
+  off,
+
+  /// Send, reply finished, waiting on the user, failures and gestures.
+  light,
+
+  /// Also marks the moment the AI starts writing its reply.
+  strong;
+
+  /// Also reads the on/off value stored before there were levels.
+  static HapticsLevel fromJson(Object? value) => switch (value) {
+    false => off,
+    String name => values.where((l) => l.name == name).firstOrNull ?? light,
+    _ => light,
+  };
+}
+
 /// App-wide preferences that do not depend on any server.
 class AppSettings {
   const AppSettings({
     this.themeMode = ThemeMode.system,
     this.languageCode,
-    this.haptics = true,
+    this.haptics = HapticsLevel.light,
     this.crashReports = true,
   });
 
@@ -17,8 +35,8 @@ class AppSettings {
   /// `ja`, `en`, or null to follow the device language.
   final String? languageCode;
 
-  /// Whether the app gives haptic feedback at key moments.
-  final bool haptics;
+  /// How much haptic feedback the app gives.
+  final HapticsLevel haptics;
 
   /// Whether crash reports may be sent.
   final bool crashReports;
@@ -28,7 +46,7 @@ class AppSettings {
   AppSettings copyWith({
     ThemeMode? themeMode,
     String? Function()? language,
-    bool? haptics,
+    HapticsLevel? haptics,
     bool? crashReports,
   }) => AppSettings(
     themeMode: themeMode ?? this.themeMode,
@@ -57,7 +75,7 @@ class SettingsStore {
           ThemeMode.values.where((m) => m.name == json['theme']).firstOrNull ??
           ThemeMode.system,
       languageCode: json['language'] as String?,
-      haptics: json['haptics'] as bool? ?? true,
+      haptics: HapticsLevel.fromJson(json['haptics']),
       crashReports: json['crashReports'] as bool? ?? true,
     );
   }
@@ -67,7 +85,7 @@ class SettingsStore {
     value: jsonEncode({
       'theme': settings.themeMode.name,
       'language': ?settings.languageCode,
-      'haptics': settings.haptics,
+      'haptics': settings.haptics.name,
       'crashReports': settings.crashReports,
     }),
   );

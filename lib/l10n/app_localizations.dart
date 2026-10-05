@@ -1574,23 +1574,41 @@ abstract class AppLocalizations {
   /// **'Pick a session to show its chat here'**
   String get chatPaneEmpty;
 
-  /// No description provided for @settingsInteraction.
-  ///
-  /// In en, this message translates to:
-  /// **'Interaction'**
-  String get settingsInteraction;
-
   /// No description provided for @settingsHaptics.
   ///
   /// In en, this message translates to:
   /// **'Haptic feedback'**
   String get settingsHaptics;
 
-  /// No description provided for @settingsHapticsHelp.
+  /// No description provided for @hapticsOff.
   ///
   /// In en, this message translates to:
-  /// **'Vibrate lightly on send, when a reply finishes, and when the AI needs your answer'**
-  String get settingsHapticsHelp;
+  /// **'Off'**
+  String get hapticsOff;
+
+  /// No description provided for @hapticsLight.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get hapticsLight;
+
+  /// No description provided for @hapticsLightHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibrate on send, when a reply finishes, and when the AI needs your answer'**
+  String get hapticsLightHelp;
+
+  /// No description provided for @hapticsStrong.
+  ///
+  /// In en, this message translates to:
+  /// **'Strong'**
+  String get hapticsStrong;
+
+  /// No description provided for @hapticsStrongHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'A little stronger, and also vibrates when the AI starts writing its reply'**
+  String get hapticsStrongHelp;
 
   /// No description provided for @updateRequiredTitle.
   ///

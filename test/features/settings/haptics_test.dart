@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/core/events/server_event.dart';
+import 'package:opencode_mobile/core/storage/settings_store.dart';
 import 'package:opencode_mobile/features/settings/haptics.dart';
 
 ServerEvent event(String type, [String session = 's1']) =>
@@ -47,6 +48,27 @@ void main() {
       );
     });
 
+    test('the start of a reply is marked once per run', () {
+      final cues = SessionCues('s1', running: false);
+      cues.onEvent(event('session.execution.started'));
+      expect(
+        cues.onEvent(event('session.text.started')),
+        HapticCue.replyStarted,
+      );
+      expect(cues.onEvent(event('session.text.started')), isNull);
+      cues.onEvent(event('session.execution.succeeded'));
+      cues.onEvent(event('session.execution.started'));
+      expect(
+        cues.onEvent(event('session.text.started')),
+        HapticCue.replyStarted,
+      );
+    });
+
+    test('a run already writing when the chat opens is not marked', () {
+      final cues = SessionCues('s1', running: true);
+      expect(cues.onEvent(event('session.text.started')), isNull);
+    });
+
     test('other sessions are ignored', () {
       final cues = SessionCues('s1', running: true);
       expect(cues.onEvent(event('session.idle', 's2')), isNull);
@@ -83,13 +105,31 @@ void main() {
     );
 
     test('plays when enabled', () async {
-      await const Haptics(enabled: true).play(HapticCue.replyDone);
+      await const Haptics(level: HapticsLevel.light).play(HapticCue.replyDone);
       expect(played, ['HapticFeedbackType.mediumImpact']);
     });
 
     test('stays silent when turned off', () async {
-      await const Haptics(enabled: false).play(HapticCue.failure);
+      await const Haptics(level: HapticsLevel.off).play(HapticCue.failure);
       expect(played, isEmpty);
+    });
+
+    test('the start of a reply plays only at the strong level', () async {
+      await const Haptics(level: HapticsLevel.light)
+          .play(HapticCue.replyStarted);
+      expect(played, isEmpty);
+      await const Haptics(level: HapticsLevel.strong)
+          .play(HapticCue.replyStarted);
+      expect(played, ['HapticFeedbackType.lightImpact']);
+    });
+
+    test('the strong level plays a step stronger', () async {
+      await const Haptics(level: HapticsLevel.strong).play(HapticCue.send);
+      await const Haptics(level: HapticsLevel.strong).play(HapticCue.replyDone);
+      expect(played, [
+        'HapticFeedbackType.lightImpact',
+        'HapticFeedbackType.heavyImpact',
+      ]);
     });
   });
 }

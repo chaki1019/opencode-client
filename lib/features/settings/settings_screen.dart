@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/layout.dart';
+import '../../core/storage/settings_store.dart';
 import '../../l10n/l10n.dart';
 import '../ads/ads_settings_section.dart';
 import '../update/update_providers.dart';
@@ -77,13 +78,35 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ),
-          _SectionHeader(l10n.settingsInteraction),
-          SwitchListTile(
-            key: const Key('haptics'),
-            value: settings.haptics,
-            onChanged: notifier.setHaptics,
-            title: Text(l10n.settingsHaptics),
-            subtitle: Text(l10n.settingsHapticsHelp),
+          _SectionHeader(l10n.settingsHaptics),
+          RadioGroup<HapticsLevel>(
+            groupValue: settings.haptics,
+            onChanged: (level) {
+              if (level != null) notifier.setHaptics(level);
+            },
+            child: Column(
+              children: [
+                for (final (level, label, help) in [
+                  (HapticsLevel.off, l10n.hapticsOff, null),
+                  (
+                    HapticsLevel.light,
+                    l10n.hapticsLight,
+                    l10n.hapticsLightHelp,
+                  ),
+                  (
+                    HapticsLevel.strong,
+                    l10n.hapticsStrong,
+                    l10n.hapticsStrongHelp,
+                  ),
+                ])
+                  RadioListTile<HapticsLevel>(
+                    key: Key('haptics-${level.name}'),
+                    value: level,
+                    title: Text(label),
+                    subtitle: help == null ? null : Text(help),
+                  ),
+              ],
+            ),
           ),
           AdsSettingsSection(header: _SectionHeader.new),
           SupportSection(header: _SectionHeader.new),

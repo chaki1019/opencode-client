@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/events/server_event.dart';
+import '../../core/storage/settings_store.dart';
 import '../live/live_providers.dart';
 import 'settings_providers.dart';
 
@@ -11,6 +12,9 @@ import 'settings_providers.dart';
 enum HapticCue {
   /// A message was sent.
   send,
+
+  /// The AI started writing its reply. Only at the strong level.
+  replyStarted,
 
   /// The AI finished its reply.
   replyDone,
@@ -28,49 +32,68 @@ enum HapticCue {
   swipeThreshold,
 }
 
-/// Plays [HapticCue]s, unless the user turned haptics off in Settings.
+/// Plays [HapticCue]s at the level chosen in Settings.
 class Haptics {
-  const Haptics({required this.enabled});
+  const Haptics({required this.level});
 
-  final bool enabled;
+  final HapticsLevel level;
 
   Future<void> play(HapticCue cue) async {
-    if (!enabled) return;
+    if (level == HapticsLevel.off) return;
+    final strong = level == HapticsLevel.strong;
+    if (cue == HapticCue.replyStarted && !strong) return;
     switch (cue) {
       case HapticCue.send:
+      case HapticCue.replyStarted:
       case HapticCue.swipeThreshold:
-        await HapticFeedback.selectionClick();
+        await (strong
+            ? HapticFeedback.lightImpact()
+            : HapticFeedback.selectionClick());
       case HapticCue.replyDone:
-        await HapticFeedback.mediumImpact();
+        await (strong
+            ? HapticFeedback.heavyImpact()
+            : HapticFeedback.mediumImpact());
       case HapticCue.attention:
         await HapticFeedback.heavyImpact();
+        if (strong) {
+          await Future<void>.delayed(const Duration(milliseconds: 120));
+          await HapticFeedback.heavyImpact();
+        }
       case HapticCue.failure:
-        // Two quick taps, so it does not read as a finished reply.
-        await HapticFeedback.heavyImpact();
-        await Future<void>.delayed(const Duration(milliseconds: 120));
-        await HapticFeedback.heavyImpact();
+        // Several quick taps, so it does not read as a finished reply.
+        for (var i = 0; i < (strong ? 3 : 2); i++) {
+          if (i > 0) {
+            await Future<void>.delayed(const Duration(milliseconds: 120));
+          }
+          await HapticFeedback.heavyImpact();
+        }
       case HapticCue.longPress:
         // Android widgets already vibrate on long press themselves.
         if (defaultTargetPlatform == TargetPlatform.iOS) {
-          await HapticFeedback.mediumImpact();
+          await (strong
+              ? HapticFeedback.heavyImpact()
+              : HapticFeedback.mediumImpact());
         }
     }
   }
 }
 
 final hapticsProvider = Provider<Haptics>(
-  (ref) =>
-      Haptics(enabled: ref.watch(settingsProvider.select((s) => s.haptics))),
+  (ref) => Haptics(level: ref.watch(settingsProvider.select((s) => s.haptics))),
 );
 
 /// Decides which cue, if any, a server event about one session deserves.
 /// A run's end is marked once, even when the server sends both a result and
-/// `session.idle`. A run the user stopped gets no cue.
+/// `session.idle`. A run the user stopped gets no cue. The start of a reply
+/// is marked at the first text of each run, not at every message in it.
 class SessionCues {
-  SessionCues(this.sessionId, {required bool running}) : _ended = !running;
+  SessionCues(this.sessionId, {required bool running})
+    : _ended = !running,
+      _writing = running;
 
   final String sessionId;
   bool _ended;
+  bool _writing;
 
   HapticCue? onEvent(ServerEvent event) {
     final asked = waitingRequestAdded(event);
@@ -80,7 +103,13 @@ class SessionCues {
     if (event.sessionId != sessionId) return null;
     if (event.isExecutionStarted) {
       _ended = false;
+      _writing = false;
       return null;
+    }
+    if (event.type == 'session.text.started') {
+      if (_writing) return null;
+      _writing = true;
+      return HapticCue.replyStarted;
     }
     if (!event.isExecutionTerminal || _ended) return null;
     _ended = true;
