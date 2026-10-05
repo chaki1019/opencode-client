@@ -36,6 +36,15 @@ simple = { limit = 30, period = 60 }
 
 # Secret (not in this file): npx wrangler secret put FCM_SERVICE_ACCOUNT < service-account.json
 
+# Ad switches served with /v1/app-version: JSON under the key `ads`, edited
+# in the dashboard (Storage & Databases → KV → opencode-config) and live
+# on the server within about a minute, no deploy. Create once with
+# `npx wrangler kv namespace create opencode-config`, paste the id and
+# uncomment. Without it the app keeps its built-in values. See docs/ads.md.
+# [[kv_namespaces]]
+# binding = "CONFIG"
+# id = "YOUR_CONFIG_NAMESPACE_ID"
+
 # Minimum app versions (GET /v1/app-version). Older apps are blocked until
 # the user updates from the store URL. Leave a minimum empty to allow every
 # version. Change them here and `npx wrangler deploy`, or edit the variables
@@ -45,11 +54,3 @@ MIN_VERSION_IOS = ""
 MIN_VERSION_ANDROID = ""
 STORE_URL_IOS = ""
 STORE_URL_ANDROID = ""
-
-# Ad switches, served with the minimums above. Empty keeps the app's
-# built-in value (rewarded ads on, 10 free messages a day, 10 more per ad).
-# ADS_REWARDED = "false" turns the rewarded ad and the daily limit off;
-# banners stay. Counts are whole numbers from 1 to 1000.
-ADS_REWARDED = ""
-ADS_FREE_MESSAGES = ""
-ADS_MESSAGES_PER_REWARD = ""
