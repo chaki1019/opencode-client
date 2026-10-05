@@ -92,6 +92,8 @@ Apple Developer の Identifiers に `app.opencodemobile`（Push Notifications �
 
 アプリが PC に書き込むことはありません。キーの持ち主は常に PC 側です。
 
+OpenCode のログに `[opencode-mobile-push] "relay" and "key" options are required; notifications are off.` と出る場合は、0.2.0 以前の古いプラグインが動いています（このメッセージは 0.3.0 以降にはありません）。OpenCode が以前に入れた版を使い続けているので、`"plugins": ["opencode-mobile-push@0.3.0"]` のように版を指定して OpenCode を再起動してください。
+
 自前の中継を使う場合や、キーを自分で決めたい場合は、オプションで渡します。`opencode.json` / `opencode.jsonc` のオプションは設定ファイルより優先されます。アプリは `opencode.json` のキーも読み取って合わせます。npm を使わない場合は、`push/plugin/opencode-mobile-push.js` を `~/.config/opencode/plugins/` にコピーします（v2 は `"package"` にファイルのパスを書くと無視します）。オプションを渡せないので、プラグインは同じ設定ファイルから中継とキーを読みます。
 
 ```jsonc

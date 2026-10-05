@@ -22,6 +22,9 @@ by hand, and every phone that connects to this computer uses the same key.
 Notifications go through the public relay at `https://relay.opencodemobile.app`.
 
 To pin a version, use `"opencode-mobile-push@0.3.0"`.
+If OpenCode logs `"relay" and "key" options are required; notifications are off.`,
+it is still running 0.2.0 or older, which needed both options. Pin the
+version as above and restart OpenCode to move to the current one.
 
 To use your own relay, or a key you choose, pass them as options:
 
