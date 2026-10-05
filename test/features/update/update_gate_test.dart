@@ -83,7 +83,7 @@ void main() {
     await pumpApp(
       tester,
       minimum: '9.0.0',
-      remote: FakeRemoteSettings({'min_version_android': '1.0.0'}),
+      remote: FakeRemoteSettings({'app_version': '1.0.0'}),
     );
     expect(find.byType(UpdateRequiredScreen), findsNothing);
   });
@@ -94,8 +94,8 @@ void main() {
     expect(find.byType(UpdateRequiredScreen), findsNothing);
 
     remote.push({
-      'min_version_android': '1.1.0',
-      'store_url_android': 'https://example.com/store',
+      'app_version': '1.1.0',
+      'store_url': 'https://example.com/store',
     });
     await tester.pumpAndSettle();
     final screen = tester.widget<UpdateRequiredScreen>(

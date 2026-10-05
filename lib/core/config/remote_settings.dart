@@ -117,15 +117,15 @@ Map<String, Object?> remoteSettingsJson(Map<String, String> values) {
 
   int? count(String key) => int.tryParse(text(key) ?? '');
 
+  // Remote Config resolves platform differences with conditions, so one
+  // value serves whichever platform asks.
+  final minimum = {
+    'minimum': text('app_version'),
+    'storeUrl': text('store_url'),
+  };
   return {
-    'ios': {
-      'minimum': text('min_version_ios'),
-      'storeUrl': text('store_url_ios'),
-    },
-    'android': {
-      'minimum': text('min_version_android'),
-      'storeUrl': text('store_url_android'),
-    },
+    'ios': minimum,
+    'android': minimum,
     'ads': {
       'rewarded': flag('ads_rewarded'),
       'freeMessages': count('ads_free_messages'),

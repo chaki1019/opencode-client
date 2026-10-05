@@ -88,9 +88,8 @@ void main() {
       },
     });
     final json = remoteSettingsJson({
-      'min_version_ios': ' 1.2.0 ',
-      'store_url_ios': 'https://apps.apple.com/app/id1',
-      'min_version_android': '',
+      'app_version': ' 1.2.0 ',
+      'store_url': 'https://apps.apple.com/app/id1',
       'ads_rewarded': 'FALSE',
       'ads_free_messages': '20',
       'ads_messages_per_reward': 'ten',
@@ -99,7 +98,11 @@ void main() {
       'minimum': '1.2.0',
       'storeUrl': 'https://apps.apple.com/app/id1',
     });
-    expect(json['android'], {'minimum': null, 'storeUrl': null});
+    expect(json['android'], json['ios']);
+    expect(remoteSettingsJson({'app_version': ''})['ios'], {
+      'minimum': null,
+      'storeUrl': null,
+    });
     expect(json['ads'], {
       'rewarded': false,
       'freeMessages': 20,

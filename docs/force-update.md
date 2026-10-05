@@ -13,11 +13,10 @@ Firebase コンソールの Remote Config で、次のパラメータを追加�
 
 | パラメータ | 内容 |
 |---|---|
-| `min_version_ios` / `min_version_android` | これより古いバージョンをブロックする（未設定や空ならブロックしない） |
-| `store_url_ios` | App Store のページ（例 `https://apps.apple.com/app/id1234567890`）。未設定だとボタンを出さず「App Store から更新してください」とだけ表示します |
-| `store_url_android` | 未設定なら `https://play.google.com/store/apps/details?id=<applicationId>` を使います |
+| `app_version` | これより古いバージョンをブロックする（未設定や空ならブロックしない） |
+| `store_url` | 「ストアを開く」ボタンの行き先。iOS は App Store のページ（例 `https://apps.apple.com/app/id1234567890`）を入れ、未設定だとボタンを出さず「App Store から更新してください」とだけ表示します。Android は未設定なら `https://play.google.com/store/apps/details?id=<applicationId>` を使います |
 
-型はどれも文字列で作ります。
+型はどちらも文字列です。iOS と Android で値を変えるときは、パラメータにプラットフォームの条件を付けて出し分けます。
 
 新しい版がストアの審査を通って公開されてから最低バージョンを上げてください。先に上げると、更新先がないまま使えなくなります。
 
@@ -31,8 +30,8 @@ Remote Config 対応版がストアに出たら、中継サーバーの最低バ
 
 | 変数 | 内容 |
 |---|---|
-| `MIN_VERSION_IOS` / `MIN_VERSION_ANDROID` | Remote Config の `min_version_*` と同じ |
-| `STORE_URL_IOS` / `STORE_URL_ANDROID` | Remote Config の `store_url_*` と同じ |
+| `MIN_VERSION_IOS` / `MIN_VERSION_ANDROID` | Remote Config の `app_version` と同じ |
+| `STORE_URL_IOS` / `STORE_URL_ANDROID` | Remote Config の `store_url` と同じ |
 
 応答は 5 分キャッシュされるので、反映まで最大 5 分ほどかかります。
 
