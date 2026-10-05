@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -80,7 +79,7 @@ final rewardedActiveProvider = Provider<bool>(
       ref.watch(adsActiveProvider) && ref.watch(adsPolicyProvider).rewarded,
 );
 
-/// Today's messages against today's allowance.
+/// Today's free messages and the earned ones carried over.
 class MessageQuotaNotifier extends Notifier<MessageQuota> {
   AdsPolicy get _policy => ref.read(adsPolicyProvider);
   AdsStore get _store => ref.read(adsStoreProvider);
@@ -97,32 +96,22 @@ class MessageQuotaNotifier extends Notifier<MessageQuota> {
     return _fresh();
   }
 
-  MessageQuota _fresh() => const MessageQuota(
-    day: '',
-    sent: 0,
-    allowance: 0,
-  ).on(ref.read(adsClockProvider)(), freeMessages: _policy.dailyFreeMessages);
+  MessageQuota _fresh() =>
+      _rolled(const MessageQuota(day: '', sent: 0, free: 0));
 
-  /// The quota for today, rolled over if the date changed since.
-  MessageQuota get today => state.on(
+  MessageQuota _rolled(MessageQuota quota) => quota.on(
     ref.read(adsClockProvider)(),
     freeMessages: _policy.dailyFreeMessages,
+    carryOver: _policy.carryOver,
   );
 
-  Future<void> recordSent() {
-    final quota = today;
-    return _update(quota.withSent(quota.sent + 1));
-  }
+  /// The quota for today, rolled over if the date changed since.
+  MessageQuota get today => _rolled(state);
 
-  /// Adds one rewarded ad's worth of messages on top of what is sent.
-  Future<void> addReward() {
-    final quota = today;
-    return _update(
-      quota.withAllowance(
-        max(quota.allowance, quota.sent) + _policy.messagesPerReward,
-      ),
-    );
-  }
+  Future<void> recordSent() => _update(today.spend());
+
+  /// Adds one rewarded ad's worth of messages, kept until used.
+  Future<void> addReward() => _update(today.earn(_policy.messagesPerReward));
 
   Future<void> _update(MessageQuota quota) async {
     _changed = true;

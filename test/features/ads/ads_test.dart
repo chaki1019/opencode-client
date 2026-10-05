@@ -43,11 +43,12 @@ class FakeAdsService implements AdsService {
 }
 
 /// Remote Config as the console would serve it: ten free a day, ten more
-/// per ad.
+/// per ad, up to twenty earned ones kept overnight.
 const tenAndTen = {
   'rewarded_ads_enabled': 'true',
   'daily_free_messages': '10',
   'ads_messages_per_reward': '10',
+  'ads_carryover_limit': '20',
 };
 
 void main() {
@@ -138,7 +139,7 @@ void main() {
     await send(tester, 10);
 
     await send(tester);
-    expect(find.text('今日の無料送信回数を使い切りました'), findsOneWidget);
+    expect(find.text('今日の送信回数を使い切りました'), findsOneWidget);
     await tester.tap(find.byKey(const Key('watch-reward')));
     await tester.pumpAndSettle();
     expect(ads.rewardedShown, 1);
@@ -211,12 +212,12 @@ void main() {
       extra: AdsSettingsSection(header: (title) => Text(title)),
     );
     expect(find.text('メッセージ回数'), findsOneWidget);
-    expect(find.text('0/10回'), findsOneWidget);
+    expect(find.text('通常 0/10回・広告獲得分 残り0回'), findsOneWidget);
     // The purchase stays hidden until the store has the product.
     expect(find.byKey(const Key('remove-ads')), findsNothing);
 
     await send(tester, 3);
-    expect(find.text('3/10回'), findsOneWidget);
+    expect(find.text('通常 3/10回・広告獲得分 残り0回'), findsOneWidget);
   });
 
   testWidgets('the ring by the send button shows what is left', (tester) async {
@@ -226,7 +227,7 @@ void main() {
     );
     final ring = find.byKey(const Key('message-quota'));
     expect(find.descendant(of: ring, matching: find.text('10')), findsOne);
-    expect(find.bySemanticsLabel('本日の残り10回'), findsOneWidget);
+    expect(find.bySemanticsLabel('残り10回'), findsOneWidget);
 
     await send(tester, 3);
     expect(find.descendant(of: ring, matching: find.text('7')), findsOne);
@@ -234,11 +235,11 @@ void main() {
     // Tapping it shows the count and earns more from the sheet.
     await tester.tap(ring);
     await tester.pumpAndSettle();
-    expect(find.text('3/10回'), findsOneWidget);
+    expect(find.text('通常 3/10回・広告獲得分 残り0回'), findsOneWidget);
     await tester.tap(find.byKey(const Key('earn-messages')));
     await tester.pumpAndSettle();
     expect(container.read(messageQuotaProvider).remaining, 17);
-    expect(find.text('3/20回'), findsOneWidget);
+    expect(find.text('通常 3/10回・広告獲得分 残り10回'), findsOneWidget);
   });
 
   testWidgets('the ring is hidden while sending is not limited', (
@@ -346,8 +347,8 @@ void main() {
     await tester.tap(find.byKey(const Key('earn-messages')));
     await tester.pumpAndSettle();
     expect(ads.rewardedShown, 1);
-    expect(find.text('2/20回'), findsOneWidget);
-    expect(find.text('今日の送信回数を10回増やしました'), findsOneWidget);
+    expect(find.text('通常 2/10回・広告獲得分 残り10回'), findsOneWidget);
+    expect(find.text('送信回数を10回増やしました'), findsOneWidget);
 
     // Closing early or a missing ad earns nothing here.
     for (final outcome in [RewardOutcome.skipped, RewardOutcome.unavailable]) {
@@ -355,6 +356,23 @@ void main() {
       await tester.tap(find.byKey(const Key('earn-messages')));
       await tester.pumpAndSettle();
     }
-    expect(container.read(messageQuotaProvider).allowance, 20);
+    expect(container.read(messageQuotaProvider).earned, 10);
+  });
+
+  testWidgets('earned messages are kept the next day', (tester) async {
+    final (container, _) = await pumpGate(
+      tester,
+      extra: AdsSettingsSection(header: (title) => Text(title)),
+    );
+    await tester.tap(find.byKey(const Key('earn-messages')));
+    await tester.pumpAndSettle();
+    await send(tester, 12);
+    expect(container.read(messageQuotaProvider).remaining, 8);
+
+    now = DateTime(2026, 10, 4, 9);
+    await send(tester);
+    // The new day's regular ones go first; the earned eight wait.
+    expect(find.text('通常 1/10回・広告獲得分 残り8回'), findsOneWidget);
+    expect(find.textContaining('20回まで翌日に持ち越せます'), findsOneWidget);
   });
 }

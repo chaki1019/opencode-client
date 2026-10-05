@@ -2,48 +2,75 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-/// Messages sent today against today's allowance. The allowance starts at
-/// the free count and grows with each rewarded ad; both reset when the
-/// local date moves forward, at midnight in the phone's time zone.
+/// Today's messages: the daily free ones, which reset when the local date
+/// moves forward (midnight in the phone's time zone), and those earned by
+/// watching rewarded ads, which carry over to later days until used.
 class MessageQuota {
   const MessageQuota({
     required this.day,
     required this.sent,
-    required this.allowance,
+    required this.free,
+    this.earned = 0,
   });
 
   /// The local date as `yyyy-mm-dd`.
   final String day;
-  final int sent;
-  final int allowance;
 
-  int get remaining => allowance - sent < 0 ? 0 : allowance - sent;
+  /// Free messages used today.
+  final int sent;
+
+  /// Free messages for today.
+  final int free;
+
+  /// Messages earned from ads and not used yet.
+  final int earned;
+
+  int get freeLeft => free - sent < 0 ? 0 : free - sent;
+
+  int get remaining => freeLeft + earned;
 
   static String dayOf(DateTime time) {
     String two(int n) => n.toString().padLeft(2, '0');
     return '${time.year}-${two(time.month)}-${two(time.day)}';
   }
 
-  /// This quota, or a fresh one once [now]'s date is past it. A clock set
-  /// back keeps the quota as it is, so winding it to 23:59 and letting it
-  /// pass midnight again earns nothing; a clock set ahead spends the days
-  /// it skips. A free count raised during the day applies at once; a
-  /// lowered one waits for the next day, so nobody loses messages they
-  /// were promised.
-  MessageQuota on(DateTime now, {required int freeMessages}) {
+  /// This quota, or a fresh day once [now]'s date is past it, keeping up to
+  /// [carryOver] earned messages. A clock set back keeps the quota as it
+  /// is, so winding it to 23:59 and letting it pass midnight again earns
+  /// nothing; a clock set ahead spends the days it skips. A free count
+  /// raised during the day applies at once; a lowered one waits for the
+  /// next day, so nobody loses messages they were promised.
+  MessageQuota on(
+    DateTime now, {
+    required int freeMessages,
+    required int carryOver,
+  }) {
     final today = dayOf(now);
     // `yyyy-mm-dd` sorts by date; an empty day (nothing stored) sorts first.
     if (today.compareTo(day) > 0) {
-      return MessageQuota(day: today, sent: 0, allowance: freeMessages);
+      return MessageQuota(
+        day: today,
+        sent: 0,
+        free: freeMessages,
+        earned: earned < carryOver ? earned : carryOver,
+      );
     }
-    return allowance < freeMessages ? withAllowance(freeMessages) : this;
+    return free < freeMessages ? _copy(free: freeMessages) : this;
   }
 
-  MessageQuota withSent(int sent) =>
-      MessageQuota(day: day, sent: sent, allowance: allowance);
+  /// Uses one message: a free one while any are left, then an earned one.
+  MessageQuota spend() => freeLeft > 0
+      ? _copy(sent: sent + 1)
+      : _copy(earned: earned > 0 ? earned - 1 : 0);
 
-  MessageQuota withAllowance(int allowance) =>
-      MessageQuota(day: day, sent: sent, allowance: allowance);
+  MessageQuota earn(int messages) => _copy(earned: earned + messages);
+
+  MessageQuota _copy({int? sent, int? free, int? earned}) => MessageQuota(
+    day: day,
+    sent: sent ?? this.sent,
+    free: free ?? this.free,
+    earned: earned ?? this.earned,
+  );
 }
 
 /// Keeps the quota and the ad-free purchase next to the other stored data.
@@ -63,7 +90,10 @@ class AdsStore {
     return MessageQuota(
       day: json['day'] as String,
       sent: json['sent'] as int,
-      allowance: json['allowance'] as int,
+      // Builds before carry-over stored one allowance with ads included;
+      // that day ends without anything to carry.
+      free: (json['free'] ?? json['allowance']) as int,
+      earned: (json['earned'] as int?) ?? 0,
     );
   }
 
@@ -72,7 +102,8 @@ class AdsStore {
     value: jsonEncode({
       'day': quota.day,
       'sent': quota.sent,
-      'allowance': quota.allowance,
+      'free': quota.free,
+      'earned': quota.earned,
     }),
   );
 

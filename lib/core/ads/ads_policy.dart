@@ -5,6 +5,7 @@ class AdsPolicy {
     required this.rewarded,
     required this.dailyFreeMessages,
     required this.messagesPerReward,
+    this.carryOver = 0,
   });
 
   /// No daily limit and no rewarded ad.
@@ -21,8 +22,12 @@ class AdsPolicy {
   /// Messages a day that need no ad.
   final int dailyFreeMessages;
 
-  /// Messages one rewarded ad adds for the rest of the day.
+  /// Messages one rewarded ad adds.
   final int messagesPerReward;
+
+  /// Earned messages kept into the next day at most. Zero (the parameter
+  /// unset) means earned messages last only the day they were earned.
+  final int carryOver;
 
   /// The `ads` entry of [remoteSettingsJson]. The limit applies only when
   /// it is switched on and both counts are valid; anything less (nothing
@@ -39,6 +44,7 @@ class AdsPolicy {
       rewarded: true,
       dailyFreeMessages: daily,
       messagesPerReward: perReward,
+      carryOver: _count(entry['carryOver']) ?? 0,
     );
   }
 
@@ -50,9 +56,10 @@ class AdsPolicy {
       other is AdsPolicy &&
       other.rewarded == rewarded &&
       other.dailyFreeMessages == dailyFreeMessages &&
-      other.messagesPerReward == messagesPerReward;
+      other.messagesPerReward == messagesPerReward &&
+      other.carryOver == carryOver;
 
   @override
   int get hashCode =>
-      Object.hash(rewarded, dailyFreeMessages, messagesPerReward);
+      Object.hash(rewarded, dailyFreeMessages, messagesPerReward, carryOver);
 }

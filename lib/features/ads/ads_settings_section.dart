@@ -102,7 +102,7 @@ class AdsSettingsSection extends ConsumerWidget {
   }
 }
 
-/// Today's sent messages against today's allowance, as a ring and a count.
+/// Today's regular messages used, as a ring, and the earned ones left.
 class MessageCountTile extends ConsumerWidget {
   const MessageCountTile({super.key});
 
@@ -111,9 +111,9 @@ class MessageCountTile extends ConsumerWidget {
     ref.watch(messageQuotaProvider);
     final quota = ref.read(messageQuotaProvider.notifier).today;
     final scheme = Theme.of(context).colorScheme;
-    final fraction = quota.allowance == 0
+    final fraction = quota.free == 0
         ? 1.0
-        : (quota.sent / quota.allowance).clamp(0.0, 1.0);
+        : (quota.sent / quota.free).clamp(0.0, 1.0);
     return ListTile(
       key: const Key('messages-today'),
       leading: UsageRing(
@@ -125,9 +125,8 @@ class MessageCountTile extends ConsumerWidget {
         trackColor: scheme.outlineVariant,
       ),
       title: Text(context.l10n.messagesToday),
-      trailing: Text(
-        context.l10n.messagesTodayValue(quota.sent, quota.allowance),
-        style: Theme.of(context).textTheme.titleMedium,
+      subtitle: Text(
+        context.l10n.messagesTodayDetail(quota.sent, quota.free, quota.earned),
       ),
     );
   }
@@ -166,12 +165,17 @@ class _EarnMessagesTileState extends ConsumerState<EarnMessagesTile> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final more = ref.watch(adsPolicyProvider).messagesPerReward;
+    final policy = ref.watch(adsPolicyProvider);
+    final more = policy.messagesPerReward;
     return ListTile(
       key: const Key('earn-messages'),
       leading: const Icon(Icons.play_circle_outline),
       title: Text(l10n.rewardEarnMore),
-      subtitle: Text(l10n.rewardEarnMoreSubtitle(more)),
+      subtitle: Text(
+        policy.carryOver > 0
+            ? l10n.rewardEarnMoreCarry(more, policy.carryOver)
+            : l10n.rewardEarnMoreSubtitle(more),
+      ),
       trailing: _loading
           ? const SizedBox.square(
               dimension: 20,

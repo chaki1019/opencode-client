@@ -913,11 +913,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get updateFromStore => 'App Store または Google Play からアプリを更新してください。';
 
   @override
-  String get rewardTitle => '今日の無料送信回数を使い切りました';
+  String get rewardTitle => '今日の送信回数を使い切りました';
 
   @override
   String rewardBody(int free, int more) {
-    return '広告なしで送れるのは1日$free回までです。短い広告を見ると、今日はさらに$more回送れます。';
+    return '広告なしで送れるのは1日$free回までです。短い広告を見ると、さらに$more回送れます。';
   }
 
   @override
@@ -936,13 +936,13 @@ class AppLocalizationsJa extends AppLocalizations {
   String get messagesToday => '本日の送信回数';
 
   @override
-  String messagesTodayValue(int sent, int allowance) {
-    return '$sent/$allowance回';
+  String messagesTodayDetail(int sent, int free, int earned) {
+    return '通常 $sent/$free回・広告獲得分 残り$earned回';
   }
 
   @override
   String messagesLeft(int left) {
-    return '本日の残り$left回';
+    return '残り$left回';
   }
 
   @override
@@ -954,8 +954,13 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String rewardEarnMoreCarry(int more, int limit) {
+    return '短い広告を見ると$more回増えます。使わなかった分は$limit回まで翌日に持ち越せます';
+  }
+
+  @override
   String rewardAdded(int more) {
-    return '今日の送信回数を$more回増やしました';
+    return '送信回数を$more回増やしました';
   }
 
   @override
