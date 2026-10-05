@@ -6,10 +6,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/router.dart';
 import 'app/theme.dart';
 import 'core/analytics/usage_analytics.dart';
+import 'core/config/remote_settings.dart';
 import 'core/crash/crash_reporter.dart';
 import 'core/push/push_config.dart';
 import 'features/ads/ads_providers.dart';
 import 'features/ads/remove_ads.dart';
+import 'features/config/remote_values.dart';
 import 'features/live/server_activity.dart';
 import 'features/push/push_providers.dart';
 import 'features/settings/settings_providers.dart';
@@ -22,11 +24,13 @@ Future<void> main() async {
   final firebaseOptions = const PushConfig.fromEnvironment().firebaseOptions;
   final crashReporter = await startCrashReporting(firebaseOptions);
   final usageAnalytics = await startUsageAnalytics(firebaseOptions);
+  final remoteSettings = await startRemoteSettings(firebaseOptions);
   runApp(
     ProviderScope(
       overrides: [
         crashReporterProvider.overrideWithValue(crashReporter),
         usageAnalyticsProvider.overrideWithValue(usageAnalytics),
+        remoteSettingsProvider.overrideWithValue(remoteSettings),
       ],
       child: const OpenCodeMobileApp(),
     ),

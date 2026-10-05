@@ -25,9 +25,10 @@ class AdBanner extends ConsumerWidget {
 
 /// Lets a message through, or, once today's free messages are used,
 /// offers a rewarded ad first. False means the user declined, so the
-/// caller keeps the text. An ad that cannot load never blocks sending.
+/// caller keeps the text. An ad that cannot load never blocks sending,
+/// and neither does anything while the server has rewarded ads off.
 Future<bool> admitMessage(BuildContext context, WidgetRef ref) async {
-  if (!ref.read(adsActiveProvider)) return true;
+  if (!ref.read(rewardedActiveProvider)) return true;
   final quota = ref.read(messageQuotaProvider.notifier);
   if (quota.today.remaining > 0) return true;
 
@@ -69,11 +70,11 @@ class _RewardDialogState extends ConsumerState<_RewardDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final config = ref.watch(adsConfigProvider);
+    final policy = ref.watch(adsPolicyProvider);
     return AlertDialog(
       title: Text(l10n.rewardTitle),
       content: Text(
-        l10n.rewardBody(config.dailyFreeMessages, config.messagesPerReward),
+        l10n.rewardBody(policy.dailyFreeMessages, policy.messagesPerReward),
       ),
       actions: [
         TextButton(

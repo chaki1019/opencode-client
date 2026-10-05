@@ -24,12 +24,15 @@ class MessageQuota {
     return '${time.year}-${two(time.month)}-${two(time.day)}';
   }
 
-  /// This quota if it is for [now]'s date, otherwise a fresh one.
+  /// This quota if it is for [now]'s date, otherwise a fresh one. A free
+  /// count raised during the day applies at once; a lowered one waits for
+  /// the next day, so nobody loses messages they were promised.
   MessageQuota on(DateTime now, {required int freeMessages}) {
     final today = dayOf(now);
-    return today == day
-        ? this
-        : MessageQuota(day: today, sent: 0, allowance: freeMessages);
+    if (today != day) {
+      return MessageQuota(day: today, sent: 0, allowance: freeMessages);
+    }
+    return allowance < freeMessages ? withAllowance(freeMessages) : this;
   }
 
   MessageQuota withSent(int sent) =>

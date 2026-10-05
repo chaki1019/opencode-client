@@ -6,7 +6,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/ads/ads_config.dart';
+import '../../core/ads/ads_policy.dart';
 import '../../core/ads/message_quota.dart';
+import '../../core/config/remote_settings.dart';
+import '../config/remote_values.dart';
 import 'ads_service.dart';
 
 /// Overridden in tests; real builds read `--dart-define`s.
@@ -64,9 +67,22 @@ final adsStartupProvider = Provider<void>((ref) {
   }
 });
 
+/// The rewarded-ad settings in force, from Remote Config.
+final adsPolicyProvider = Provider<AdsPolicy>(
+  (ref) => AdsPolicy.fromJson(
+    remoteSettingsJson(ref.watch(remoteValuesProvider))['ads'],
+  ),
+);
+
+/// Whether sending is limited per day, with a rewarded ad for more.
+final rewardedActiveProvider = Provider<bool>(
+  (ref) =>
+      ref.watch(adsActiveProvider) && ref.watch(adsPolicyProvider).rewarded,
+);
+
 /// Today's messages against today's allowance.
 class MessageQuotaNotifier extends Notifier<MessageQuota> {
-  AdsConfig get _config => ref.read(adsConfigProvider);
+  AdsPolicy get _policy => ref.read(adsPolicyProvider);
   AdsStore get _store => ref.read(adsStoreProvider);
 
   /// Set once something is counted, so a slow initial read does not
@@ -85,12 +101,12 @@ class MessageQuotaNotifier extends Notifier<MessageQuota> {
     day: '',
     sent: 0,
     allowance: 0,
-  ).on(ref.read(adsClockProvider)(), freeMessages: _config.dailyFreeMessages);
+  ).on(ref.read(adsClockProvider)(), freeMessages: _policy.dailyFreeMessages);
 
   /// The quota for today, rolled over if the date changed since.
   MessageQuota get today => state.on(
     ref.read(adsClockProvider)(),
-    freeMessages: _config.dailyFreeMessages,
+    freeMessages: _policy.dailyFreeMessages,
   );
 
   Future<void> recordSent() {
@@ -103,7 +119,7 @@ class MessageQuotaNotifier extends Notifier<MessageQuota> {
     final quota = today;
     return _update(
       quota.withAllowance(
-        max(quota.allowance, quota.sent) + _config.messagesPerReward,
+        max(quota.allowance, quota.sent) + _policy.messagesPerReward,
       ),
     );
   }

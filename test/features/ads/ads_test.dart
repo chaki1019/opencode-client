@@ -7,7 +7,10 @@ import 'package:opencode_mobile/features/ads/ad_widgets.dart';
 import 'package:opencode_mobile/features/ads/ads_providers.dart';
 import 'package:opencode_mobile/features/ads/ads_service.dart';
 import 'package:opencode_mobile/features/ads/ads_settings_section.dart';
+import 'package:opencode_mobile/features/config/remote_values.dart';
 import 'package:opencode_mobile/l10n/app_localizations.dart';
+
+import '../../support/fake_remote_settings.dart';
 
 class FakeAdsService implements AdsService {
   RewardOutcome outcome = RewardOutcome.earned;
@@ -38,13 +41,23 @@ class FakeAdsService implements AdsService {
   Future<void> showPrivacyOptions() async {}
 }
 
+/// Remote Config as the console would serve it: ten free a day, ten more
+/// per ad.
+const tenAndTen = {
+  'rewarded_ads_enabled': 'true',
+  'daily_free_messages': '10',
+  'ads_messages_per_reward': '10',
+};
+
 void main() {
   late FakeAdsService ads;
+  late FakeRemoteSettings remote;
   late DateTime now;
 
   setUp(() {
     FlutterSecureStorage.setMockInitialValues({});
     ads = FakeAdsService();
+    remote = FakeRemoteSettings(tenAndTen);
     now = DateTime(2026, 10, 3, 9);
   });
 
@@ -61,6 +74,7 @@ void main() {
       ProviderScope(
         overrides: [
           adsServiceProvider.overrideWithValue(ads),
+          remoteSettingsProvider.overrideWithValue(remote),
           adsClockProvider.overrideWithValue(() => now),
         ],
         child: MaterialApp(
@@ -195,12 +209,99 @@ void main() {
       tester,
       extra: AdsSettingsSection(header: (title) => Text(title)),
     );
-    expect(find.text('広告'), findsOneWidget);
-    expect(find.text('残り10回'), findsOneWidget);
+    expect(find.text('メッセージ回数'), findsOneWidget);
+    expect(find.text('0/10回'), findsOneWidget);
     // The purchase stays hidden until the store has the product.
     expect(find.byKey(const Key('remove-ads')), findsNothing);
 
     await send(tester, 3);
-    expect(find.text('残り7回'), findsOneWidget);
+    expect(find.text('3/10回'), findsOneWidget);
+  });
+
+  testWidgets('with rewarded ads switched off, sending is never limited', (
+    tester,
+  ) async {
+    remote = FakeRemoteSettings({
+      ...tenAndTen,
+      'rewarded_ads_enabled': 'false',
+    });
+    final (_, results) = await pumpGate(
+      tester,
+      extra: AdsSettingsSection(header: (title) => Text(title)),
+    );
+    // The banner stays; only the limit and its row go.
+    expect(find.byKey(const Key('fake-banner')), findsOneWidget);
+    expect(find.byKey(const Key('messages-today')), findsNothing);
+
+    await send(tester, 12);
+    expect(results, List.filled(12, true));
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(ads.rewardedShown, 0);
+  });
+
+  testWidgets('Remote Config sets the counts', (tester) async {
+    remote = FakeRemoteSettings({
+      ...tenAndTen,
+      'daily_free_messages': '3',
+      'ads_messages_per_reward': '5',
+    });
+    final (container, _) = await pumpGate(tester);
+    await send(tester, 3);
+    expect(find.byType(AlertDialog), findsNothing);
+
+    await send(tester);
+    expect(find.byType(AlertDialog), findsOneWidget);
+    await tester.tap(find.byKey(const Key('watch-reward')));
+    await tester.pumpAndSettle();
+    expect(container.read(messageQuotaProvider).remaining, 4);
+  });
+
+  testWidgets('a console change applies while the app runs', (tester) async {
+    final (_, results) = await pumpGate(tester);
+    await send(tester, 10);
+    expect(remote.refreshes, 1);
+
+    remote.push({...tenAndTen, 'rewarded_ads_enabled': 'false'});
+    await tester.pumpAndSettle();
+    await send(tester);
+    expect(results.last, isTrue);
+    expect(find.byType(AlertDialog), findsNothing);
+
+    remote.push(tenAndTen);
+    await tester.pumpAndSettle();
+    await send(tester);
+    expect(find.byType(AlertDialog), findsOneWidget);
+  });
+
+  testWidgets('nothing fetched yet means no limit', (tester) async {
+    remote = FakeRemoteSettings();
+    final (_, results) = await pumpGate(tester);
+    await send(tester, 12);
+    expect(results, List.filled(12, true));
+    expect(ads.rewardedShown, 0);
+  });
+
+  testWidgets('settings can earn more messages before they run out', (
+    tester,
+  ) async {
+    final (container, _) = await pumpGate(
+      tester,
+      extra: AdsSettingsSection(header: (title) => Text(title)),
+    );
+    await send(tester, 2);
+
+    await tester.tap(find.byKey(const Key('earn-messages')));
+    await tester.pumpAndSettle();
+    expect(ads.rewardedShown, 1);
+    expect(find.text('2/20回'), findsOneWidget);
+    expect(find.text('今日の送信回数を10回増やしました'), findsOneWidget);
+
+    // Closing early or a missing ad earns nothing here.
+    for (final outcome in [RewardOutcome.skipped, RewardOutcome.unavailable]) {
+      ads.outcome = outcome;
+      await tester.tap(find.byKey(const Key('earn-messages')));
+      await tester.pumpAndSettle();
+    }
+    expect(container.read(messageQuotaProvider).allowance, 20);
   });
 }

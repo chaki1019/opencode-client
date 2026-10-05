@@ -11,8 +11,6 @@ class AdsConfig {
     this.iosRewardedId = _testIosRewarded,
     this.removeAdsEnabled = false,
     this.removeAdsProductId = 'remove_ads',
-    this.dailyFreeMessages = 10,
-    this.messagesPerReward = 10,
   });
 
   const AdsConfig.fromEnvironment()
@@ -37,9 +35,7 @@ class AdsConfig {
       removeAdsProductId = const String.fromEnvironment(
         'REMOVE_ADS_PRODUCT_ID',
         defaultValue: 'remove_ads',
-      ),
-      dailyFreeMessages = 10,
-      messagesPerReward = 10;
+      );
 
   // Google's sample ad units: https://developers.google.com/admob/flutter/test-ads
   static const _testAndroidBanner = 'ca-app-pub-3940256099942544/9214589741';
@@ -57,12 +53,6 @@ class AdsConfig {
 
   /// The non-consumable product, with the same ID in both stores.
   final String removeAdsProductId;
-
-  /// Messages a day that need no ad.
-  final int dailyFreeMessages;
-
-  /// Messages one rewarded ad adds for the rest of the day.
-  final int messagesPerReward;
 
   String get bannerId => defaultTargetPlatform == TargetPlatform.iOS
       ? iosBannerId

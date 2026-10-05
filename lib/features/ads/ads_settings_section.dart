@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../l10n/l10n.dart';
+import '../chat/context_sheet.dart' show UsageRing;
 import 'ads_providers.dart';
+import 'ads_service.dart';
 import 'remove_ads.dart';
 
 /// Whether the user must be offered their ad consent again.
@@ -11,8 +13,9 @@ final _privacyOptionsProvider = FutureProvider.autoDispose<bool>((ref) async {
   return ref.watch(adsServiceProvider).privacyOptionsRequired();
 });
 
-/// The settings page's ad rows: today's free messages, the "remove ads"
-/// purchase and the consent form. Empty where the app shows no ads.
+/// The settings page's ad sections: today's messages with a rewarded ad to
+/// earn more, then the "remove ads" purchase and the consent form. Empty
+/// where the app shows no ads.
 class AdsSettingsSection extends ConsumerWidget {
   const AdsSettingsSection({super.key, required this.header});
 
@@ -42,58 +45,140 @@ class AdsSettingsSection extends ConsumerWidget {
     final purchase = ref.watch(removeAdsProvider);
     final product = purchase.product;
     final privacy = ref.watch(_privacyOptionsProvider).value ?? false;
-    ref.watch(messageQuotaProvider);
-    final quota = ref.read(messageQuotaProvider.notifier).today;
+    final rewarded = !removed && ref.watch(rewardedActiveProvider);
+    final adRows = [
+      if (removed)
+        ListTile(
+          key: const Key('ads-removed'),
+          leading: const Icon(Icons.check_circle_outline),
+          title: Text(l10n.removeAdsDone),
+        )
+      else ...[
+        if (config.removeAdsEnabled && product != null)
+          ListTile(
+            key: const Key('remove-ads'),
+            title: Text(l10n.removeAds),
+            subtitle: Text(l10n.removeAdsSubtitle),
+            trailing: purchase.busy
+                ? const SizedBox.square(
+                    dimension: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : Text(product.price),
+            onTap: purchase.busy
+                ? null
+                : () => ref.read(removeAdsProvider.notifier).buy(),
+          ),
+        if (config.removeAdsEnabled)
+          ListTile(
+            key: const Key('restore-purchases'),
+            title: Text(l10n.restorePurchases),
+            onTap: () {
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text(l10n.restoreStarted)));
+              ref.read(removeAdsProvider.notifier).restore();
+            },
+          ),
+        if (privacy)
+          ListTile(
+            key: const Key('ad-privacy'),
+            title: Text(l10n.adPrivacy),
+            onTap: () => ref.read(adsServiceProvider).showPrivacyOptions(),
+          ),
+      ],
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        header(l10n.settingsAds),
-        if (removed)
-          ListTile(
-            key: const Key('ads-removed'),
-            leading: const Icon(Icons.check_circle_outline),
-            title: Text(l10n.removeAdsDone),
-          )
-        else ...[
-          ListTile(
-            key: const Key('ads-free-left'),
-            title: Text(l10n.adsFreeLeft),
-            trailing: Text(l10n.adsFreeLeftValue(quota.remaining)),
-          ),
-          if (config.removeAdsEnabled && product != null)
-            ListTile(
-              key: const Key('remove-ads'),
-              title: Text(l10n.removeAds),
-              subtitle: Text(l10n.removeAdsSubtitle),
-              trailing: purchase.busy
-                  ? const SizedBox.square(
-                      dimension: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Text(product.price),
-              onTap: purchase.busy
-                  ? null
-                  : () => ref.read(removeAdsProvider.notifier).buy(),
-            ),
-          if (config.removeAdsEnabled)
-            ListTile(
-              key: const Key('restore-purchases'),
-              title: Text(l10n.restorePurchases),
-              onTap: () {
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(SnackBar(content: Text(l10n.restoreStarted)));
-                ref.read(removeAdsProvider.notifier).restore();
-              },
-            ),
-          if (privacy)
-            ListTile(
-              key: const Key('ad-privacy'),
-              title: Text(l10n.adPrivacy),
-              onTap: () => ref.read(adsServiceProvider).showPrivacyOptions(),
-            ),
+        if (rewarded) ...[
+          header(l10n.settingsMessages),
+          const _MessageCount(),
+          const _EarnMessagesTile(),
         ],
+        if (adRows.isNotEmpty) ...[header(l10n.settingsAds), ...adRows],
       ],
+    );
+  }
+}
+
+/// Today's sent messages against today's allowance, as a ring and a count.
+class _MessageCount extends ConsumerWidget {
+  const _MessageCount();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(messageQuotaProvider);
+    final quota = ref.read(messageQuotaProvider.notifier).today;
+    final scheme = Theme.of(context).colorScheme;
+    final fraction = quota.allowance == 0
+        ? 1.0
+        : (quota.sent / quota.allowance).clamp(0.0, 1.0);
+    return ListTile(
+      key: const Key('messages-today'),
+      leading: UsageRing(
+        fraction: fraction,
+        // Icon-sized, so the titles line up with the row below.
+        size: 24,
+        strokeWidth: 3.5,
+        color: quota.remaining == 0 ? scheme.error : scheme.primary,
+        trackColor: scheme.outlineVariant,
+      ),
+      title: Text(context.l10n.messagesToday),
+      trailing: Text(
+        context.l10n.messagesTodayValue(quota.sent, quota.allowance),
+        style: Theme.of(context).textTheme.titleMedium,
+      ),
+    );
+  }
+}
+
+/// Watches a rewarded ad on request, before the day's messages run out.
+class _EarnMessagesTile extends ConsumerStatefulWidget {
+  const _EarnMessagesTile();
+
+  @override
+  ConsumerState<_EarnMessagesTile> createState() => _EarnMessagesTileState();
+}
+
+class _EarnMessagesTileState extends ConsumerState<_EarnMessagesTile> {
+  bool _loading = false;
+
+  Future<void> _watch() async {
+    setState(() => _loading = true);
+    final outcome = await ref.read(adsServiceProvider).showRewarded();
+    final more = ref.read(adsPolicyProvider).messagesPerReward;
+    // Unlike sending, a missing ad earns nothing here: nothing is blocked.
+    if (outcome == RewardOutcome.earned) {
+      await ref.read(messageQuotaProvider.notifier).addReward();
+    }
+    if (!mounted) return;
+    setState(() => _loading = false);
+    final l10n = context.l10n;
+    final text = switch (outcome) {
+      RewardOutcome.earned => l10n.rewardAdded(more),
+      RewardOutcome.skipped => l10n.rewardEarnSkipped,
+      RewardOutcome.unavailable => l10n.rewardUnavailable,
+    };
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final more = ref.watch(adsPolicyProvider).messagesPerReward;
+    return ListTile(
+      key: const Key('earn-messages'),
+      leading: const Icon(Icons.play_circle_outline),
+      title: Text(l10n.rewardEarnMore),
+      subtitle: Text(l10n.rewardEarnMoreSubtitle(more)),
+      trailing: _loading
+          ? const SizedBox.square(
+              dimension: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : null,
+      onTap: _loading ? null : _watch,
     );
   }
 }

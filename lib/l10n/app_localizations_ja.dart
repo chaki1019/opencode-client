@@ -930,12 +930,34 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsAds => '広告';
 
   @override
-  String get adsFreeLeft => '今日の広告なし送信';
+  String get settingsMessages => 'メッセージ回数';
 
   @override
-  String adsFreeLeftValue(int left) {
-    return '残り$left回';
+  String get messagesToday => '本日の送信回数';
+
+  @override
+  String messagesTodayValue(int sent, int allowance) {
+    return '$sent/$allowance回';
   }
+
+  @override
+  String get rewardEarnMore => '広告を見て回数を増やす';
+
+  @override
+  String rewardEarnMoreSubtitle(int more) {
+    return '短い広告を見ると、今日はさらに$more回送れます';
+  }
+
+  @override
+  String rewardAdded(int more) {
+    return '今日の送信回数を$more回増やしました';
+  }
+
+  @override
+  String get rewardEarnSkipped => '広告を最後まで見ると回数が増えます。';
+
+  @override
+  String get rewardUnavailable => '今は広告を表示できません。しばらくしてからお試しください。';
 
   @override
   String get removeAds => '広告を外す';
