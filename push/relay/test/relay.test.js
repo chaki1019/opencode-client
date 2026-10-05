@@ -235,16 +235,10 @@ test("app-version serves the configured minimums", async () => {
     ads: { rewarded: null, freeMessages: null, messagesPerReward: null },
   });
 
-  const config = (value) => ({
-    get: async (key, options) => {
-      assert.equal(key, "ads");
-      assert.equal(options.type, "json");
-      if (value instanceof Error) throw value;
-      return value;
-    },
-  });
   res = await handle(req("GET", "/v1/app-version"), {
-    CONFIG: config({ rewarded: false, freeMessages: 20, messagesPerReward: 5 }),
+    ADS_REWARDED: "false",
+    ADS_FREE_MESSAGES: "20",
+    ADS_MESSAGES_PER_REWARD: "5",
   });
   assert.deepEqual((await res.json()).ads, {
     rewarded: false,
@@ -253,18 +247,16 @@ test("app-version serves the configured minimums", async () => {
   });
 
   // Anything that is not a clear value leaves the app's own.
-  const unset = { rewarded: null, freeMessages: null, messagesPerReward: null };
   res = await handle(req("GET", "/v1/app-version"), {
-    CONFIG: config({ rewarded: "no", freeMessages: 0, messagesPerReward: "10" }),
+    ADS_REWARDED: "no",
+    ADS_FREE_MESSAGES: "0",
+    ADS_MESSAGES_PER_REWARD: "ten",
   });
-  assert.deepEqual((await res.json()).ads, unset);
-  res = await handle(req("GET", "/v1/app-version"), { CONFIG: config(null) });
-  assert.deepEqual((await res.json()).ads, unset);
-  res = await handle(req("GET", "/v1/app-version"), {
-    CONFIG: config(new SyntaxError("Unexpected token")),
+  assert.deepEqual((await res.json()).ads, {
+    rewarded: null,
+    freeMessages: null,
+    messagesPerReward: null,
   });
-  assert.equal(res.status, 200);
-  assert.deepEqual((await res.json()).ads, unset);
 
   // Not rate limited: every app launch asks.
   const blocked = { limit: async () => ({ success: false }) };

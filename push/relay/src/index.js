@@ -22,8 +22,8 @@
 // account JSON). An optional KV namespace DEVICES holds registrations from
 // before D1; they move to D1 the first time their key is used. Vars
 // MIN_VERSION_IOS / MIN_VERSION_ANDROID / STORE_URL_IOS / STORE_URL_ANDROID
-// (all optional) feed /v1/app-version. An optional KV namespace CONFIG holds
-// the ad switches as JSON under the key `ads`, edited in the dashboard.
+// and ADS_REWARDED / ADS_FREE_MESSAGES / ADS_MESSAGES_PER_REWARD (all
+// optional) feed /v1/app-version.
 
 const MIN_KEY_LENGTH = 32;
 const MAX_DEVICES_PER_KEY = 10;
@@ -41,7 +41,7 @@ export async function handle(request, env, deps = {}) {
     // Public and cacheable, and asked on every app launch: many users can
     // share one carrier address, so it is not rate limited.
     if (url.pathname === "/v1/app-version" && request.method === "GET") {
-      return await appVersion(env);
+      return appVersion(env);
     }
     // Per client address on every route, so neither registrations nor
     // guessed keys can be sprayed from one place.
@@ -85,7 +85,7 @@ async function limit(limiter, key) {
 
 // The app refuses to run below `minimum` and sends the user to `storeUrl`.
 // An unset minimum means every version may run.
-async function appVersion(env) {
+function appVersion(env) {
   const platform = (minimum, storeUrl) => ({
     minimum: minimum || null,
     storeUrl: storeUrl || null,
@@ -94,33 +94,31 @@ async function appVersion(env) {
     {
       ios: platform(env.MIN_VERSION_IOS, env.STORE_URL_IOS),
       android: platform(env.MIN_VERSION_ANDROID, env.STORE_URL_ANDROID),
-      ads: await adsSwitches(env),
+      ads: {
+        rewarded: flag(env.ADS_REWARDED),
+        freeMessages: count(env.ADS_FREE_MESSAGES),
+        messagesPerReward: count(env.ADS_MESSAGES_PER_REWARD),
+      },
     },
     200,
     { "cache-control": "public, max-age=300" },
   );
 }
 
-// Ad switches read by the app, from the CONFIG namespace's `ads` JSON, e.g.
-// {"rewarded": false, "freeMessages": 20}. Anything missing, mistyped or
-// unreadable is null, which leaves the app's built-in value.
-async function adsSwitches(env) {
-  let stored = null;
-  try {
-    stored = await env.CONFIG?.get("ads", { type: "json", cacheTtl: 60 });
-  } catch (error) {
-    console.error("CONFIG ads is not valid JSON", error);
-  }
-  const entry = stored && typeof stored === "object" ? stored : {};
-  return {
-    rewarded: typeof entry.rewarded === "boolean" ? entry.rewarded : null,
-    freeMessages: count(entry.freeMessages),
-    messagesPerReward: count(entry.messagesPerReward),
-  };
+// Ad switches read by the app. Null leaves the app's built-in value, so an
+// unset or mistyped variable never changes anything.
+function flag(value) {
+  const text = String(value ?? "").trim().toLowerCase();
+  if (text === "true") return true;
+  if (text === "false") return false;
+  return null;
 }
 
 function count(value) {
-  return Number.isInteger(value) && value >= 1 && value <= 1000 ? value : null;
+  const text = String(value ?? "").trim();
+  if (!/^\d+$/.test(text)) return null;
+  const n = Number(text);
+  return n >= 1 && n <= 1000 ? n : null;
 }
 
 async function readJson(request) {

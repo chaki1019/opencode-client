@@ -17,31 +17,21 @@
 
 ## リワード広告をサーバーから切り替える
 
-強制アップデートと同じ中継サーバーの `GET /v1/app-version`（[force-update.md](force-update.md)）が、最低バージョンと一緒に `ads` を返します。値は Cloudflare の Workers KV に JSON で置き、ダッシュボードで書き換えるだけで変わります（デプロイ不要）。
+強制アップデートと同じ中継サーバーの `GET /v1/app-version`（[force-update.md](force-update.md)）が、最低バージョンと一緒に `ads` を返します。アプリは起動時と前面に戻ったとき（30 分に 1 回まで）に読みます。
 
-### 最初に一度だけ
+`push/relay/wrangler.toml` の `[vars]` を書き換えて `npx wrangler deploy` するか、Cloudflare ダッシュボードの Worker → Settings → Variables で変えます。応答は 5 分キャッシュされます。
 
-1. `cd push/relay && npx wrangler kv namespace create opencode-config` を実行し、表示された `id` を `wrangler.toml` の `[[kv_namespaces]]`（`binding = "CONFIG"`）に貼ってコメントを外す。
-2. `npx wrangler deploy` する。
-
-KV が無い間はアプリの既定値のままです。
-
-### 値を変える
-
-Cloudflare ダッシュボードの Storage & Databases → KV → `opencode-config` で、キー `ads` に JSON を保存します（コマンドなら `npx wrangler kv key put --binding CONFIG --remote ads '{"rewarded":false}'`）。
+| 変数 | 内容 |
+|---|---|
+| `ADS_REWARDED` | `false` でリワード広告と 1 日の回数制限をなくす（バナーはそのまま）。`true` または空で今まで通り |
+| `ADS_FREE_MESSAGES` | 広告なしで送れる 1 日の回数（1〜1000）。空ならアプリの既定値（10） |
+| `ADS_MESSAGES_PER_REWARD` | 広告 1 回で増える回数（1〜1000）。空ならアプリの既定値（10） |
 
 ```json
-{ "rewarded": false, "freeMessages": 20, "messagesPerReward": 10 }
+"ads": { "rewarded": true, "freeMessages": 10, "messagesPerReward": 10 }
 ```
 
-| キー | 内容 |
-|---|---|
-| `rewarded` | `false` でリワード広告と 1 日の回数制限をなくす（バナーはそのまま）。`true` または省略で今まで通り |
-| `freeMessages` | 広告なしで送れる 1 日の回数（1〜1000 の整数）。省略ならアプリの既定値（10） |
-| `messagesPerReward` | 広告 1 回で増える回数（1〜1000 の整数）。省略ならアプリの既定値（10） |
-
-- 中継サーバーには 1 分ほどで反映されます。アプリは起動時と前面に戻ったとき（30 分に 1 回まで）に読むので、各端末に届くのはその次の問い合わせです。
-- 型が違う値（`"10"`、`0`、`"no"` など）や壊れた JSON は省略と同じ扱いで、アプリの既定値になります。キーを消すと既定値に戻ります。
+- 読めない値（`no`、`0`、`ten` など）は空と同じ扱いで、アプリの既定値になります。
 - 問い合わせに失敗したときは、前回受け取った値（端末に保存）を使います。一度も受け取っていなければアプリの既定値です。失敗時に広告をオフにしないのは、中継サーバーへの通信を止めるだけで広告を避けられないようにするためです。
 - 無料回数を増やすとその日のうちに反映し、減らすと翌日から効きます。
 - 中継サーバーの URL が無いビルド（`PUSH_RELAY_URL` も `UPDATE_CHECK_URL` も無し）では切り替えられず、常にアプリの既定値です。
