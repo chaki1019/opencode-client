@@ -3,13 +3,24 @@
 # Uses npm Trusted Publishing (OIDC), so no npm token is stored anywhere.
 # One-time setup on npmjs.com: package settings → Trusted Publisher →
 # GitHub Actions, repository chaki1019/opencode-mobile, workflow
-# publish-plugin.yml, with "Allow npm publish" left off. Bump "version" in
-# push/plugin/package.json first. The run only stages the release; the owner
-# approves it on npmjs.com before it goes live.
+# publish-plugin.yml, with "Allow npm publish" left off.
+#
+# Runs by itself when "version" in push/plugin/package.json changes on main
+# (or this file does), and skips versions npm already has. It can also be
+# started by hand. The run only stages the release; the owner approves it on
+# npmjs.com before it goes live.
 name: Publish plugin
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - push/plugin/package.json
+      - .github/workflows/publish-plugin.yml
   workflow_dispatch:
+
+concurrency:
+  group: publish-plugin
 
 permissions:
   contents: read
@@ -27,9 +38,22 @@ jobs:
         with:
           node-version: 22
           registry-url: https://registry.npmjs.org
+      # A package.json change that keeps the version publishes nothing.
+      - id: version
+        run: |
+          version=$(node -p 'require("./package.json").version')
+          if npm view "opencode-mobile-push@$version" version >/dev/null 2>&1; then
+            echo "opencode-mobile-push@$version is already on npm; nothing to publish."
+            echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
       # Trusted Publishing needs npm 11.5.1 or later.
-      - run: npm install -g npm@latest
-      - run: npm test
+      - if: steps.version.outputs.new == 'true'
+        run: npm install -g npm@latest
+      - if: steps.version.outputs.new == 'true'
+        run: npm test
       # Provenance is off: npm checks it against package.json "repository",
       # which the package leaves out because the repository is private.
-      - run: npm stage publish --access public --provenance=false
+      - if: steps.version.outputs.new == 'true'
+        run: npm stage publish --access public --provenance=false
