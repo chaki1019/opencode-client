@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../app/layout.dart';
 import '../../app/theme.dart';
@@ -29,22 +30,96 @@ String pluginConfigSnippet({required String relayUrl}) =>
 bool _sameUrl(String a, String b) =>
     a.replaceAll(RegExp(r'/+$'), '') == b.replaceAll(RegExp(r'/+$'), '');
 
-/// Turns notifications on for the connected server and shows what to add
-/// to OpenCode on the computer.
+/// Notification settings, which belong to each server. Opened without
+/// [serverId], it lists the servers to pick from, or goes straight to the
+/// only one.
 class PushSettingsScreen extends ConsumerWidget {
-  const PushSettingsScreen({super.key});
+  const PushSettingsScreen({super.key, this.serverId});
+
+  final String? serverId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final server = ref.watch(connectionProvider)?.server;
+    final servers = ref.watch(listedServersProvider);
     final config = ref.watch(pushConfigProvider);
+    final server = serverId == null
+        ? (servers.length == 1 ? servers.single : null)
+        : servers.where((s) => s.id == serverId).firstOrNull;
     return Scaffold(
       appBar: AppBar(title: Text(context.l10n.pushTitle)),
-      body: server == null
-          ? const SizedBox.shrink()
-          : !config.isConfigured
+      body: !config.isConfigured
           ? _Message(context.l10n.pushNotConfigured)
-          : _PairingView(server: server, relayUrl: config.relayUrl),
+          : server != null
+          ? _PairingView(server: server, relayUrl: config.relayUrl)
+          : serverId == null
+          ? _ServerList(servers: servers)
+          : const SizedBox.shrink(),
+    );
+  }
+}
+
+/// Every listed server with whether its notifications are on.
+class _ServerList extends StatelessWidget {
+  const _ServerList({required this.servers});
+
+  final List<ServerConfig> servers;
+
+  @override
+  Widget build(BuildContext context) => ListView(
+    padding: EdgeInsets.fromLTRB(
+      readableSide(context),
+      0,
+      readableSide(context),
+      24,
+    ),
+    children: [
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: Text(
+          context.l10n.pushChooseServer,
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ),
+      for (final server in servers) _ServerTile(server: server),
+    ],
+  );
+}
+
+class _ServerTile extends ConsumerWidget {
+  const _ServerTile({required this.server});
+
+  final ServerConfig server;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    final enabled =
+        ref.watch(pushPairingProvider(server.id)).value?.enabled ?? false;
+    final plugin = enabled
+        ? ref.watch(computerPluginProvider(server.id)).value?.status
+        : null;
+    final status = !enabled
+        ? l10n.pushOff
+        : switch (plugin) {
+            ComputerPluginStatus.active => l10n.pushOnActive,
+            null => l10n.pushOn,
+            _ => l10n.pushOnCheck,
+          };
+    return ListTile(
+      key: Key('push-server-${server.id}'),
+      leading: Icon(
+        enabled
+            ? Icons.notifications_active_outlined
+            : Icons.notifications_off_outlined,
+      ),
+      title: Text(
+        server.displayName,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      ),
+      subtitle: Text(status, key: Key('push-server-status-${server.id}')),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () => context.push('/push/${server.id}'),
     );
   }
 }

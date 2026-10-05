@@ -85,6 +85,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             _page(state, const PushSettingsScreen()),
       ),
       GoRoute(
+        path: '/push/:serverId',
+        pageBuilder: (context, state) => _page(
+          state,
+          PushSettingsScreen(serverId: state.pathParameters['serverId']),
+        ),
+      ),
+      GoRoute(
         path: '/sessions/:sessionId',
         redirect: (context, state) =>
             state.extra is Session ? null : '/projects',

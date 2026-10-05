@@ -256,3 +256,28 @@ final connectionProvider =
     NotifierProvider<ConnectionNotifier, ActiveConnection?>(
       ConnectionNotifier.new,
     );
+
+/// The servers the app lists: the saved ones, plus the one on screen when
+/// it was connected without saving.
+final listedServersProvider = Provider<List<ServerConfig>>((ref) {
+  final current = ref.watch(connectionProvider)?.server;
+  final saved = ref.watch(savedServersProvider).value ?? const [];
+  return [
+    if (current != null && !saved.any((s) => s.id == current.id)) current,
+    ...saved,
+  ];
+});
+
+/// The client for the server with [id]: its connection in the pool, or
+/// the one on screen. Null while it is not connected.
+final serverClientProvider = Provider.family<OpenCodeClient?, String>((
+  ref,
+  id,
+) {
+  final pooled = ref.watch(
+    connectionPoolProvider.select((pool) => pool[id]?.connection?.client),
+  );
+  if (pooled != null) return pooled;
+  final current = ref.watch(connectionProvider);
+  return current?.server.id == id ? current!.client : null;
+});

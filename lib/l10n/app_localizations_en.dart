@@ -773,6 +773,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pushReceive => 'Get notified for this server';
 
   @override
+  String get pushChooseServer =>
+      'Notifications are set up for each server. Choose a server.';
+
+  @override
+  String get pushOn => 'On';
+
+  @override
+  String get pushOff => 'Off';
+
+  @override
+  String get pushOnActive => 'On · running on the computer';
+
+  @override
+  String get pushOnCheck => 'On · check the setup on the computer';
+
+  @override
   String get pushWhat =>
       'Notifies you when the agent finishes, stops on an error, or waits for a permission or an answer. Needs the plugin below in OpenCode on your computer. Project and session names are encrypted, so the relay server cannot read them.';
 
@@ -1043,7 +1059,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diagnosticsPluginOtherKey =>
-      'The plugin on the computer uses another relay or key. Tap to check.';
+      'The plugin on the computer uses another relay or key. Check it under Notifications in the menu.';
 
   @override
   String get diagnosticsMcpNone => 'No MCP servers';
