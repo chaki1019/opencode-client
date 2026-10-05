@@ -6,23 +6,28 @@ import '../../app/layout.dart';
 import '../../app/theme.dart';
 import '../../core/models/server_config.dart';
 import '../../core/push/computer_plugin.dart';
-import '../../core/push/push_store.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 import 'push_providers.dart';
 
-/// The `opencode.json` entry that loads the plugin with this pairing.
-String pluginConfigSnippet({required String relayUrl, required String key}) =>
-    '''
+/// The `opencode.json` entry that loads the plugin. The plugin makes its
+/// own pairing key, which the app reads back, so only a relay other than
+/// the public one needs passing.
+String pluginConfigSnippet({required String relayUrl}) =>
+    _sameUrl(relayUrl, defaultPushRelayUrl)
+    ? '"plugins": ["$pushPluginPackage"]'
+    : '''
 "plugins": [
   {
-    "package": "opencode-mobile-push",
+    "package": "$pushPluginPackage",
     "options": {
-      "relay": "$relayUrl",
-      "key": "$key"
+      "relay": "$relayUrl"
     }
   }
 ]''';
+
+bool _sameUrl(String a, String b) =>
+    a.replaceAll(RegExp(r'/+$'), '') == b.replaceAll(RegExp(r'/+$'), '');
 
 /// Turns notifications on for the connected server and shows what to add
 /// to OpenCode on the computer.
@@ -104,6 +109,8 @@ class _PairingViewState extends ConsumerState<_PairingView> {
   Widget build(BuildContext context) {
     final provider = pushPairingProvider(widget.server.id);
     final pairing = ref.watch(provider);
+    // Picks up the computer's key before notifications are turned on.
+    ref.watch(computerPluginProvider(widget.server.id));
     return pairing.when(
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => _Message(context.l10n.pushFailed('$e')),
@@ -136,16 +143,8 @@ class _PairingViewState extends ConsumerState<_PairingView> {
             ),
           ),
           if (pairing.enabled) ...[
-            _ComputerStatus(
-              serverId: widget.server.id,
-              onAdopt: _busy
-                  ? null
-                  : (key) => _run(
-                      () => ref.read(provider.notifier).adoptKey(key),
-                      done: context.l10n.pushComputerAdopted,
-                    ),
-            ),
-            _Setup(relayUrl: widget.relayUrl, pairing: pairing),
+            _ComputerStatus(serverId: widget.server.id),
+            _Setup(relayUrl: widget.relayUrl),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: OutlinedButton.icon(
@@ -170,12 +169,9 @@ class _PairingViewState extends ConsumerState<_PairingView> {
 }
 
 class _ComputerStatus extends ConsumerWidget {
-  const _ComputerStatus({required this.serverId, this.onAdopt});
+  const _ComputerStatus({required this.serverId});
 
   final String serverId;
-
-  /// Switches this device to the key `opencode.json` already uses.
-  final void Function(String key)? onAdopt;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -218,11 +214,7 @@ class _ComputerStatus extends ConsumerWidget {
         l10n.pushComputerUnknown,
       ),
     };
-    final sharedKey = switch (check) {
-      AsyncData(value: ComputerPluginCheck(:final sharedKey?)) => sharedKey,
-      _ => null,
-    };
-    final tile = ListTile(
+    return ListTile(
       key: const Key('push-computer'),
       leading: icon == null
           ? const SizedBox.square(
@@ -239,42 +231,18 @@ class _ComputerStatus extends ConsumerWidget {
         onPressed: () => ref.invalidate(provider),
       ),
     );
-    if (sharedKey == null) return tile;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        tile,
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: Text(
-            l10n.pushComputerAdoptHint,
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-          child: FilledButton.tonalIcon(
-            key: const Key('push-computer-adopt'),
-            icon: const Icon(Icons.key_outlined),
-            label: Text(l10n.pushComputerAdopt),
-            onPressed: onAdopt == null ? null : () => onAdopt!(sharedKey),
-          ),
-        ),
-      ],
-    );
   }
 }
 
 class _Setup extends StatelessWidget {
-  const _Setup({required this.relayUrl, required this.pairing});
+  const _Setup({required this.relayUrl});
 
   final String relayUrl;
-  final PushPairing pairing;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final snippet = pluginConfigSnippet(relayUrl: relayUrl, key: pairing.key);
+    final snippet = pluginConfigSnippet(relayUrl: relayUrl);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
       child: Column(

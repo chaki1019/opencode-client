@@ -1,9 +1,12 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../app/layout.dart';
 import '../../l10n/l10n.dart';
 import '../ads/ads_settings_section.dart';
+import '../update/update_providers.dart';
 import 'settings_providers.dart';
 import 'support_section.dart';
 
@@ -84,6 +87,19 @@ class SettingsScreen extends ConsumerWidget {
           ),
           AdsSettingsSection(header: _SectionHeader.new),
           SupportSection(header: _SectionHeader.new),
+          _SectionHeader(l10n.settingsAbout),
+          ListTile(
+            key: const Key('app-version'),
+            title: Text(l10n.settingsVersion),
+            subtitle: Text(ref.watch(appVersionProvider).value ?? ''),
+          ),
+          ListTile(
+            key: const Key('app-os'),
+            title: Text(l10n.settingsOs),
+            subtitle: Text(
+              '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
+            ),
+          ),
         ],
       ),
     );

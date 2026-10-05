@@ -117,7 +117,14 @@ void main() {
     expect(find.text('Stopped'), findsOneWidget);
     expect(find.text('github'), findsOneWidget);
     expect(find.text('failed: token expired'), findsOneWidget);
-    expect(find.text('1.0.0 (5)'), findsOneWidget);
+    // The push plugin sits with the server; the app's own details live in
+    // settings.
+    expect(
+      tester.getTopLeft(find.text('Push notification plugin')).dy,
+      lessThan(tester.getTopLeft(find.text('Live updates')).dy),
+    );
+    expect(find.text('Address'), findsNothing);
+    expect(find.text('1.0.0 (5)'), findsNothing);
 
     await tester.tap(find.byKey(const Key('diagnostics-copy')));
     await tester.pumpAndSettle();

@@ -1397,7 +1397,7 @@ abstract class AppLocalizations {
   /// No description provided for @pushSetupSteps.
   ///
   /// In en, this message translates to:
-  /// **'1. Add the entry below to ~/.config/opencode/opencode.json\n2. Restart OpenCode (it installs the opencode-mobile-push plugin from npm)'**
+  /// **'1. Add the entry below to ~/.config/opencode/opencode.json\n2. Restart OpenCode\n\nOpenCode installs the plugin from npm, and the plugin makes its own pairing key on the computer. The app reads that key by itself, so there is nothing to copy.'**
   String get pushSetupSteps;
 
   /// No description provided for @pushSendTest.
@@ -1733,7 +1733,7 @@ abstract class AppLocalizations {
   /// No description provided for @pushComputerOtherKey.
   ///
   /// In en, this message translates to:
-  /// **'It is set up with a different key. Replace the entry in opencode.json with the one below.'**
+  /// **'The plugin on the computer uses another relay or key. Change its entry in opencode.json to the one below.'**
   String get pushComputerOtherKey;
 
   /// No description provided for @pushComputerNotLoaded.
@@ -1759,24 +1759,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check again'**
   String get pushComputerRefresh;
-
-  /// No description provided for @pushComputerAdopt.
-  ///
-  /// In en, this message translates to:
-  /// **'Use the key from the computer'**
-  String get pushComputerAdopt;
-
-  /// No description provided for @pushComputerAdoptHint.
-  ///
-  /// In en, this message translates to:
-  /// **'If another device set this up, switch this device to the same key and both will get notifications.'**
-  String get pushComputerAdoptHint;
-
-  /// No description provided for @pushComputerAdopted.
-  ///
-  /// In en, this message translates to:
-  /// **'Switched to the computer\'s key'**
-  String get pushComputerAdopted;
 
   /// No description provided for @diagnosticsTitle.
   ///
@@ -1838,17 +1820,17 @@ abstract class AppLocalizations {
   /// **'Stopped'**
   String get diagnosticsLiveStopped;
 
-  /// No description provided for @diagnosticsPush.
-  ///
-  /// In en, this message translates to:
-  /// **'Notifications'**
-  String get diagnosticsPush;
-
   /// No description provided for @diagnosticsPlugin.
   ///
   /// In en, this message translates to:
-  /// **'Push plugin on the computer'**
+  /// **'Push notification plugin'**
   String get diagnosticsPlugin;
+
+  /// No description provided for @diagnosticsPluginOtherKey.
+  ///
+  /// In en, this message translates to:
+  /// **'The plugin on the computer uses another relay or key. Tap to check.'**
+  String get diagnosticsPluginOtherKey;
 
   /// No description provided for @diagnosticsMcpNone.
   ///
@@ -1856,23 +1838,23 @@ abstract class AppLocalizations {
   /// **'No MCP servers'**
   String get diagnosticsMcpNone;
 
-  /// No description provided for @diagnosticsApp.
+  /// No description provided for @settingsAbout.
   ///
   /// In en, this message translates to:
   /// **'This app'**
-  String get diagnosticsApp;
+  String get settingsAbout;
 
-  /// No description provided for @diagnosticsAppVersion.
+  /// No description provided for @settingsVersion.
   ///
   /// In en, this message translates to:
   /// **'Version'**
-  String get diagnosticsAppVersion;
+  String get settingsVersion;
 
-  /// No description provided for @diagnosticsOs.
+  /// No description provided for @settingsOs.
   ///
   /// In en, this message translates to:
   /// **'OS'**
-  String get diagnosticsOs;
+  String get settingsOs;
 
   /// No description provided for @diagnosticsChecking.
   ///

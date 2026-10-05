@@ -6,31 +6,39 @@ answer. It works with the opencode-mobile app.
 
 ## Setup
 
-1. In the app, connect to your OpenCode server, open the bell on the
+1. Add the plugin to `~/.config/opencode/opencode.json` and restart OpenCode:
+
+```jsonc
+"plugins": ["opencode-mobile-push"]
+```
+
+2. In the app, connect to your OpenCode server, open the bell on the
    projects screen and turn on notifications for that server.
-2. Add the snippet the app shows to `~/.config/opencode/opencode.json` and
-   restart OpenCode:
+
+On first start the plugin creates a pairing key and saves it to
+`~/.config/opencode/opencode-mobile-push.json` (readable only by you). The
+app reads that key through the OpenCode server, so nothing has to be copied
+by hand, and every phone that connects to this computer uses the same key.
+Notifications go through the public relay at `https://relay.opencodemobile.app`.
+
+To pin a version, use `"opencode-mobile-push@0.3.0"`.
+
+To use your own relay, or a key you choose, pass them as options:
 
 ```jsonc
 "plugins": [
   {
     "package": "opencode-mobile-push",
-    "options": {
-      "relay": "<relay URL shown in the app>",
-      "key": "<pairing key shown in the app>"
-    }
+    "options": { "relay": "https://<your-relay>", "key": "<pairing key>" }
   }
 ]
 ```
 
-To pin a version, use `"opencode-mobile-push@0.2.0"`.
-
 Without npm, copy `opencode-mobile-push.js` to `~/.config/opencode/plugins/`
-(OpenCode loads that folder by itself) and put the relay and key in
-`~/.config/opencode/opencode-mobile-push.json`:
+(OpenCode loads that folder by itself). The settings file works the same way:
 
 ```json
-{ "relay": "<relay URL shown in the app>", "key": "<pairing key shown in the app>" }
+{ "relay": "https://<your-relay>", "key": "<pairing key>" }
 ```
 
 Options given in `opencode.json` take precedence over this file.

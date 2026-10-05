@@ -1,11 +1,10 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/layout.dart';
+import '../../app/theme.dart';
 import '../../core/events/event_stream.dart';
 import '../../core/models/project_tools.dart';
 import '../../core/push/computer_plugin.dart';
@@ -13,10 +12,17 @@ import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
 import '../push/push_providers.dart';
-import '../update/update_providers.dart';
 import 'diagnostics_providers.dart';
 
-enum _Level { ok, warning, error, neutral }
+enum _Level {
+  ok,
+  warning,
+  error,
+  neutral,
+
+  /// Plain information, not a check: shown as its value alone.
+  info,
+}
 
 /// One checked item: what it is, how it went, and a short value.
 class _Row {
@@ -45,18 +51,13 @@ class DiagnosticsScreen extends ConsumerWidget {
     final streamStatus = ref.watch(eventStreamProvider)?.status;
     final plugin = ref.watch(computerPluginProvider(connection.server.id));
     final mcp = ref.watch(diagnosticsMcpProvider);
-    final appVersion = ref.watch(_appVersionProvider).value;
     final checking = l10n.diagnosticsChecking;
 
     final sections = <(String, List<_Row>)>[
       (
         l10n.diagnosticsServer,
         [
-          _Row(
-            l10n.diagnosticsAddress,
-            connection.server.baseUrl,
-            _Level.neutral,
-          ),
+          _Row(l10n.diagnosticsAddress, connection.server.baseUrl, _Level.info),
           switch (serverCheck) {
             AsyncData(value: ServerCheck(:final health?, :final latency)) =>
               _Row(
@@ -74,6 +75,7 @@ class DiagnosticsScreen extends ConsumerWidget {
             ),
             _ => _Row(l10n.diagnosticsHealth, checking, _Level.neutral),
           },
+          _pluginRow(l10n, plugin, () => context.push('/push')),
         ],
       ),
       (
@@ -100,10 +102,6 @@ class DiagnosticsScreen extends ConsumerWidget {
         ],
       ),
       (
-        l10n.diagnosticsPush,
-        [_pluginRow(l10n, plugin, () => context.push('/push'))],
-      ),
-      (
         'MCP',
         switch (mcp) {
           AsyncData(value: final servers) when servers.isEmpty => [
@@ -117,17 +115,6 @@ class DiagnosticsScreen extends ConsumerWidget {
           ],
           _ => [_Row('MCP', checking, _Level.neutral)],
         },
-      ),
-      (
-        l10n.diagnosticsApp,
-        [
-          _Row(l10n.diagnosticsAppVersion, appVersion ?? '', _Level.neutral),
-          _Row(
-            l10n.diagnosticsOs,
-            '${Platform.operatingSystem} ${Platform.operatingSystemVersion}',
-            _Level.neutral,
-          ),
-        ],
       ),
     ];
 
@@ -189,7 +176,7 @@ class DiagnosticsScreen extends ConsumerWidget {
           _Level.error,
         ),
         ComputerPluginStatus.otherKey => (
-          l10n.pushComputerOtherKey,
+          l10n.diagnosticsPluginOtherKey,
           _Level.error,
         ),
         ComputerPluginStatus.notLoaded => (
@@ -233,11 +220,6 @@ String _report(List<(String, List<_Row>)> sections) {
   return lines.join('\n');
 }
 
-final _appVersionProvider = FutureProvider.autoDispose<String>((ref) async {
-  final info = await ref.watch(packageInfoProvider);
-  return '${info.version} (${info.buildNumber})';
-});
-
 class _RowTile extends StatelessWidget {
   const _RowTile(this.row);
 
@@ -245,12 +227,24 @@ class _RowTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+    if (row.level == _Level.info) {
+      // Leaves the icon column empty so the text lines up with the checks.
+      return ListTile(
+        leading: const SizedBox(width: 24),
+        title: Text(
+          row.value,
+          style: theme.textTheme.bodyLarge?.copyWith(fontFamily: AppFonts.mono),
+        ),
+      );
+    }
     final (icon, color) = switch (row.level) {
       _Level.ok => (Icons.check_circle_outline, colors.primary),
       _Level.warning => (Icons.warning_amber_outlined, colors.tertiary),
       _Level.error => (Icons.error_outline, colors.error),
-      _Level.neutral => (Icons.circle_outlined, colors.onSurfaceVariant),
+      _Level.neutral ||
+      _Level.info => (Icons.circle_outlined, colors.onSurfaceVariant),
     };
     return ListTile(
       leading: Icon(icon, color: color),

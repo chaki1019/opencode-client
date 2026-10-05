@@ -798,7 +798,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pushSetupSteps =>
-      '1. Add the entry below to ~/.config/opencode/opencode.json\n2. Restart OpenCode (it installs the opencode-mobile-push plugin from npm)';
+      '1. Add the entry below to ~/.config/opencode/opencode.json\n2. Restart OpenCode\n\nOpenCode installs the plugin from npm, and the plugin makes its own pairing key on the computer. The app reads that key by itself, so there is nothing to copy.';
 
   @override
   String get pushSendTest => 'Send a test notification';
@@ -988,7 +988,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pushComputerOtherKey =>
-      'It is set up with a different key. Replace the entry in opencode.json with the one below.';
+      'The plugin on the computer uses another relay or key. Change its entry in opencode.json to the one below.';
 
   @override
   String get pushComputerNotLoaded =>
@@ -1003,16 +1003,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pushComputerRefresh => 'Check again';
-
-  @override
-  String get pushComputerAdopt => 'Use the key from the computer';
-
-  @override
-  String get pushComputerAdoptHint =>
-      'If another device set this up, switch this device to the same key and both will get notifications.';
-
-  @override
-  String get pushComputerAdopted => 'Switched to the computer\'s key';
 
   @override
   String get diagnosticsTitle => 'Connection check';
@@ -1049,22 +1039,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get diagnosticsLiveStopped => 'Stopped';
 
   @override
-  String get diagnosticsPush => 'Notifications';
+  String get diagnosticsPlugin => 'Push notification plugin';
 
   @override
-  String get diagnosticsPlugin => 'Push plugin on the computer';
+  String get diagnosticsPluginOtherKey =>
+      'The plugin on the computer uses another relay or key. Tap to check.';
 
   @override
   String get diagnosticsMcpNone => 'No MCP servers';
 
   @override
-  String get diagnosticsApp => 'This app';
+  String get settingsAbout => 'This app';
 
   @override
-  String get diagnosticsAppVersion => 'Version';
+  String get settingsVersion => 'Version';
 
   @override
-  String get diagnosticsOs => 'OS';
+  String get settingsOs => 'OS';
 
   @override
   String get diagnosticsChecking => 'Checking…';

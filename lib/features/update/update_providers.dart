@@ -22,6 +22,12 @@ final packageInfoProvider = Provider<Future<PackageInfo>>(
   (ref) => PackageInfo.fromPlatform(),
 );
 
+/// The app's version and build number, as shown in settings.
+final appVersionProvider = FutureProvider.autoDispose<String>((ref) async {
+  final info = await ref.watch(packageInfoProvider);
+  return '${info.version} (${info.buildNumber})';
+});
+
 /// Checks at launch and again when the app comes back to the foreground,
 /// at most every [recheckAfter]. Once an update is required the app stays
 /// blocked until it is replaced by a newer build.

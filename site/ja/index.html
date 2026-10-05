@@ -171,7 +171,7 @@ opencode serve --hostname 0.0.0.0 --port 4096</code></pre>
 </ol>
 <div class="callout">
   <h3>通知も受け取るには</h3>
-  <p>プロジェクト一覧右上のベルから通知をオンにし、表示される設定を PC の <code class="copy">~/.config/opencode/opencode.json</code> に貼って OpenCode を再起動します。プラグイン <code class="copy">opencode-mobile-push</code> は npm から自動で入ります。</p>
+  <p>PC の <code class="copy">~/.config/opencode/opencode.json</code> に <code class="copy">"plugins": ["opencode-mobile-push"]</code> を追加して OpenCode を再起動し、アプリのプロジェクト一覧右上のベルから通知をオンにします。プラグインは npm から自動で入り、通知用のキーも PC 側で作られます。アプリはそのキーを自動で読み取るので、コピーは要りません。</p>
 </div>
 </section>
 

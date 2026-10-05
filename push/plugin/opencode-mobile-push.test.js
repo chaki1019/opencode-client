@@ -159,10 +159,35 @@ async function withSettingsDir(fn) {
   }
 }
 
-test("missing options disable the plugin", async () => {
-  await withSettingsDir(async () => {
+test("without any settings, it creates and saves a key and uses the public relay", async () => {
+  await withSettingsDir(async (dir) => {
+    const { readFile, stat } = await import("node:fs/promises");
     const out = await run([ev("session.execution.succeeded", { sessionID: "ses_7" })], { options: {} });
-    assert.equal(out.length, 0);
+    const path = `${dir}/opencode/opencode-mobile-push.json`;
+    const saved = JSON.parse(await readFile(path, "utf8"));
+    assert.match(saved.key, /^[A-Za-z0-9_-]{43}$/);
+    assert.equal((await stat(path)).mode & 0o777, 0o600);
+    assert.equal(out.length, 1);
+    assert.equal(out[0].url, "https://relay.opencodemobile.app/v1/notify");
+    assert.deepEqual(await open(saved.key, out[0].body), { project: "app" });
+
+    // The next start reuses the saved key.
+    const again = await run([ev("session.execution.succeeded", { sessionID: "ses_7b" })], { options: {} });
+    assert.deepEqual(await open(saved.key, again[0].body), { project: "app" });
+  });
+});
+
+test("a settings file with only a relay gets a key added next to it", async () => {
+  await withSettingsDir(async (dir) => {
+    const { mkdir, readFile, writeFile } = await import("node:fs/promises");
+    await mkdir(`${dir}/opencode`, { recursive: true });
+    const path = `${dir}/opencode/opencode-mobile-push.json`;
+    await writeFile(path, JSON.stringify({ relay: "https://own-relay.example" }));
+    const out = await run([ev("session.execution.succeeded", { sessionID: "ses_10" })], { options: {} });
+    const saved = JSON.parse(await readFile(path, "utf8"));
+    assert.equal(saved.relay, "https://own-relay.example");
+    assert.equal(out[0].url, "https://own-relay.example/v1/notify");
+    assert.deepEqual(await open(saved.key, out[0].body), { project: "app" });
   });
 });
 
