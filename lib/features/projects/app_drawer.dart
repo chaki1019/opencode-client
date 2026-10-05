@@ -57,13 +57,8 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final current = ref.watch(connectionProvider)?.server;
-    final saved = ref.watch(savedServersProvider).value ?? const [];
+    final servers = ref.watch(listedServersProvider);
     final pool = ref.watch(connectionPoolProvider);
-    // A server connected without saving is still listed while it is open.
-    final servers = [
-      if (current != null && !saved.any((s) => s.id == current.id)) current,
-      ...saved,
-    ];
     return Drawer(
       child: SafeArea(
         child: Column(

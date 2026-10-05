@@ -393,6 +393,52 @@ void main() {
     );
   });
 
+  testWidgets('with several servers, the menu lists them to choose from', (
+    tester,
+  ) async {
+    await pumpConnected(tester);
+    await tester.tap(find.byKey(const Key('open-drawer')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('add-server')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('url')), 'second.test:4096');
+    await tester.enterText(find.byKey(const Key('password')), 'pw');
+    await tester.tap(find.byKey(const Key('connect')));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byKey(const Key('save-name')), '会社');
+    await tester.tap(find.byKey(const Key('save')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('open-drawer')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('push-settings')));
+    await tester.pumpAndSettle();
+    final tiles = find.byWidgetPredicate(
+      (w) =>
+          w.key is ValueKey<String> &&
+          (w.key! as ValueKey<String>).value.startsWith('push-server-') &&
+          !(w.key! as ValueKey<String>).value.startsWith('push-server-status-'),
+    );
+    expect(tiles, findsNWidgets(2));
+    expect(find.byKey(const Key('push-switch')), findsNothing);
+
+    // The server not on screen opens without switching to it.
+    await tester.tap(find.text('example.test'));
+    await tester.pumpAndSettle();
+    final toggle = tester.widget<SwitchListTile>(
+      find.byKey(const Key('push-switch')),
+    );
+    expect((toggle.subtitle! as Text).data, 'example.test');
+
+    await tester.tap(find.byKey(const Key('push-switch')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(BackButton));
+    await tester.pumpAndSettle();
+    // The fake computer has no plugin yet.
+    expect(find.text('オン · PC/Mac 側の設定を確認してください'), findsOneWidget);
+    expect(find.text('オフ'), findsOneWidget);
+  });
+
   testWidgets('tapping a notification opens its session', (tester) async {
     await pumpConnected(tester);
     final saved = (await ServerStore().loadServers()).single;

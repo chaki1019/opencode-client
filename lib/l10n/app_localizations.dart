@@ -1358,6 +1358,36 @@ abstract class AppLocalizations {
   /// **'Get notified for this server'**
   String get pushReceive;
 
+  /// No description provided for @pushChooseServer.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications are set up for each server. Choose a server.'**
+  String get pushChooseServer;
+
+  /// No description provided for @pushOn.
+  ///
+  /// In en, this message translates to:
+  /// **'On'**
+  String get pushOn;
+
+  /// No description provided for @pushOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get pushOff;
+
+  /// No description provided for @pushOnActive.
+  ///
+  /// In en, this message translates to:
+  /// **'On · running on the computer'**
+  String get pushOnActive;
+
+  /// No description provided for @pushOnCheck.
+  ///
+  /// In en, this message translates to:
+  /// **'On · check the setup on the computer'**
+  String get pushOnCheck;
+
   /// No description provided for @pushWhat.
   ///
   /// In en, this message translates to:
@@ -1829,7 +1859,7 @@ abstract class AppLocalizations {
   /// No description provided for @diagnosticsPluginOtherKey.
   ///
   /// In en, this message translates to:
-  /// **'The plugin on the computer uses another relay or key. Tap to check.'**
+  /// **'The plugin on the computer uses another relay or key. Check it under Notifications in the menu.'**
   String get diagnosticsPluginOtherKey;
 
   /// No description provided for @diagnosticsMcpNone.

@@ -760,6 +760,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pushReceive => 'このサーバーの通知を受け取る';
 
   @override
+  String get pushChooseServer => '通知はサーバーごとに設定します。設定するサーバーを選んでください。';
+
+  @override
+  String get pushOn => 'オン';
+
+  @override
+  String get pushOff => 'オフ';
+
+  @override
+  String get pushOnActive => 'オン · PC/Mac 側も稼働中';
+
+  @override
+  String get pushOnCheck => 'オン · PC/Mac 側の設定を確認してください';
+
+  @override
   String get pushWhat =>
       'Agent の応答が終わったとき、エラーで止まったとき、許可や回答を待っているときに通知します。PC/Mac の OpenCode に下のプラグインを入れる必要があります。プロジェクト名やセッション名は暗号化して送るため、中継サーバーからは読めません。';
 
@@ -1023,7 +1038,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get diagnosticsPluginOtherKey =>
-      'PC のプラグインが別のリレーかキーを使っています。タップして確認してください。';
+      'PC のプラグインが別のリレーかキーを使っています。メニューの「通知」で確認してください。';
 
   @override
   String get diagnosticsMcpNone => 'MCP サーバーはありません';

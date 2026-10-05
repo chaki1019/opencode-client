@@ -150,7 +150,7 @@ final pushPairingProvider = AsyncNotifierProvider.autoDispose
 /// its notifications.
 final computerPluginProvider = FutureProvider.autoDispose
     .family<ComputerPluginCheck?, String>((ref, serverId) async {
-      final client = ref.watch(connectionProvider)?.client;
+      final client = ref.watch(serverClientProvider(serverId));
       if (client == null) return null;
       final pairing = await ref.watch(pushPairingProvider(serverId).future);
       final relayUrl = ref.watch(pushConfigProvider).relayUrl;

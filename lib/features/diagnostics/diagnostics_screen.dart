@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../app/layout.dart';
 import '../../app/theme.dart';
@@ -26,12 +25,11 @@ enum _Level {
 
 /// One checked item: what it is, how it went, and a short value.
 class _Row {
-  const _Row(this.label, this.value, this.level, {this.onTap});
+  const _Row(this.label, this.value, this.level);
 
   final String label;
   final String value;
   final _Level level;
-  final VoidCallback? onTap;
 }
 
 /// Shows whether the parts the app depends on work: the server, live
@@ -75,7 +73,7 @@ class DiagnosticsScreen extends ConsumerWidget {
             ),
             _ => _Row(l10n.diagnosticsHealth, checking, _Level.neutral),
           },
-          _pluginRow(l10n, plugin, () => context.push('/push')),
+          _pluginRow(l10n, plugin),
         ],
       ),
       (
@@ -165,7 +163,6 @@ class DiagnosticsScreen extends ConsumerWidget {
   static _Row _pluginRow(
     AppLocalizations l10n,
     AsyncValue<ComputerPluginCheck?> check,
-    VoidCallback open,
   ) {
     final label = l10n.diagnosticsPlugin;
     final (value, level) = switch (check) {
@@ -191,7 +188,7 @@ class DiagnosticsScreen extends ConsumerWidget {
       AsyncLoading() => (l10n.diagnosticsChecking, _Level.neutral),
       _ => (l10n.pushComputerUnknown, _Level.neutral),
     };
-    return _Row(label, value, level, onTap: open);
+    return _Row(label, value, level);
   }
 
   static _Row _mcpRow(AppLocalizations l10n, McpServer server) {
@@ -250,8 +247,6 @@ class _RowTile extends StatelessWidget {
       leading: Icon(icon, color: color),
       title: Text(row.label),
       subtitle: row.value.isEmpty ? null : Text(row.value),
-      trailing: row.onTap == null ? null : const Icon(Icons.chevron_right),
-      onTap: row.onTap,
     );
   }
 }
