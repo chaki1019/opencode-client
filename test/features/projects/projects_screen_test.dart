@@ -34,17 +34,17 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('shows a Projects section with an add button', (tester) async {
+  testWidgets('shows a Projects section and a FAB to add one', (tester) async {
     await pumpScreen(tester);
 
-    final add = find.byKey(const Key('add-project'));
-    final row = find.ancestor(of: add, matching: find.byType(Row)).first;
-    final header = tester.getRect(add);
-    final label = tester.getRect(
-      find.descendant(of: row, matching: find.text('プロジェクト')),
+    expect(
+      find.descendant(of: find.byType(ListView), matching: find.text('プロジェクト')),
+      findsOneWidget,
     );
-    expect(label.center.dy, closeTo(header.center.dy, 1));
-    expect(label.left, lessThan(header.left));
+    final add = find.byKey(const Key('add-project'));
+    expect(tester.widget(add), isA<FloatingActionButton>());
+    // The header no longer has a "+" of its own.
+    expect(find.widgetWithIcon(IconButton, Icons.add), findsNothing);
     expect(
       find.descendant(
         of: find.byKey(const Key('project-list')),

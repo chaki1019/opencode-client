@@ -118,6 +118,17 @@ class ProjectsPane extends ConsumerWidget {
       // competes with the iOS swipe back on the screens above it.
       drawer: onMenu == null ? const AppDrawer() : null,
       bottomNavigationBar: const AdBanner(),
+      // Same round "+" as the session list, so adding reads the same on
+      // both lists.
+      floatingActionButton: FloatingActionButton(
+        key: const Key('add-project'),
+        // In two panes the session list slides in over this one with a FAB
+        // of its own; without a tag they don't fly between the lists.
+        heroTag: null,
+        tooltip: context.l10n.addProject,
+        onPressed: () => _addProject(context, ref),
+        child: const Icon(Icons.add),
+      ),
       appBar: AppBar(
         // The connect screen sits underneath, so AppBar would otherwise
         // add a back button that the PopScope below swallows.
@@ -171,12 +182,10 @@ class ProjectsPane extends ConsumerWidget {
         onRefresh: () => ref.refresh(projectsProvider.future),
         child: projects.when(
           data: (bootstrap) => ListView(
-            padding: const EdgeInsets.only(bottom: 16),
+            // Room under the last project for the FAB.
+            padding: const EdgeInsets.only(bottom: 88),
             children: [
-              _SectionHeader(
-                title: context.l10n.projects,
-                onAdd: () => _addProject(context, ref),
-              ),
+              _SectionHeader(title: context.l10n.projects),
               if (bootstrap.projects.isNotEmpty)
                 Card(
                   key: const Key('project-list'),
@@ -297,36 +306,36 @@ class _ProjectTile extends ConsumerWidget {
   }
 }
 
-/// "Projects" label on the left with the add button on its right.
+/// "Projects" label above the list.
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title, required this.onAdd});
+  const _SectionHeader({required this.title});
 
   final String title;
-  final VoidCallback onAdd;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Padding(
-      padding: const EdgeInsets.fromLTRB(ProjectsPane._edge, 8, 4, 0),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              title,
-              style: theme.textTheme.titleSmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
-              ),
+      padding: const EdgeInsets.fromLTRB(
+        ProjectsPane._edge,
+        8,
+        ProjectsPane._edge,
+        0,
+      ),
+      // As tall as the add button it used to share the row with, so the
+      // list doesn't move up.
+      child: SizedBox(
+        height: kMinInteractiveDimension,
+        child: Align(
+          alignment: AlignmentDirectional.centerStart,
+          child: Text(
+            title,
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          IconButton(
-            key: const Key('add-project'),
-            tooltip: context.l10n.addProject,
-            icon: const Icon(Icons.add),
-            onPressed: onAdd,
-          ),
-        ],
+        ),
       ),
     );
   }
