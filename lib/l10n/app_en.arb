@@ -523,7 +523,7 @@
   "crashReportsHelp": "When the app crashes, send the error details (no chat content) to help fix it",
   "linkOpenFailed": "Couldn't open this:",
   "pushComputerTitle": "On the computer",
-  "pushComputerActive": "The plugin is running",
+  "pushComputerActive": "Running",
   "pushComputerFailed": "The plugin failed to load: {error}",
   "@pushComputerFailed": {"placeholders": {"error": {}}},
   "pushComputerOtherKey": "The plugin on the computer uses another relay or key. Change its entry in opencode.json(c) to the one below.",

@@ -960,7 +960,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pushComputerTitle => 'PC/Mac 側の状態';
 
   @override
-  String get pushComputerActive => 'プラグインが動いています';
+  String get pushComputerActive => '稼働中';
 
   @override
   String pushComputerFailed(Object error) {
@@ -1013,7 +1013,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diagnosticsLiveUpdates => 'イベントの受信';
 
   @override
-  String get diagnosticsLiveConnected => 'つながっています';
+  String get diagnosticsLiveConnected => '接続中';
 
   @override
   String get diagnosticsLiveStopped => '止まっています';

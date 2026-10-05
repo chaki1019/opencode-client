@@ -979,7 +979,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pushComputerTitle => 'On the computer';
 
   @override
-  String get pushComputerActive => 'The plugin is running';
+  String get pushComputerActive => 'Running';
 
   @override
   String pushComputerFailed(Object error) {

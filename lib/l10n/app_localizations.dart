@@ -1721,7 +1721,7 @@ abstract class AppLocalizations {
   /// No description provided for @pushComputerActive.
   ///
   /// In en, this message translates to:
-  /// **'The plugin is running'**
+  /// **'Running'**
   String get pushComputerActive;
 
   /// No description provided for @pushComputerFailed.
