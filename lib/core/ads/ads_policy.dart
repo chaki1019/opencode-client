@@ -1,11 +1,18 @@
-/// The rewarded-ad switches Remote Config can change without a new build
-/// (docs/ads.md).
+/// The rewarded-ad settings from Remote Config (docs/ads.md). The defaults
+/// live in the Remote Config console, not in the app.
 class AdsPolicy {
   const AdsPolicy({
     required this.rewarded,
     required this.dailyFreeMessages,
     required this.messagesPerReward,
   });
+
+  /// No daily limit and no rewarded ad.
+  static const off = AdsPolicy(
+    rewarded: false,
+    dailyFreeMessages: 0,
+    messagesPerReward: 0,
+  );
 
   /// Whether the daily limit and its rewarded ad apply. Off means messages
   /// are never limited; banners are not affected.
@@ -17,28 +24,26 @@ class AdsPolicy {
   /// Messages one rewarded ad adds for the rest of the day.
   final int messagesPerReward;
 
-  /// The `ads` entry of [remoteSettingsJson] over [fallback] (the build's
-  /// own values).
-  /// A missing, null or out-of-range field keeps the fallback's, so a
-  /// mistyped variable never changes anything.
-  factory AdsPolicy.fromJson(Object? json, AdsPolicy fallback) {
+  /// The `ads` entry of [remoteSettingsJson]. The limit applies only when
+  /// it is switched on and both counts are valid; anything less (nothing
+  /// fetched yet, a missing or out-of-range value) means [off], so a broken
+  /// setting never locks anyone out.
+  factory AdsPolicy.fromJson(Object? json) {
     final entry = json is Map ? json : const {};
-    final rewarded = entry['rewarded'];
+    final daily = _count(entry['freeMessages']);
+    final perReward = _count(entry['messagesPerReward']);
+    if (entry['rewarded'] != true || daily == null || perReward == null) {
+      return off;
+    }
     return AdsPolicy(
-      rewarded: rewarded is bool ? rewarded : fallback.rewarded,
-      dailyFreeMessages: _count(
-        entry['freeMessages'],
-        fallback.dailyFreeMessages,
-      ),
-      messagesPerReward: _count(
-        entry['messagesPerReward'],
-        fallback.messagesPerReward,
-      ),
+      rewarded: true,
+      dailyFreeMessages: daily,
+      messagesPerReward: perReward,
     );
   }
 
-  static int _count(Object? value, int fallback) =>
-      value is int && value >= 1 && value <= 1000 ? value : fallback;
+  static int? _count(Object? value) =>
+      value is int && value >= 1 && value <= 1000 ? value : null;
 
   @override
   bool operator ==(Object other) =>

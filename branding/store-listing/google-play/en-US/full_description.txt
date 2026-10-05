@@ -23,7 +23,7 @@ PRIVACY
 Your password is stored in the Android Keystore, and your conversations travel only between your server and your device. Project and session names sent through the notification relay are encrypted.
 
 PRICING
-The app is free and shows a banner ad on list screens. You can send 10 messages a day for free; after that, watch a short video ad to add more. A one-time "Remove Ads" purchase hides ads.
+The app is free and shows a banner ad on list screens. You can send a set number of messages a day for free; after that, watch a short video ad to add more. A one-time "Remove Ads" purchase hides ads.
 
 PLEASE NOTE
 • OpenCode Mobile is not built by the OpenCode team and is not affiliated with OpenCode in any way. It is an unofficial client.

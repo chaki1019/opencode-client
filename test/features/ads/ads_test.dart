@@ -41,6 +41,14 @@ class FakeAdsService implements AdsService {
   Future<void> showPrivacyOptions() async {}
 }
 
+/// Remote Config as the console would serve it: ten free a day, ten more
+/// per ad.
+const tenAndTen = {
+  'rewarded_ads_enabled': 'true',
+  'daily_free_messages': '10',
+  'ads_messages_per_reward': '10',
+};
+
 void main() {
   late FakeAdsService ads;
   late FakeRemoteSettings remote;
@@ -49,7 +57,7 @@ void main() {
   setUp(() {
     FlutterSecureStorage.setMockInitialValues({});
     ads = FakeAdsService();
-    remote = FakeRemoteSettings();
+    remote = FakeRemoteSettings(tenAndTen);
     now = DateTime(2026, 10, 3, 9);
   });
 
@@ -213,7 +221,10 @@ void main() {
   testWidgets('with rewarded ads switched off, sending is never limited', (
     tester,
   ) async {
-    remote = FakeRemoteSettings({'ads_rewarded': 'false'});
+    remote = FakeRemoteSettings({
+      ...tenAndTen,
+      'rewarded_ads_enabled': 'false',
+    });
     final (_, results) = await pumpGate(
       tester,
       extra: AdsSettingsSection(header: (title) => Text(title)),
@@ -230,6 +241,7 @@ void main() {
 
   testWidgets('Remote Config sets the counts', (tester) async {
     remote = FakeRemoteSettings({
+      ...tenAndTen,
       'daily_free_messages': '3',
       'ads_messages_per_reward': '5',
     });
@@ -249,16 +261,23 @@ void main() {
     await send(tester, 10);
     expect(remote.refreshes, 1);
 
-    remote.push({'ads_rewarded': 'false'});
+    remote.push({...tenAndTen, 'rewarded_ads_enabled': 'false'});
     await tester.pumpAndSettle();
     await send(tester);
     expect(results.last, isTrue);
     expect(find.byType(AlertDialog), findsNothing);
 
-    // Removing the parameter puts the build's own values back.
-    remote.push({});
+    remote.push(tenAndTen);
     await tester.pumpAndSettle();
     await send(tester);
     expect(find.byType(AlertDialog), findsOneWidget);
+  });
+
+  testWidgets('nothing fetched yet means no limit', (tester) async {
+    remote = FakeRemoteSettings();
+    final (_, results) = await pumpGate(tester);
+    await send(tester, 12);
+    expect(results, List.filled(12, true));
+    expect(ads.rewardedShown, 0);
   });
 }

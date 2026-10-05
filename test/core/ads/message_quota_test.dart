@@ -48,33 +48,29 @@ void main() {
     expect(quota.on(tomorrow, freeMessages: 5).remaining, 5);
   });
 
-  test('a policy keeps the fallback for anything unclear', () {
-    const fallback = AdsPolicy(
-      rewarded: true,
-      dailyFreeMessages: 10,
-      messagesPerReward: 10,
-    );
-    expect(AdsPolicy.fromJson(null, fallback), fallback);
+  test('a policy applies only when switched on with valid counts', () {
+    expect(AdsPolicy.fromJson(null), AdsPolicy.off);
     expect(
       AdsPolicy.fromJson({
-        'rewarded': 'no',
-        'freeMessages': 0,
-        'messagesPerReward': 5000,
-      }, fallback),
-      fallback,
-    );
-    expect(
-      AdsPolicy.fromJson({
-        'rewarded': false,
-        'freeMessages': 3,
-        'messagesPerReward': null,
-      }, fallback),
+        'rewarded': true,
+        'freeMessages': 5,
+        'messagesPerReward': 5,
+      }),
       const AdsPolicy(
-        rewarded: false,
-        dailyFreeMessages: 3,
-        messagesPerReward: 10,
+        rewarded: true,
+        dailyFreeMessages: 5,
+        messagesPerReward: 5,
       ),
     );
+    for (final broken in [
+      {'rewarded': false, 'freeMessages': 5, 'messagesPerReward': 5},
+      {'rewarded': null, 'freeMessages': 5, 'messagesPerReward': 5},
+      {'rewarded': true, 'freeMessages': 0, 'messagesPerReward': 5},
+      {'rewarded': true, 'freeMessages': 5, 'messagesPerReward': 5000},
+      {'rewarded': true, 'freeMessages': 5, 'messagesPerReward': null},
+    ]) {
+      expect(AdsPolicy.fromJson(broken), AdsPolicy.off, reason: '$broken');
+    }
   });
 
   test('Remote Config values read like the relay response', () {
@@ -89,7 +85,7 @@ void main() {
     });
     final json = remoteSettingsJson({
       'app_version': ' 1.2.0 ',
-      'ads_rewarded': 'FALSE',
+      'rewarded_ads_enabled': 'FALSE',
       'daily_free_messages': '20',
       'ads_messages_per_reward': 'ten',
     });

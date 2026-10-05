@@ -67,12 +67,10 @@ final adsStartupProvider = Provider<void>((ref) {
   }
 });
 
-/// The rewarded-ad switches in force: Remote Config's, over the build's own
-/// values for anything not set there.
+/// The rewarded-ad settings in force, from Remote Config.
 final adsPolicyProvider = Provider<AdsPolicy>(
   (ref) => AdsPolicy.fromJson(
     remoteSettingsJson(ref.watch(remoteValuesProvider))['ads'],
-    ref.watch(adsConfigProvider).defaultPolicy,
   ),
 );
 
