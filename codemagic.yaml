@@ -33,6 +33,9 @@ workflows:
         PACKAGE_NAME: app.opencodemobile
         # The app's Apple ID from App Store Connect (App Information page).
         APP_STORE_APPLE_ID: "6818950202"
+        # Builds iOS usage analytics from FirebaseAnalyticsCore, which has no
+        # code that reads the IDFA (see lib/core/analytics/usage_analytics.dart).
+        FIREBASE_ANALYTICS_WITHOUT_ADID: "true"
     triggering:
       events:
         - tag

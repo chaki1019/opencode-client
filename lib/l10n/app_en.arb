@@ -527,6 +527,8 @@
   "privacyPolicy": "Privacy policy",
   "crashReports": "Send crash reports",
   "crashReportsHelp": "When the app crashes, send the error details (no chat content) to help fix it",
+  "usageAnalytics": "Send usage statistics",
+  "usageAnalyticsHelp": "Send statistics such as which screens you open and on which days, to help improve the app (no chat content or server details)",
   "linkOpenFailed": "Couldn't open this:",
   "pushComputerTitle": "On the computer",
   "pushComputerActive": "Running",

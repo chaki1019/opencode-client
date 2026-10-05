@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:opencode_mobile/app/router.dart';
+import 'package:opencode_mobile/core/analytics/usage_analytics.dart';
 import 'package:opencode_mobile/core/crash/crash_reporter.dart';
 import 'package:opencode_mobile/core/storage/settings_store.dart';
 import 'package:opencode_mobile/core/support/support_config.dart';
@@ -21,6 +22,19 @@ class _FakeCrashReporter implements CrashReporter {
 
   @override
   bool get available => true;
+
+  @override
+  Future<void> setEnabled(bool on) async => calls.add(on);
+}
+
+class _FakeUsageAnalytics implements UsageAnalytics {
+  final calls = <bool>[];
+
+  @override
+  bool get available => true;
+
+  @override
+  NavigatorObserver? get observer => null;
 
   @override
   Future<void> setEnabled(bool on) async => calls.add(on);
@@ -136,6 +150,29 @@ void main() {
     expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
     expect(reporter.calls, [false]);
     expect((await SettingsStore().load()).crashReports, isFalse);
+  });
+
+  testWidgets('usage statistics can be turned off', (tester) async {
+    final analytics = _FakeUsageAnalytics();
+    await pumpSettings(
+      tester,
+      overrides: [
+        usageAnalyticsProvider.overrideWithValue(analytics),
+        supportConfigProvider.overrideWithValue(const SupportConfig()),
+      ],
+    );
+    final toggle = find.byKey(const Key('usage-analytics'));
+    await tester.scrollUntilVisible(toggle, 100);
+    await tester.ensureVisible(toggle);
+    await tester.pumpAndSettle();
+    expect(find.text('利用状況を送信'), findsOneWidget);
+    expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
+
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
+    expect(analytics.calls, [false]);
+    expect((await SettingsStore().load()).usageAnalytics, isFalse);
   });
 
   testWidgets('stored settings are applied on start', (tester) async {

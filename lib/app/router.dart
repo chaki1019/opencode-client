@@ -11,13 +11,16 @@ import '../features/connection/connection_screen.dart';
 import '../features/projects/projects_screen.dart';
 import '../features/push/push_settings_screen.dart';
 import '../features/settings/settings_screen.dart';
+import '../features/settings/settings_providers.dart';
 import '../features/sessions/sessions_screen.dart';
 
 /// go_router 18 only recognizes `material_ui`'s MaterialApp and otherwise
 /// falls back to pages without any transition, so every route builds its
-/// [MaterialPage] itself to get the theme's slide.
+/// [MaterialPage] itself to get the theme's slide. The page is named after
+/// its route pattern (`/sessions/:sessionId`), which usage analytics reports
+/// as the screen, so no IDs leave the device.
 Page<void> _page(GoRouterState state, Widget child) =>
-    MaterialPage<void>(key: state.pageKey, child: child);
+    MaterialPage<void>(key: state.pageKey, name: state.fullPath, child: child);
 
 final routerProvider = Provider<GoRouter>((ref) {
   // Re-run redirects whenever the connection changes.
@@ -25,8 +28,10 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.listen(connectionProvider, (_, _) => refresh.value++);
   ref.onDispose(refresh.dispose);
 
+  final analyticsObserver = ref.read(usageAnalyticsProvider).observer;
   return GoRouter(
     initialLocation: '/',
+    observers: [?analyticsObserver],
     refreshListenable: refresh,
     redirect: (context, state) {
       final connected = ref.read(connectionProvider) != null;

@@ -1742,6 +1742,18 @@ abstract class AppLocalizations {
   /// **'When the app crashes, send the error details (no chat content) to help fix it'**
   String get crashReportsHelp;
 
+  /// No description provided for @usageAnalytics.
+  ///
+  /// In en, this message translates to:
+  /// **'Send usage statistics'**
+  String get usageAnalytics;
+
+  /// No description provided for @usageAnalyticsHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'Send statistics such as which screens you open and on which days, to help improve the app (no chat content or server details)'**
+  String get usageAnalyticsHelp;
+
   /// No description provided for @linkOpenFailed.
   ///
   /// In en, this message translates to:
