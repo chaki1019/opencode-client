@@ -18,6 +18,25 @@ void main() {
     expect(tomorrow.remaining, 10);
   });
 
+  test('setting the clock back never starts the count over', () {
+    const quota = MessageQuota(day: '2026-10-04', sent: 10, allowance: 10);
+    // Back to 23:59 the day before, then past midnight again.
+    final back = quota.on(DateTime(2026, 10, 3, 23, 59), freeMessages: 10);
+    expect(back.remaining, 0);
+    final again = back.on(DateTime(2026, 10, 4, 0, 0), freeMessages: 10);
+    expect(again.remaining, 0);
+
+    // A clock run ahead spends that day: back at the real date, today's
+    // count is the one already used.
+    const ahead = MessageQuota(day: '2026-10-05', sent: 10, allowance: 10);
+    expect(ahead.on(DateTime(2026, 10, 4, 9), freeMessages: 10).remaining, 0);
+    expect(ahead.on(DateTime(2026, 10, 5, 9), freeMessages: 10).remaining, 0);
+    expect(
+      ahead.on(DateTime(2026, 10, 6, 0, 1), freeMessages: 10).remaining,
+      10,
+    );
+  });
+
   test('remaining never goes below zero', () {
     const quota = MessageQuota(day: '2026-10-03', sent: 11, allowance: 10);
     expect(quota.remaining, 0);

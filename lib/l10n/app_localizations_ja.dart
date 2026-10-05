@@ -941,6 +941,11 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String messagesLeft(int left) {
+    return '本日の残り$left回';
+  }
+
+  @override
   String get rewardEarnMore => '広告を見て回数を増やす';
 
   @override

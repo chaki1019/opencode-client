@@ -93,8 +93,8 @@ class AdsSettingsSection extends ConsumerWidget {
       children: [
         if (rewarded) ...[
           header(l10n.settingsMessages),
-          const _MessageCount(),
-          const _EarnMessagesTile(),
+          const MessageCountTile(),
+          const EarnMessagesTile(),
         ],
         if (adRows.isNotEmpty) ...[header(l10n.settingsAds), ...adRows],
       ],
@@ -103,8 +103,8 @@ class AdsSettingsSection extends ConsumerWidget {
 }
 
 /// Today's sent messages against today's allowance, as a ring and a count.
-class _MessageCount extends ConsumerWidget {
-  const _MessageCount();
+class MessageCountTile extends ConsumerWidget {
+  const MessageCountTile({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -134,14 +134,14 @@ class _MessageCount extends ConsumerWidget {
 }
 
 /// Watches a rewarded ad on request, before the day's messages run out.
-class _EarnMessagesTile extends ConsumerStatefulWidget {
-  const _EarnMessagesTile();
+class EarnMessagesTile extends ConsumerStatefulWidget {
+  const EarnMessagesTile({super.key});
 
   @override
-  ConsumerState<_EarnMessagesTile> createState() => _EarnMessagesTileState();
+  ConsumerState<EarnMessagesTile> createState() => _EarnMessagesTileState();
 }
 
-class _EarnMessagesTileState extends ConsumerState<_EarnMessagesTile> {
+class _EarnMessagesTileState extends ConsumerState<EarnMessagesTile> {
   bool _loading = false;
 
   Future<void> _watch() async {

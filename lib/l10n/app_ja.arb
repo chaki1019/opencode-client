@@ -264,6 +264,7 @@
   "settingsMessages": "メッセージ回数",
   "messagesToday": "本日の送信回数",
   "messagesTodayValue": "{sent}/{allowance}回",
+  "messagesLeft": "本日の残り{left}回",
   "rewardEarnMore": "広告を見て回数を増やす",
   "rewardEarnMoreSubtitle": "短い広告を見ると、今日はさらに{more}回送れます",
   "rewardAdded": "今日の送信回数を{more}回増やしました",
