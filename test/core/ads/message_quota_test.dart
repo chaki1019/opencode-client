@@ -1,5 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:opencode_mobile/core/ads/ads_policy.dart';
 import 'package:opencode_mobile/core/ads/message_quota.dart';
 
 void main() {
@@ -35,5 +36,43 @@ void main() {
     final quota = (await AdsStore().loadQuota())!;
     expect((quota.day, quota.sent, quota.allowance), ('2026-10-03', 3, 20));
     expect(await AdsStore().loadRemoved(), isTrue);
+  });
+
+  test('a raised free count applies today, a lowered one tomorrow', () {
+    const quota = MessageQuota(day: '2026-10-03', sent: 10, allowance: 10);
+    final today = DateTime(2026, 10, 3, 12);
+    expect(quota.on(today, freeMessages: 15).remaining, 5);
+    expect(quota.on(today, freeMessages: 5).allowance, 10);
+    final tomorrow = DateTime(2026, 10, 4, 12);
+    expect(quota.on(tomorrow, freeMessages: 5).remaining, 5);
+  });
+
+  test('a policy keeps the fallback for anything unclear', () {
+    const fallback = AdsPolicy(
+      rewarded: true,
+      dailyFreeMessages: 10,
+      messagesPerReward: 10,
+    );
+    expect(AdsPolicy.fromJson(null, fallback), fallback);
+    expect(
+      AdsPolicy.fromJson({
+        'rewarded': 'no',
+        'freeMessages': 0,
+        'messagesPerReward': 5000,
+      }, fallback),
+      fallback,
+    );
+    expect(
+      AdsPolicy.fromJson({
+        'rewarded': false,
+        'freeMessages': 3,
+        'messagesPerReward': null,
+      }, fallback),
+      const AdsPolicy(
+        rewarded: false,
+        dailyFreeMessages: 3,
+        messagesPerReward: 10,
+      ),
+    );
   });
 }

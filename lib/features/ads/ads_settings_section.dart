@@ -42,6 +42,7 @@ class AdsSettingsSection extends ConsumerWidget {
     final purchase = ref.watch(removeAdsProvider);
     final product = purchase.product;
     final privacy = ref.watch(_privacyOptionsProvider).value ?? false;
+    final rewarded = ref.watch(rewardedActiveProvider);
     ref.watch(messageQuotaProvider);
     final quota = ref.read(messageQuotaProvider.notifier).today;
 
@@ -56,11 +57,12 @@ class AdsSettingsSection extends ConsumerWidget {
             title: Text(l10n.removeAdsDone),
           )
         else ...[
-          ListTile(
-            key: const Key('ads-free-left'),
-            title: Text(l10n.adsFreeLeft),
-            trailing: Text(l10n.adsFreeLeftValue(quota.remaining)),
-          ),
+          if (rewarded)
+            ListTile(
+              key: const Key('ads-free-left'),
+              title: Text(l10n.adsFreeLeft),
+              trailing: Text(l10n.adsFreeLeftValue(quota.remaining)),
+            ),
           if (config.removeAdsEnabled && product != null)
             ListTile(
               key: const Key('remove-ads'),

@@ -219,6 +219,7 @@ test("app-version serves the configured minimums", async () => {
   assert.deepEqual(await res.json(), {
     ios: { minimum: null, storeUrl: null },
     android: { minimum: null, storeUrl: null },
+    ads: { rewarded: null, freeMessages: null, messagesPerReward: null },
   });
 
   res = await handle(req("GET", "/v1/app-version"), {
@@ -231,6 +232,30 @@ test("app-version serves the configured minimums", async () => {
   assert.deepEqual(await res.json(), {
     ios: { minimum: "1.2.0", storeUrl: "https://apps.apple.com/app/id123" },
     android: { minimum: "1.1.0", storeUrl: null },
+    ads: { rewarded: null, freeMessages: null, messagesPerReward: null },
+  });
+
+  res = await handle(req("GET", "/v1/app-version"), {
+    ADS_REWARDED: "false",
+    ADS_FREE_MESSAGES: "20",
+    ADS_MESSAGES_PER_REWARD: "5",
+  });
+  assert.deepEqual((await res.json()).ads, {
+    rewarded: false,
+    freeMessages: 20,
+    messagesPerReward: 5,
+  });
+
+  // Anything that is not a clear value leaves the app's own.
+  res = await handle(req("GET", "/v1/app-version"), {
+    ADS_REWARDED: "no",
+    ADS_FREE_MESSAGES: "0",
+    ADS_MESSAGES_PER_REWARD: "ten",
+  });
+  assert.deepEqual((await res.json()).ads, {
+    rewarded: null,
+    freeMessages: null,
+    messagesPerReward: null,
   });
 
   // Not rate limited: every app launch asks.

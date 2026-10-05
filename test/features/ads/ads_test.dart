@@ -203,4 +203,58 @@ void main() {
     await send(tester, 3);
     expect(find.text('残り7回'), findsOneWidget);
   });
+
+  testWidgets('with rewarded ads switched off, sending is never limited', (
+    tester,
+  ) async {
+    final (container, results) = await pumpGate(
+      tester,
+      extra: AdsSettingsSection(header: (title) => Text(title)),
+    );
+    await container.read(adsPolicyProvider.notifier).apply({
+      'ads': {'rewarded': false},
+    });
+    await tester.pumpAndSettle();
+    // The banner stays; only the limit and its row go.
+    expect(find.byKey(const Key('fake-banner')), findsOneWidget);
+    expect(find.byKey(const Key('ads-free-left')), findsNothing);
+
+    await send(tester, 12);
+    expect(results, List.filled(12, true));
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(ads.rewardedShown, 0);
+  });
+
+  testWidgets('the server sets the counts', (tester) async {
+    final (container, _) = await pumpGate(tester);
+    await container.read(adsPolicyProvider.notifier).apply({
+      'ads': {'rewarded': true, 'freeMessages': 3, 'messagesPerReward': 5},
+    });
+    await send(tester, 3);
+    expect(find.byType(AlertDialog), findsNothing);
+
+    await send(tester);
+    expect(find.textContaining('3'), findsWidgets);
+    await tester.tap(find.byKey(const Key('watch-reward')));
+    await tester.pumpAndSettle();
+    expect(container.read(messageQuotaProvider).remaining, 4);
+  });
+
+  testWidgets('the last policy is kept for the next launch', (tester) async {
+    final (container, _) = await pumpGate(tester);
+    await container.read(adsPolicyProvider.notifier).apply({
+      'ads': {'rewarded': false, 'freeMessages': 20},
+    });
+    final stored = await container
+        .read(adsStoreProvider)
+        .loadPolicy(container.read(adsConfigProvider).defaultPolicy);
+    expect(stored?.rewarded, isFalse);
+    expect(stored?.dailyFreeMessages, 20);
+    expect(stored?.messagesPerReward, 10);
+
+    // A relay without the switches puts the build's values back.
+    await container.read(adsPolicyProvider.notifier).apply({'ios': {}});
+    expect(container.read(adsPolicyProvider).rewarded, isTrue);
+    expect(container.read(adsPolicyProvider).dailyFreeMessages, 10);
+  });
 }

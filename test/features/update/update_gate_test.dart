@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/core/update/update_checker.dart';
+import 'package:opencode_mobile/features/ads/ads_providers.dart';
 import 'package:opencode_mobile/features/update/update_gate.dart';
 import 'package:opencode_mobile/features/update/update_providers.dart';
 import 'package:opencode_mobile/main.dart';
@@ -16,13 +17,18 @@ void main() {
 
   const url = 'https://relay.test/v1/app-version';
 
-  Future<void> pumpApp(WidgetTester tester, {required String minimum}) async {
+  Future<ProviderContainer> pumpApp(
+    WidgetTester tester, {
+    required String minimum,
+    Map<String, Object?>? ads,
+  }) async {
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     tester.platformDispatcher.localesTestValue = const [Locale('ja')];
     final dio = fakeDio(
       FakeAdapter({
         url: FakeRoute.json({
           'android': {'minimum': minimum, 'storeUrl': null},
+          'ads': ?ads,
         }),
       }),
     );
@@ -46,6 +52,9 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    return ProviderScope.containerOf(
+      tester.element(find.byType(OpenCodeMobileApp)),
+    );
   }
 
   testWidgets('an outdated app is replaced by the update screen', (
@@ -69,5 +78,16 @@ void main() {
   testWidgets('an up-to-date app runs normally', (tester) async {
     await pumpApp(tester, minimum: '1.0.0');
     expect(find.byType(UpdateRequiredScreen), findsNothing);
+  });
+
+  testWidgets('the same response switches rewarded ads', (tester) async {
+    final container = await pumpApp(
+      tester,
+      minimum: '1.0.0',
+      ads: {'rewarded': false, 'freeMessages': 5},
+    );
+    final policy = container.read(adsPolicyProvider);
+    expect(policy.rewarded, isFalse);
+    expect(policy.dailyFreeMessages, 5);
   });
 }

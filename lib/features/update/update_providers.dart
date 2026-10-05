@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../core/update/update_checker.dart';
+import '../ads/ads_providers.dart';
 
 /// Null when this build has no update server, or on a platform without a
 /// store.
@@ -30,7 +33,8 @@ final appVersionProvider = FutureProvider.autoDispose<String>((ref) async {
 
 /// Checks at launch and again when the app comes back to the foreground,
 /// at most every [recheckAfter]. Once an update is required the app stays
-/// blocked until it is replaced by a newer build.
+/// blocked until it is replaced by a newer build. Each response also
+/// carries the ad switches, handed to [adsPolicyProvider].
 class RequiredUpdateNotifier extends Notifier<RequiredUpdate?> {
   static const recheckAfter = Duration(minutes: 30);
 
@@ -56,12 +60,16 @@ class RequiredUpdateNotifier extends Notifier<RequiredUpdate?> {
     try {
       final info = await ref.read(packageInfoProvider);
       final android = defaultTargetPlatform == TargetPlatform.android;
-      final required = await checker.check(
+      final response = await checker.fetch();
+      _lastCheck = DateTime.now();
+      if (!ref.mounted) return;
+      unawaited(ref.read(adsPolicyProvider.notifier).apply(response));
+      final required = UpdateChecker.requiredUpdate(
+        response,
         installedVersion: info.version,
         platform: android ? 'android' : 'ios',
       );
-      _lastCheck = DateTime.now();
-      if (required == null || !ref.mounted) return;
+      if (required == null) return;
       _blocked = true;
       state = RequiredUpdate(
         installed: required.installed,

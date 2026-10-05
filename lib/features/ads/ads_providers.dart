@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/ads/ads_config.dart';
+import '../../core/ads/ads_policy.dart';
 import '../../core/ads/message_quota.dart';
 import 'ads_service.dart';
 
@@ -64,9 +65,51 @@ final adsStartupProvider = Provider<void>((ref) {
   }
 });
 
+/// The rewarded-ad switches in force: the server's latest, else the last
+/// one stored, else the build's own. Fed by the update check, which reads
+/// the same response.
+class AdsPolicyNotifier extends Notifier<AdsPolicy> {
+  AdsPolicy get _fallback => ref.read(adsConfigProvider).defaultPolicy;
+  AdsStore get _store => ref.read(adsStoreProvider);
+
+  /// Set once the server answered, so a slow stored read does not
+  /// overwrite it.
+  bool _received = false;
+
+  @override
+  AdsPolicy build() {
+    _store.loadPolicy(_fallback).then((stored) {
+      if (!_received && stored != null && ref.mounted) state = stored;
+    });
+    return _fallback;
+  }
+
+  /// Applies the `ads` entry of a `/v1/app-version` response. A response
+  /// without one (a relay from before the switches) means the build's own
+  /// values.
+  Future<void> apply(Object? response) async {
+    if (response is! Map) return;
+    _received = true;
+    final policy = AdsPolicy.fromJson(response['ads'], _fallback);
+    if (policy == state) return;
+    state = policy;
+    await _store.savePolicy(policy);
+  }
+}
+
+final adsPolicyProvider = NotifierProvider<AdsPolicyNotifier, AdsPolicy>(
+  AdsPolicyNotifier.new,
+);
+
+/// Whether sending is limited per day, with a rewarded ad for more.
+final rewardedActiveProvider = Provider<bool>(
+  (ref) =>
+      ref.watch(adsActiveProvider) && ref.watch(adsPolicyProvider).rewarded,
+);
+
 /// Today's messages against today's allowance.
 class MessageQuotaNotifier extends Notifier<MessageQuota> {
-  AdsConfig get _config => ref.read(adsConfigProvider);
+  AdsPolicy get _policy => ref.read(adsPolicyProvider);
   AdsStore get _store => ref.read(adsStoreProvider);
 
   /// Set once something is counted, so a slow initial read does not
@@ -85,12 +128,12 @@ class MessageQuotaNotifier extends Notifier<MessageQuota> {
     day: '',
     sent: 0,
     allowance: 0,
-  ).on(ref.read(adsClockProvider)(), freeMessages: _config.dailyFreeMessages);
+  ).on(ref.read(adsClockProvider)(), freeMessages: _policy.dailyFreeMessages);
 
   /// The quota for today, rolled over if the date changed since.
   MessageQuota get today => state.on(
     ref.read(adsClockProvider)(),
-    freeMessages: _config.dailyFreeMessages,
+    freeMessages: _policy.dailyFreeMessages,
   );
 
   Future<void> recordSent() {
@@ -103,7 +146,7 @@ class MessageQuotaNotifier extends Notifier<MessageQuota> {
     final quota = today;
     return _update(
       quota.withAllowance(
-        max(quota.allowance, quota.sent) + _config.messagesPerReward,
+        max(quota.allowance, quota.sent) + _policy.messagesPerReward,
       ),
     );
   }

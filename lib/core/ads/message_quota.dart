@@ -2,6 +2,8 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
+import 'ads_policy.dart';
+
 /// Messages sent today against today's allowance. The allowance starts at
 /// the free count and grows with each rewarded ad; both reset when the
 /// local date changes.
@@ -24,12 +26,15 @@ class MessageQuota {
     return '${time.year}-${two(time.month)}-${two(time.day)}';
   }
 
-  /// This quota if it is for [now]'s date, otherwise a fresh one.
+  /// This quota if it is for [now]'s date, otherwise a fresh one. A free
+  /// count raised during the day applies at once; a lowered one waits for
+  /// the next day, so nobody loses messages they were promised.
   MessageQuota on(DateTime now, {required int freeMessages}) {
     final today = dayOf(now);
-    return today == day
-        ? this
-        : MessageQuota(day: today, sent: 0, allowance: freeMessages);
+    if (today != day) {
+      return MessageQuota(day: today, sent: 0, allowance: freeMessages);
+    }
+    return allowance < freeMessages ? withAllowance(freeMessages) : this;
   }
 
   MessageQuota withSent(int sent) =>
@@ -46,6 +51,7 @@ class AdsStore {
 
   static const _quotaKey = 'ads.quota.v1';
   static const _removedKey = 'ads.removed.v1';
+  static const _policyKey = 'ads.policy.v1';
 
   final FlutterSecureStorage _storage;
 
@@ -74,4 +80,19 @@ class AdsStore {
 
   Future<void> saveRemoved(bool removed) =>
       _storage.write(key: _removedKey, value: '$removed');
+
+  /// The last policy the server sent, over [fallback]; null if none was
+  /// ever received.
+  Future<AdsPolicy?> loadPolicy(AdsPolicy fallback) async {
+    final raw = await _storage.read(key: _policyKey);
+    if (raw == null || raw.isEmpty) return null;
+    try {
+      return AdsPolicy.fromJson(jsonDecode(raw), fallback);
+    } on FormatException {
+      return null;
+    }
+  }
+
+  Future<void> savePolicy(AdsPolicy policy) =>
+      _storage.write(key: _policyKey, value: jsonEncode(policy.toJson()));
 }

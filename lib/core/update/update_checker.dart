@@ -43,23 +43,39 @@ class UpdateChecker {
   final String url;
   final Dio _dio;
 
-  Future<RequiredUpdate?> check({
-    required String installedVersion,
-    required String platform,
-  }) async {
-    final installed = AppVersion.tryParse(installedVersion);
-    if (installed == null) return null;
+  /// The server's response, or null when it could not be read. The same
+  /// response carries the ad switches (`ads`).
+  Future<Object?> fetch() async {
     try {
-      final response = await _dio.get<Object?>(url);
-      final policy = UpdatePolicy.fromJson(response.data, platform);
-      if (!policy.requiresUpdate(installed)) return null;
-      return RequiredUpdate(
-        installed: installed,
-        minimum: policy.minimum!,
-        storeUrl: policy.storeUrl,
-      );
+      return (await _dio.get<Object?>(url)).data;
     } on DioException {
       return null;
     }
+  }
+
+  Future<RequiredUpdate?> check({
+    required String installedVersion,
+    required String platform,
+  }) async => requiredUpdate(
+    await fetch(),
+    installedVersion: installedVersion,
+    platform: platform,
+  );
+
+  /// The update [response] asks of [installedVersion], if any.
+  static RequiredUpdate? requiredUpdate(
+    Object? response, {
+    required String installedVersion,
+    required String platform,
+  }) {
+    final installed = AppVersion.tryParse(installedVersion);
+    if (installed == null) return null;
+    final policy = UpdatePolicy.fromJson(response, platform);
+    if (!policy.requiresUpdate(installed)) return null;
+    return RequiredUpdate(
+      installed: installed,
+      minimum: policy.minimum!,
+      storeUrl: policy.storeUrl,
+    );
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import 'ads_policy.dart';
+
 /// Build-time ad settings, passed with `--dart-define-from-file=ads.env.json`
 /// (see docs/ads.md). A build without them shows Google's test ads, so
 /// development never serves live ads.
@@ -58,11 +60,19 @@ class AdsConfig {
   /// The non-consumable product, with the same ID in both stores.
   final String removeAdsProductId;
 
-  /// Messages a day that need no ad.
+  /// Messages a day that need no ad, until the server says otherwise.
   final int dailyFreeMessages;
 
-  /// Messages one rewarded ad adds for the rest of the day.
+  /// Messages one rewarded ad adds for the rest of the day, until the
+  /// server says otherwise.
   final int messagesPerReward;
+
+  /// What applies before the server has ever been reached.
+  AdsPolicy get defaultPolicy => AdsPolicy(
+    rewarded: true,
+    dailyFreeMessages: dailyFreeMessages,
+    messagesPerReward: messagesPerReward,
+  );
 
   String get bannerId => defaultTargetPlatform == TargetPlatform.iOS
       ? iosBannerId
