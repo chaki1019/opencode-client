@@ -2,13 +2,17 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/ads/ads_config.dart';
 import '../../core/ads/ads_policy.dart';
 import '../../core/ads/message_quota.dart';
+import '../../core/ads/quota_reminder.dart';
 import '../../core/config/remote_settings.dart';
+import '../../l10n/app_localizations.dart';
 import '../config/remote_values.dart';
+import '../settings/settings_providers.dart';
 import 'ads_service.dart';
 
 /// Overridden in tests; real builds read `--dart-define`s.
@@ -108,7 +112,33 @@ class MessageQuotaNotifier extends Notifier<MessageQuota> {
   /// The quota for today, rolled over if the date changed since.
   MessageQuota get today => _rolled(state);
 
-  Future<void> recordSent() => _update(today.spend());
+  Future<void> recordSent() async {
+    await _update(today.spend());
+    await remindIfUsed();
+  }
+
+  /// Sets the midnight reminder once a regular message was used today, so
+  /// days without any use pass quietly.
+  Future<void> remindIfUsed() async {
+    if (today.sent == 0 || !ref.read(rewardedActiveProvider)) return;
+    final on =
+        ref.read(quotaReminderOnProvider) ??
+        await ref.read(adsStoreProvider).loadReminder();
+    if (!on) return;
+    final now = ref.read(adsClockProvider)();
+    final code = ref.read(settingsProvider).languageCode;
+    final l10n = lookupAppLocalizations(
+      code != null ? Locale(code) : _deviceLocale(),
+    );
+    await ref
+        .read(quotaReminderProvider)
+        .remindAt(
+          DateTime(now.year, now.month, now.day + 1),
+          title: l10n.quotaReminderTitle,
+          body: l10n.quotaReminderBody(_policy.dailyFreeMessages),
+          channelName: l10n.quotaReminderChannel,
+        );
+  }
 
   /// Adds one rewarded ad's worth of messages, kept until used.
   Future<void> addReward() => _update(today.earn(_policy.messagesPerReward));
@@ -123,4 +153,49 @@ class MessageQuotaNotifier extends Notifier<MessageQuota> {
 final messageQuotaProvider =
     NotifierProvider<MessageQuotaNotifier, MessageQuota>(
       MessageQuotaNotifier.new,
+    );
+
+Locale _deviceLocale() {
+  final dispatcher = WidgetsBinding.instance.platformDispatcher;
+  final locale = dispatcher.locales.firstOrNull ?? dispatcher.locale;
+  return AppLocalizations.supportedLocales.any(
+        (l) => l.languageCode == locale.languageCode,
+      )
+      ? Locale(locale.languageCode)
+      : const Locale('en');
+}
+
+/// Schedules the local notification that the day's messages are back.
+final quotaReminderProvider = Provider<QuotaReminder>(
+  (ref) => isAdsPlatform ? LocalQuotaReminder() : const QuotaReminder.none(),
+);
+
+/// Whether the midnight reminder is on; null until storage is read.
+class QuotaReminderOnNotifier extends Notifier<bool?> {
+  @override
+  bool? build() {
+    ref.read(adsStoreProvider).loadReminder().then((on) {
+      if (ref.mounted && state == null) state = on;
+    });
+    return null;
+  }
+
+  /// Turning it on asks for notification permission and sets today's
+  /// reminder if messages were already used; off cancels it.
+  Future<void> set(bool on) async {
+    state = on;
+    await ref.read(adsStoreProvider).saveReminder(on);
+    final reminder = ref.read(quotaReminderProvider);
+    if (on) {
+      await reminder.requestPermission();
+      await ref.read(messageQuotaProvider.notifier).remindIfUsed();
+    } else {
+      await reminder.cancel();
+    }
+  }
+}
+
+final quotaReminderOnProvider =
+    NotifierProvider<QuotaReminderOnNotifier, bool?>(
+      QuotaReminderOnNotifier.new,
     );

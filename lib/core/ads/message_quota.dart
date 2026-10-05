@@ -97,6 +97,7 @@ class AdsStore {
 
   static const _quotaKey = 'ads.quota.v1';
   static const _removedKey = 'ads.removed.v1';
+  static const _reminderKey = 'ads.reminder.v1';
 
   final FlutterSecureStorage _storage;
 
@@ -131,4 +132,12 @@ class AdsStore {
 
   Future<void> saveRemoved(bool removed) =>
       _storage.write(key: _removedKey, value: '$removed');
+
+  /// Whether to notify at midnight that the day's messages are back; on
+  /// unless turned off.
+  Future<bool> loadReminder() async =>
+      await _storage.read(key: _reminderKey) != 'false';
+
+  Future<void> saveReminder(bool on) =>
+      _storage.write(key: _reminderKey, value: '$on');
 }

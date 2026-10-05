@@ -1694,6 +1694,36 @@ abstract class AppLocalizations {
   /// **'{left} messages left'**
   String messagesLeft(int left);
 
+  /// No description provided for @quotaReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Notify when messages reset'**
+  String get quotaReminder;
+
+  /// No description provided for @quotaReminderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'On days you send messages, get a notice at midnight when they are back'**
+  String get quotaReminderSubtitle;
+
+  /// No description provided for @quotaReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s messages are back'**
+  String get quotaReminderTitle;
+
+  /// No description provided for @quotaReminderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can send {free} messages without ads today'**
+  String quotaReminderBody(int free);
+
+  /// No description provided for @quotaReminderChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Message count'**
+  String get quotaReminderChannel;
+
   /// No description provided for @rewardEarnMore.
   ///
   /// In en, this message translates to:

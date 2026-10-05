@@ -951,6 +951,23 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String get quotaReminder => '回数回復の通知';
+
+  @override
+  String get quotaReminderSubtitle => 'メッセージを送った日は、0時に回数が回復したらお知らせします';
+
+  @override
+  String get quotaReminderTitle => '本日分の送信回数が回復しました';
+
+  @override
+  String quotaReminderBody(int free) {
+    return '今日も$free回まで広告なしで送れます';
+  }
+
+  @override
+  String get quotaReminderChannel => '送信回数のお知らせ';
+
+  @override
   String get rewardEarnMore => '広告を見て回数を増やす';
 
   @override

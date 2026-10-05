@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:opencode_mobile/core/ads/quota_reminder.dart';
 import 'package:opencode_mobile/features/ads/ad_widgets.dart';
 import 'package:opencode_mobile/features/ads/ads_providers.dart';
 import 'package:opencode_mobile/features/ads/ads_service.dart';
@@ -42,6 +43,29 @@ class FakeAdsService implements AdsService {
   Future<void> showPrivacyOptions() async {}
 }
 
+class FakeQuotaReminder implements QuotaReminder {
+  final scheduled = <(DateTime, String, String)>[];
+  int cancels = 0;
+  int permissionAsks = 0;
+
+  @override
+  Future<void> remindAt(
+    DateTime when, {
+    required String title,
+    required String body,
+    required String channelName,
+  }) async => scheduled.add((when, title, body));
+
+  @override
+  Future<void> cancel() async => cancels++;
+
+  @override
+  Future<bool> requestPermission() async {
+    permissionAsks++;
+    return true;
+  }
+}
+
 /// Remote Config as the console would serve it: ten free a day, ten more
 /// per ad, up to twenty earned ones kept overnight.
 const tenAndTen = {
@@ -53,12 +77,14 @@ const tenAndTen = {
 
 void main() {
   late FakeAdsService ads;
+  late FakeQuotaReminder reminder;
   late FakeRemoteSettings remote;
   late DateTime now;
 
   setUp(() {
     FlutterSecureStorage.setMockInitialValues({});
     ads = FakeAdsService();
+    reminder = FakeQuotaReminder();
     remote = FakeRemoteSettings(tenAndTen);
     now = DateTime(2026, 10, 3, 9);
   });
@@ -78,6 +104,7 @@ void main() {
           adsServiceProvider.overrideWithValue(ads),
           remoteSettingsProvider.overrideWithValue(remote),
           adsClockProvider.overrideWithValue(() => now),
+          quotaReminderProvider.overrideWithValue(reminder),
         ],
         child: MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -374,5 +401,50 @@ void main() {
     // The new day's regular ones go first; the earned eight wait.
     expect(find.text('1/18回（内、広告獲得分 8回）'), findsOneWidget);
     expect(find.textContaining('20回まで翌日に持ち越せます'), findsOneWidget);
+  });
+
+  testWidgets('a day with messages sent ends with a reminder at midnight', (
+    tester,
+  ) async {
+    await pumpGate(tester);
+    expect(reminder.scheduled, isEmpty);
+
+    await send(tester);
+    expect(reminder.scheduled, [
+      (DateTime(2026, 10, 4), '本日分の送信回数が回復しました', '今日も10回まで広告なしで送れます'),
+    ]);
+  });
+
+  testWidgets('no reminder without a daily limit', (tester) async {
+    remote = FakeRemoteSettings({
+      ...tenAndTen,
+      'rewarded_ads_enabled': 'false',
+    });
+    await pumpGate(tester);
+    await send(tester, 3);
+    expect(reminder.scheduled, isEmpty);
+  });
+
+  testWidgets('the reminder can be turned off and on in settings', (
+    tester,
+  ) async {
+    await pumpGate(
+      tester,
+      extra: AdsSettingsSection(header: (title) => Text(title)),
+    );
+    final toggle = find.byKey(const Key('quota-reminder'));
+    expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
+
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(reminder.cancels, 1);
+    await send(tester, 2);
+    expect(reminder.scheduled, isEmpty);
+
+    // Back on: asks to notify and sets tonight's reminder for what was used.
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(reminder.permissionAsks, 1);
+    expect(reminder.scheduled.single.$1, DateTime(2026, 10, 4));
   });
 }

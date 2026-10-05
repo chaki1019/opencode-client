@@ -970,6 +970,24 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get quotaReminder => 'Notify when messages reset';
+
+  @override
+  String get quotaReminderSubtitle =>
+      'On days you send messages, get a notice at midnight when they are back';
+
+  @override
+  String get quotaReminderTitle => 'Today\'s messages are back';
+
+  @override
+  String quotaReminderBody(int free) {
+    return 'You can send $free messages without ads today';
+  }
+
+  @override
+  String get quotaReminderChannel => 'Message count';
+
+  @override
   String get rewardEarnMore => 'Watch an ad for more messages';
 
   @override

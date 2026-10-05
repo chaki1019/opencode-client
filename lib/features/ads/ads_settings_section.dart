@@ -96,6 +96,14 @@ class AdsSettingsSection extends ConsumerWidget {
           header(l10n.settingsMessages),
           const MessageCountTile(),
           const EarnMessagesTile(),
+          SwitchListTile(
+            key: const Key('quota-reminder'),
+            title: Text(l10n.quotaReminder),
+            subtitle: Text(l10n.quotaReminderSubtitle),
+            value: ref.watch(quotaReminderOnProvider) ?? true,
+            onChanged: (on) =>
+                ref.read(quotaReminderOnProvider.notifier).set(on),
+          ),
         ],
         if (adRows.isNotEmpty) ...[header(l10n.settingsAds), ...adRows],
       ],
