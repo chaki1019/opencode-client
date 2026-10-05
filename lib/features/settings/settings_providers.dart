@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/analytics/usage_analytics.dart';
 import '../../core/crash/crash_reporter.dart';
 import '../../core/storage/settings_store.dart';
 
@@ -9,6 +10,11 @@ final settingsStoreProvider = Provider<SettingsStore>((ref) => SettingsStore());
 /// Replaced in `main` with the reporter started before the app.
 final crashReporterProvider = Provider<CrashReporter>(
   (ref) => const CrashReporter.none(),
+);
+
+/// Replaced in `main` with the analytics started before the app.
+final usageAnalyticsProvider = Provider<UsageAnalytics>(
+  (ref) => const UsageAnalytics.none(),
 );
 
 /// Starts from the defaults (system theme and language) and switches to the
@@ -36,11 +42,17 @@ class SettingsNotifier extends Notifier<AppSettings> {
   Future<void> setLanguage(String? code) =>
       _update(state.copyWith(language: () => code));
 
-  Future<void> setHaptics(bool on) => _update(state.copyWith(haptics: on));
+  Future<void> setHaptics(HapticsLevel level) =>
+      _update(state.copyWith(haptics: level));
 
   Future<void> setCrashReports(bool on) async {
     await _update(state.copyWith(crashReports: on));
     await ref.read(crashReporterProvider).setEnabled(on);
+  }
+
+  Future<void> setUsageAnalytics(bool on) async {
+    await _update(state.copyWith(usageAnalytics: on));
+    await ref.read(usageAnalyticsProvider).setEnabled(on);
   }
 
   Future<void> _update(AppSettings settings) async {

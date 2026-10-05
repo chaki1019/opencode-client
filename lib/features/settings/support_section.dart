@@ -15,7 +15,7 @@ final supportConfigProvider = Provider<SupportConfig>(
 );
 
 /// The settings page's support rows: contact by mail, the privacy policy and
-/// the crash report switch. Empty when the build has none of them.
+/// the crash report and usage statistics switches. Empty when the build has none of them.
 class SupportSection extends ConsumerWidget {
   const SupportSection({super.key, required this.header});
 
@@ -27,9 +27,13 @@ class SupportSection extends ConsumerWidget {
     final l10n = context.l10n;
     final config = ref.watch(supportConfigProvider);
     final reporter = ref.watch(crashReporterProvider);
+    final analytics = ref.watch(usageAnalyticsProvider);
     final languageCode = Localizations.localeOf(context).languageCode;
     final privacy = config.privacyPolicy(languageCode);
-    if (config.email.isEmpty && privacy == null && !reporter.available) {
+    if (config.email.isEmpty &&
+        privacy == null &&
+        !reporter.available &&
+        !analytics.available) {
       return const SizedBox.shrink();
     }
 
@@ -60,6 +64,14 @@ class SupportSection extends ConsumerWidget {
             onChanged: ref.read(settingsProvider.notifier).setCrashReports,
             title: Text(l10n.crashReports),
             subtitle: Text(l10n.crashReportsHelp),
+          ),
+        if (analytics.available)
+          SwitchListTile(
+            key: const Key('usage-analytics'),
+            value: ref.watch(settingsProvider.select((s) => s.usageAnalytics)),
+            onChanged: ref.read(settingsProvider.notifier).setUsageAnalytics,
+            title: Text(l10n.usageAnalytics),
+            subtitle: Text(l10n.usageAnalyticsHelp),
           ),
       ],
     );

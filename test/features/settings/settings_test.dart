@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:opencode_mobile/app/router.dart';
+import 'package:opencode_mobile/core/analytics/usage_analytics.dart';
 import 'package:opencode_mobile/core/crash/crash_reporter.dart';
 import 'package:opencode_mobile/core/storage/settings_store.dart';
 import 'package:opencode_mobile/core/support/support_config.dart';
@@ -21,6 +22,19 @@ class _FakeCrashReporter implements CrashReporter {
 
   @override
   bool get available => true;
+
+  @override
+  Future<void> setEnabled(bool on) async => calls.add(on);
+}
+
+class _FakeUsageAnalytics implements UsageAnalytics {
+  final calls = <bool>[];
+
+  @override
+  bool get available => true;
+
+  @override
+  NavigatorObserver? get observer => null;
 
   @override
   Future<void> setEnabled(bool on) async => calls.add(on);
@@ -80,18 +94,34 @@ void main() {
     expect((await SettingsStore().load()).languageCode, isNull);
   });
 
-  testWidgets('haptics are on by default and can be turned off', (
+  testWidgets('haptics start light and can be set strong or off', (
     tester,
   ) async {
     await pumpSettings(tester);
-    final toggle = find.byKey(const Key('haptics'));
-    await tester.scrollUntilVisible(toggle, 100);
-    expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
-
-    await tester.tap(toggle);
+    HapticsLevel shown() => tester
+        .widget<RadioGroup<HapticsLevel>>(find.byType(RadioGroup<HapticsLevel>))
+        .groupValue!;
+    final strong = find.byKey(const Key('haptics-strong'));
+    await tester.scrollUntilVisible(strong, 100);
+    await tester.ensureVisible(find.byKey(const Key('haptics-off')));
     await tester.pumpAndSettle();
-    expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
-    expect((await SettingsStore().load()).haptics, isFalse);
+    expect(shown(), HapticsLevel.light);
+
+    await tester.tap(strong);
+    await tester.pumpAndSettle();
+    expect(shown(), HapticsLevel.strong);
+    expect((await SettingsStore().load()).haptics, HapticsLevel.strong);
+
+    await tester.tap(find.byKey(const Key('haptics-off')));
+    await tester.pumpAndSettle();
+    expect((await SettingsStore().load()).haptics, HapticsLevel.off);
+  });
+
+  test('the old on/off haptics value still loads', () {
+    expect(HapticsLevel.fromJson(true), HapticsLevel.light);
+    expect(HapticsLevel.fromJson(false), HapticsLevel.off);
+    expect(HapticsLevel.fromJson(null), HapticsLevel.light);
+    expect(HapticsLevel.fromJson('strong'), HapticsLevel.strong);
   });
 
   testWidgets('support rows are hidden when the build has none', (
@@ -136,6 +166,29 @@ void main() {
     expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
     expect(reporter.calls, [false]);
     expect((await SettingsStore().load()).crashReports, isFalse);
+  });
+
+  testWidgets('usage statistics can be turned off', (tester) async {
+    final analytics = _FakeUsageAnalytics();
+    await pumpSettings(
+      tester,
+      overrides: [
+        usageAnalyticsProvider.overrideWithValue(analytics),
+        supportConfigProvider.overrideWithValue(const SupportConfig()),
+      ],
+    );
+    final toggle = find.byKey(const Key('usage-analytics'));
+    await tester.scrollUntilVisible(toggle, 100);
+    await tester.ensureVisible(toggle);
+    await tester.pumpAndSettle();
+    expect(find.text('利用状況を送信'), findsOneWidget);
+    expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
+
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
+    expect(analytics.calls, [false]);
+    expect((await SettingsStore().load()).usageAnalytics, isFalse);
   });
 
   testWidgets('stored settings are applied on start', (tester) async {

@@ -897,14 +897,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatPaneEmpty => 'Pick a session to show its chat here';
 
   @override
-  String get settingsInteraction => 'Interaction';
-
-  @override
   String get settingsHaptics => 'Haptic feedback';
 
   @override
-  String get settingsHapticsHelp =>
-      'Vibrate lightly on send, when a reply finishes, and when the AI needs your answer';
+  String get hapticsOff => 'Off';
+
+  @override
+  String get hapticsLight => 'Light';
+
+  @override
+  String get hapticsLightHelp =>
+      'Vibrate on send, when a reply finishes, and when the AI needs your answer';
+
+  @override
+  String get hapticsStrong => 'Strong';
+
+  @override
+  String get hapticsStrongHelp =>
+      'A little stronger, and also vibrates when the AI starts writing its reply';
 
   @override
   String get updateRequiredTitle => 'Update required';
@@ -990,6 +1000,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get crashReportsHelp =>
       'When the app crashes, send the error details (no chat content) to help fix it';
+
+  @override
+  String get usageAnalytics => 'Send usage statistics';
+
+  @override
+  String get usageAnalyticsHelp =>
+      'Send statistics such as which screens you open and on which days, to help improve the app (no chat content or server details)';
 
   @override
   String get linkOpenFailed => 'Couldn\'t open this:';

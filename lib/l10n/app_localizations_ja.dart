@@ -881,13 +881,22 @@ class AppLocalizationsJa extends AppLocalizations {
   String get chatPaneEmpty => 'セッションを選ぶと\nここにチャットが表示されます';
 
   @override
-  String get settingsInteraction => '操作';
-
-  @override
   String get settingsHaptics => '触覚フィードバック';
 
   @override
-  String get settingsHapticsHelp => '送信時、AI の返信完了時、AI が回答を待っているときに軽く振動します';
+  String get hapticsOff => 'オフ';
+
+  @override
+  String get hapticsLight => '弱';
+
+  @override
+  String get hapticsLightHelp => '送信時、AI の返信完了時、AI が回答を待っているときに振動します';
+
+  @override
+  String get hapticsStrong => '強';
+
+  @override
+  String get hapticsStrongHelp => '弱より少し強めに振動し、AI が返信を書き始めたときにも振動します';
 
   @override
   String get updateRequiredTitle => 'アップデートが必要です';
@@ -970,6 +979,13 @@ class AppLocalizationsJa extends AppLocalizations {
   @override
   String get crashReportsHelp =>
       'アプリが異常終了したとき、修正のためにエラーの情報を送ります（チャットの内容は送りません）';
+
+  @override
+  String get usageAnalytics => '利用状況を送信';
+
+  @override
+  String get usageAnalyticsHelp =>
+      '改善のために、開いた画面や利用した日などの統計を送ります（チャットの内容やサーバーの情報は送りません）';
 
   @override
   String get linkOpenFailed => '開けませんでした:';
