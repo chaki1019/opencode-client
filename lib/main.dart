@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/router.dart';
 import 'app/theme.dart';
+import 'core/analytics/usage_analytics.dart';
 import 'core/crash/crash_reporter.dart';
 import 'core/push/push_config.dart';
 import 'features/ads/ads_providers.dart';
@@ -18,12 +19,15 @@ import 'l10n/l10n.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   LicenseRegistry.addLicense(_fontLicenses);
-  final crashReporter = await startCrashReporting(
-    const PushConfig.fromEnvironment().firebaseOptions,
-  );
+  final firebaseOptions = const PushConfig.fromEnvironment().firebaseOptions;
+  final crashReporter = await startCrashReporting(firebaseOptions);
+  final usageAnalytics = await startUsageAnalytics(firebaseOptions);
   runApp(
     ProviderScope(
-      overrides: [crashReporterProvider.overrideWithValue(crashReporter)],
+      overrides: [
+        crashReporterProvider.overrideWithValue(crashReporter),
+        usageAnalyticsProvider.overrideWithValue(usageAnalytics),
+      ],
       child: const OpenCodeMobileApp(),
     ),
   );

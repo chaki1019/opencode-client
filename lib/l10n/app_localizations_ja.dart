@@ -972,6 +972,13 @@ class AppLocalizationsJa extends AppLocalizations {
       'アプリが異常終了したとき、修正のためにエラーの情報を送ります（チャットの内容は送りません）';
 
   @override
+  String get usageAnalytics => '利用状況を送信';
+
+  @override
+  String get usageAnalyticsHelp =>
+      '改善のために、開いた画面や利用した日などの統計を送ります（チャットの内容やサーバーの情報は送りません）';
+
+  @override
   String get linkOpenFailed => '開けませんでした:';
 
   @override

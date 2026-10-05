@@ -992,6 +992,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'When the app crashes, send the error details (no chat content) to help fix it';
 
   @override
+  String get usageAnalytics => 'Send usage statistics';
+
+  @override
+  String get usageAnalyticsHelp =>
+      'Send statistics such as which screens you open and on which days, to help improve the app (no chat content or server details)';
+
+  @override
   String get linkOpenFailed => 'Couldn\'t open this:';
 
   @override

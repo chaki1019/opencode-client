@@ -1,6 +1,6 @@
-# お問い合わせ・プライバシーポリシー・クラッシュレポート
+# お問い合わせ・プライバシーポリシー・クラッシュレポート・アナリティクス
 
-ストアに出すために必要な「お問い合わせ先」「プライバシーポリシー」「サポートページ」と、クラッシュレポート（Firebase Crashlytics）の設定です。
+ストアに出すために必要な「お問い合わせ先」「プライバシーポリシー」「サポートページ」と、クラッシュレポート（Firebase Crashlytics）、利用状況の分析（Firebase Analytics）の設定です。
 
 ## アプリ側
 
@@ -9,6 +9,7 @@
 - **お問い合わせ**: メールアプリを開き、件名と、本文の末尾にアプリのバージョンと OS を入れた下書きを作ります。
 - **プライバシーポリシー**: アプリの言語に合わせて `SITE_URL/ja/privacy/`（日本語）か `SITE_URL/en/privacy/`（英語）をブラウザで開きます。
 - **クラッシュレポートを送信**: 既定はオンです。オフにすると Crashlytics の送信を止め、未送信のレポートも消します。
+- **利用状況を送信**: 既定はオンです。オフにすると Firebase Analytics の送信を止めます。
 
 宛先とサイトの URL は `app.env.example.json` を `app.env.json` にコピーして埋めます（`app.env.json` は git に入りません）。指定しないでビルドしたときは `support@opencodemobile.app` と `https://opencodemobile.app` を使います。空の文字列を指定した項目の行は表示しません。
 
@@ -19,7 +20,7 @@ flutter build ipa \
   --dart-define-from-file=app.env.json
 ```
 
-コードは `lib/core/support/`、`lib/core/crash/`、`lib/features/settings/support_section.dart` にあります。
+コードは `lib/core/support/`、`lib/core/crash/`、`lib/core/analytics/`、`lib/features/settings/support_section.dart` にあります。
 
 ## 公開サイト（`site/`）
 
@@ -67,10 +68,29 @@ App Store の「App のプライバシー」と Play の「データ セーフ�
 | --- | --- | --- |
 | 広告 ID・端末情報・おおよその位置（IP から） | 広告の表示と測定 | AdMob（広告を外したユーザーを除く） |
 | クラッシュログ・診断情報 | アプリの不具合修正 | Firebase Crashlytics |
+| アプリの操作（開いた画面、起動・利用時間）・インストールID・おおよその位置（IP から） | 利用状況の分析 | Firebase Analytics（広告 ID は使わない） |
 | 通知トークン | プッシュ通知 | 通知中継（Cloudflare）、FCM |
 | 購入履歴 | 「広告を外す」 | App Store / Google Play |
 
 チャット、ファイル、サーバーの接続情報は利用者自身のサーバーとの間だけでやり取りし、開発者は収集しません。
+
+## アナリティクス
+
+インストール数、継続率（何日後まで使われているか）、どの画面まで進んで離れたかを見るために Firebase Analytics を使います。Firebase は push や Crashlytics と同じプロジェクトで、値も `push.env.json` の `FIREBASE_*` から読みます。これがないビルドや、debug ビルドでは送りません。
+
+送るのは Analytics が自動で集める `first_open`、`session_start`、`user_engagement`、`app_remove`（Android のみ）などと、画面の表示（`screen_view`）です。画面名は go_router のルートのパターン（`/projects/:projectId`、`/sessions/:sessionId` など）で、ID や名前は入りません。
+
+広告 ID とは結び付けず、トラッキングにも使いません。そのために次を設定しています。
+
+- iOS（`ios/Runner/Info.plist`）: 広告用の同意（`GOOGLE_ANALYTICS_DEFAULT_ALLOW_AD_*`）を既定で拒否、IDFV の収集と SKAdNetwork への登録をオフ、ネイティブの自動画面記録をオフ。リリースビルドは Codemagic で `FIREBASE_ANALYTICS_WITHOUT_ADID` を設定し、IDFA を読むコードを含まない `FirebaseAnalyticsCore` を使います。手元の Xcode でビルドしたときは通常の `FirebaseAnalytics` になりますが、広告用の同意を拒否しているので IDFA は使われません。
+- Android（`AndroidManifest.xml`）: `google_analytics_adid_collection_enabled` を `false`、広告用の同意を既定で拒否、自動画面記録をオフ。
+- Dart の起動時にも `setConsent` で同じ同意を設定し直します。
+
+Firebase コンソールでの作業:
+
+1. 「プロジェクトの設定」→「統合」→ Google アナリティクスを有効にする（プロジェクト作成時に有効にしていれば不要）。
+2. 「Google シグナル」と Google 広告などとのリンクはオンにしない。
+3. 結果は「Analytics」→「ダッシュボード」と「維持率」（継続率）で見ます。画面ごとの離脱は「イベント」→ `screen_view` か、GA4 の「探索」→「経路データ探索」で見られます。
 
 ## Crashlytics
 

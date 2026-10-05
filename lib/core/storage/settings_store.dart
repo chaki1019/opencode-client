@@ -10,6 +10,7 @@ class AppSettings {
     this.languageCode,
     this.haptics = true,
     this.crashReports = true,
+    this.usageAnalytics = true,
   });
 
   final ThemeMode themeMode;
@@ -23,6 +24,9 @@ class AppSettings {
   /// Whether crash reports may be sent.
   final bool crashReports;
 
+  /// Whether usage statistics may be sent.
+  final bool usageAnalytics;
+
   Locale? get locale => languageCode == null ? null : Locale(languageCode!);
 
   AppSettings copyWith({
@@ -30,11 +34,13 @@ class AppSettings {
     String? Function()? language,
     bool? haptics,
     bool? crashReports,
+    bool? usageAnalytics,
   }) => AppSettings(
     themeMode: themeMode ?? this.themeMode,
     languageCode: language == null ? languageCode : language(),
     haptics: haptics ?? this.haptics,
     crashReports: crashReports ?? this.crashReports,
+    usageAnalytics: usageAnalytics ?? this.usageAnalytics,
   );
 }
 
@@ -59,6 +65,7 @@ class SettingsStore {
       languageCode: json['language'] as String?,
       haptics: json['haptics'] as bool? ?? true,
       crashReports: json['crashReports'] as bool? ?? true,
+      usageAnalytics: json['usageAnalytics'] as bool? ?? true,
     );
   }
 
@@ -69,6 +76,7 @@ class SettingsStore {
       'language': ?settings.languageCode,
       'haptics': settings.haptics,
       'crashReports': settings.crashReports,
+      'usageAnalytics': settings.usageAnalytics,
     }),
   );
 }
