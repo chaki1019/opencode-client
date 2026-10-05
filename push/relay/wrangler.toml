@@ -45,11 +45,3 @@ MIN_VERSION_IOS = ""
 MIN_VERSION_ANDROID = ""
 STORE_URL_IOS = ""
 STORE_URL_ANDROID = ""
-
-# Ad switches, served with the minimums above. Empty keeps the app's
-# built-in value (rewarded ads on, 10 free messages a day, 10 more per ad).
-# ADS_REWARDED = "false" turns the rewarded ad and the daily limit off;
-# banners stay. Counts are whole numbers from 1 to 1000.
-ADS_REWARDED = ""
-ADS_FREE_MESSAGES = ""
-ADS_MESSAGES_PER_REWARD = ""

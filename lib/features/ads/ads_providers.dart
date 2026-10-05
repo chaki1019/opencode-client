@@ -8,6 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/ads/ads_config.dart';
 import '../../core/ads/ads_policy.dart';
 import '../../core/ads/message_quota.dart';
+import '../../core/config/remote_settings.dart';
+import '../config/remote_values.dart';
 import 'ads_service.dart';
 
 /// Overridden in tests; real builds read `--dart-define`s.
@@ -65,40 +67,13 @@ final adsStartupProvider = Provider<void>((ref) {
   }
 });
 
-/// The rewarded-ad switches in force: the server's latest, else the last
-/// one stored, else the build's own. Fed by the update check, which reads
-/// the same response.
-class AdsPolicyNotifier extends Notifier<AdsPolicy> {
-  AdsPolicy get _fallback => ref.read(adsConfigProvider).defaultPolicy;
-  AdsStore get _store => ref.read(adsStoreProvider);
-
-  /// Set once the server answered, so a slow stored read does not
-  /// overwrite it.
-  bool _received = false;
-
-  @override
-  AdsPolicy build() {
-    _store.loadPolicy(_fallback).then((stored) {
-      if (!_received && stored != null && ref.mounted) state = stored;
-    });
-    return _fallback;
-  }
-
-  /// Applies the `ads` entry of a `/v1/app-version` response. A response
-  /// without one (a relay from before the switches) means the build's own
-  /// values.
-  Future<void> apply(Object? response) async {
-    if (response is! Map) return;
-    _received = true;
-    final policy = AdsPolicy.fromJson(response['ads'], _fallback);
-    if (policy == state) return;
-    state = policy;
-    await _store.savePolicy(policy);
-  }
-}
-
-final adsPolicyProvider = NotifierProvider<AdsPolicyNotifier, AdsPolicy>(
-  AdsPolicyNotifier.new,
+/// The rewarded-ad switches in force: Remote Config's, over the build's own
+/// values for anything not set there.
+final adsPolicyProvider = Provider<AdsPolicy>(
+  (ref) => AdsPolicy.fromJson(
+    remoteSettingsJson(ref.watch(remoteValuesProvider))['ads'],
+    ref.watch(adsConfigProvider).defaultPolicy,
+  ),
 );
 
 /// Whether sending is limited per day, with a rewarded ad for more.

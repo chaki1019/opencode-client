@@ -1,5 +1,5 @@
-/// The rewarded-ad switches the update server can change without a new
-/// build, served as `ads` next to the minimum versions (docs/ads.md).
+/// The rewarded-ad switches Remote Config can change without a new build
+/// (docs/ads.md).
 class AdsPolicy {
   const AdsPolicy({
     required this.rewarded,
@@ -17,7 +17,8 @@ class AdsPolicy {
   /// Messages one rewarded ad adds for the rest of the day.
   final int messagesPerReward;
 
-  /// The server's `ads` entry over [fallback] (the build's own values).
+  /// The `ads` entry of [remoteSettingsJson] over [fallback] (the build's
+  /// own values).
   /// A missing, null or out-of-range field keeps the fallback's, so a
   /// mistyped variable never changes anything.
   factory AdsPolicy.fromJson(Object? json, AdsPolicy fallback) {
@@ -38,12 +39,6 @@ class AdsPolicy {
 
   static int _count(Object? value, int fallback) =>
       value is int && value >= 1 && value <= 1000 ? value : fallback;
-
-  Map<String, Object> toJson() => {
-    'rewarded': rewarded,
-    'freeMessages': dailyFreeMessages,
-    'messagesPerReward': messagesPerReward,
-  };
 
   @override
   bool operator ==(Object other) =>

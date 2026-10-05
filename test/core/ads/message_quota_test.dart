@@ -2,6 +2,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/core/ads/ads_policy.dart';
 import 'package:opencode_mobile/core/ads/message_quota.dart';
+import 'package:opencode_mobile/core/config/remote_settings.dart';
 
 void main() {
   test('a quota carries over within the day and resets on the next', () {
@@ -74,5 +75,35 @@ void main() {
         messagesPerReward: 10,
       ),
     );
+  });
+
+  test('Remote Config values read like the relay response', () {
+    expect(remoteSettingsJson({}), {
+      'ios': {'minimum': null, 'storeUrl': null},
+      'android': {'minimum': null, 'storeUrl': null},
+      'ads': {
+        'rewarded': null,
+        'freeMessages': null,
+        'messagesPerReward': null,
+      },
+    });
+    final json = remoteSettingsJson({
+      'min_version_ios': ' 1.2.0 ',
+      'store_url_ios': 'https://apps.apple.com/app/id1',
+      'min_version_android': '',
+      'ads_rewarded': 'FALSE',
+      'ads_free_messages': '20',
+      'ads_messages_per_reward': 'ten',
+    });
+    expect(json['ios'], {
+      'minimum': '1.2.0',
+      'storeUrl': 'https://apps.apple.com/app/id1',
+    });
+    expect(json['android'], {'minimum': null, 'storeUrl': null});
+    expect(json['ads'], {
+      'rewarded': false,
+      'freeMessages': 20,
+      'messagesPerReward': null,
+    });
   });
 }

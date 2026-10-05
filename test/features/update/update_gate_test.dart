@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/core/update/update_checker.dart';
-import 'package:opencode_mobile/features/ads/ads_providers.dart';
+import 'package:opencode_mobile/features/config/remote_values.dart';
 import 'package:opencode_mobile/features/update/update_gate.dart';
 import 'package:opencode_mobile/features/update/update_providers.dart';
 import 'package:opencode_mobile/main.dart';
@@ -11,16 +11,17 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../support/fake_adapter.dart';
 import '../../support/fake_discovery.dart';
+import '../../support/fake_remote_settings.dart';
 
 void main() {
   setUp(() => FlutterSecureStorage.setMockInitialValues({}));
 
   const url = 'https://relay.test/v1/app-version';
 
-  Future<ProviderContainer> pumpApp(
+  Future<void> pumpApp(
     WidgetTester tester, {
-    required String minimum,
-    Map<String, Object?>? ads,
+    String minimum = '',
+    FakeRemoteSettings? remote,
   }) async {
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     tester.platformDispatcher.localesTestValue = const [Locale('ja')];
@@ -28,7 +29,6 @@ void main() {
       FakeAdapter({
         url: FakeRoute.json({
           'android': {'minimum': minimum, 'storeUrl': null},
-          'ads': ?ads,
         }),
       }),
     );
@@ -37,6 +37,7 @@ void main() {
         overrides: [
           ...noDiscoveryOverrides,
           updateCheckerProvider.overrideWithValue(UpdateChecker(url, dio: dio)),
+          if (remote != null) remoteSettingsProvider.overrideWithValue(remote),
           packageInfoProvider.overrideWithValue(
             Future.value(
               PackageInfo(
@@ -52,9 +53,6 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    return ProviderScope.containerOf(
-      tester.element(find.byType(OpenCodeMobileApp)),
-    );
   }
 
   testWidgets('an outdated app is replaced by the update screen', (
@@ -80,14 +78,29 @@ void main() {
     expect(find.byType(UpdateRequiredScreen), findsNothing);
   });
 
-  testWidgets('the same response switches rewarded ads', (tester) async {
-    final container = await pumpApp(
+  testWidgets('Remote Config\'s minimum wins over the relay', (tester) async {
+    // The relay would block; a build with Remote Config does not ask it.
+    await pumpApp(
       tester,
-      minimum: '1.0.0',
-      ads: {'rewarded': false, 'freeMessages': 5},
+      minimum: '9.0.0',
+      remote: FakeRemoteSettings({'min_version_android': '1.0.0'}),
     );
-    final policy = container.read(adsPolicyProvider);
-    expect(policy.rewarded, isFalse);
-    expect(policy.dailyFreeMessages, 5);
+    expect(find.byType(UpdateRequiredScreen), findsNothing);
+  });
+
+  testWidgets('a raised minimum blocks while the app runs', (tester) async {
+    final remote = FakeRemoteSettings();
+    await pumpApp(tester, remote: remote);
+    expect(find.byType(UpdateRequiredScreen), findsNothing);
+
+    remote.push({
+      'min_version_android': '1.1.0',
+      'store_url_android': 'https://example.com/store',
+    });
+    await tester.pumpAndSettle();
+    final screen = tester.widget<UpdateRequiredScreen>(
+      find.byType(UpdateRequiredScreen),
+    );
+    expect(screen.update.storeUrl, 'https://example.com/store');
   });
 }

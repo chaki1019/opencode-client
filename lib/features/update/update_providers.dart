@@ -1,21 +1,21 @@
-import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
+import '../../core/config/remote_settings.dart';
 import '../../core/update/update_checker.dart';
-import '../ads/ads_providers.dart';
+import '../config/remote_values.dart';
 
-/// Null when this build has no update server, or on a platform without a
-/// store.
+bool get _storePlatform =>
+    !kIsWeb &&
+    (defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.android);
+
+/// The relay's version check, for builds without Remote Config. Null when
+/// this build has no relay, or on a platform without a store.
 final updateCheckerProvider = Provider<UpdateChecker?>((ref) {
-  if (kIsWeb ||
-      (defaultTargetPlatform != TargetPlatform.iOS &&
-          defaultTargetPlatform != TargetPlatform.android)) {
-    return null;
-  }
+  if (!_storePlatform) return null;
   final url = updateCheckUrl();
   return url == null ? null : UpdateChecker(url);
 });
@@ -31,10 +31,11 @@ final appVersionProvider = FutureProvider.autoDispose<String>((ref) async {
   return '${info.version} (${info.buildNumber})';
 });
 
-/// Checks at launch and again when the app comes back to the foreground,
-/// at most every [recheckAfter]. Once an update is required the app stays
-/// blocked until it is replaced by a newer build. Each response also
-/// carries the ad switches, handed to [adsPolicyProvider].
+/// Reads the minimum versions from Remote Config when the build has it
+/// (fetched at launch and on resume, and pushed on console changes);
+/// otherwise asks the relay at launch and on resume, at most every
+/// [recheckAfter]. Once an update is required the app stays blocked until
+/// it is replaced by a newer build.
 class RequiredUpdateNotifier extends Notifier<RequiredUpdate?> {
   static const recheckAfter = Duration(minutes: 30);
 
@@ -44,6 +45,14 @@ class RequiredUpdateNotifier extends Notifier<RequiredUpdate?> {
 
   @override
   RequiredUpdate? build() {
+    if (_storePlatform && ref.watch(remoteSettingsProvider).available) {
+      ref.listen(
+        remoteValuesProvider,
+        (_, values) => _apply(remoteSettingsJson(values)),
+        fireImmediately: true,
+      );
+      return null;
+    }
     final checker = ref.watch(updateCheckerProvider);
     if (checker == null) return null;
     final listener = AppLifecycleListener(onResume: () => _check(checker));
@@ -59,34 +68,54 @@ class RequiredUpdateNotifier extends Notifier<RequiredUpdate?> {
     _checking = true;
     try {
       final info = await ref.read(packageInfoProvider);
-      final android = defaultTargetPlatform == TargetPlatform.android;
-      final response = await checker.fetch();
-      _lastCheck = DateTime.now();
-      if (!ref.mounted) return;
-      unawaited(ref.read(adsPolicyProvider.notifier).apply(response));
-      final required = UpdateChecker.requiredUpdate(
-        response,
+      final required = await checker.check(
         installedVersion: info.version,
-        platform: android ? 'android' : 'ios',
+        platform: _platformName,
       );
-      if (required == null) return;
-      _blocked = true;
-      state = RequiredUpdate(
-        installed: required.installed,
-        minimum: required.minimum,
-        // Play's listing can be built from the package name; the App Store
-        // needs the numeric id, so iOS relies on the server.
-        storeUrl:
-            required.storeUrl ??
-            (android
-                ? 'https://play.google.com/store/apps/details?id=${info.packageName}'
-                : null),
-      );
+      _lastCheck = DateTime.now();
+      if (required != null) await _block(required);
     } catch (_) {
       // Fail open: an unreadable version or a broken plugin never blocks.
     } finally {
       _checking = false;
     }
+  }
+
+  Future<void> _apply(Map<String, Object?> json) async {
+    if (_blocked) return;
+    try {
+      final info = await ref.read(packageInfoProvider);
+      final required = UpdateChecker.requiredUpdate(
+        json,
+        installedVersion: info.version,
+        platform: _platformName,
+      );
+      if (required != null) await _block(required);
+    } catch (_) {
+      // Fail open, as with the relay.
+    }
+  }
+
+  static String get _platformName =>
+      defaultTargetPlatform == TargetPlatform.android ? 'android' : 'ios';
+
+  Future<void> _block(RequiredUpdate required) async {
+    if (_blocked || !ref.mounted) return;
+    final info = await ref.read(packageInfoProvider);
+    if (_blocked || !ref.mounted) return;
+    final android = defaultTargetPlatform == TargetPlatform.android;
+    _blocked = true;
+    state = RequiredUpdate(
+      installed: required.installed,
+      minimum: required.minimum,
+      // Play's listing can be built from the package name; the App Store
+      // needs the numeric id, so iOS relies on the server.
+      storeUrl:
+          required.storeUrl ??
+          (android
+              ? 'https://play.google.com/store/apps/details?id=${info.packageName}'
+              : null),
+    );
   }
 }
 

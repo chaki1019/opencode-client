@@ -2,8 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-import 'ads_policy.dart';
-
 /// Messages sent today against today's allowance. The allowance starts at
 /// the free count and grows with each rewarded ad; both reset when the
 /// local date changes.
@@ -51,7 +49,6 @@ class AdsStore {
 
   static const _quotaKey = 'ads.quota.v1';
   static const _removedKey = 'ads.removed.v1';
-  static const _policyKey = 'ads.policy.v1';
 
   final FlutterSecureStorage _storage;
 
@@ -80,19 +77,4 @@ class AdsStore {
 
   Future<void> saveRemoved(bool removed) =>
       _storage.write(key: _removedKey, value: '$removed');
-
-  /// The last policy the server sent, over [fallback]; null if none was
-  /// ever received.
-  Future<AdsPolicy?> loadPolicy(AdsPolicy fallback) async {
-    final raw = await _storage.read(key: _policyKey);
-    if (raw == null || raw.isEmpty) return null;
-    try {
-      return AdsPolicy.fromJson(jsonDecode(raw), fallback);
-    } on FormatException {
-      return null;
-    }
-  }
-
-  Future<void> savePolicy(AdsPolicy policy) =>
-      _storage.write(key: _policyKey, value: jsonEncode(policy.toJson()));
 }

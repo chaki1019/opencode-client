@@ -14,16 +14,14 @@
 //   DELETE /v1/devices  {key, token}            unregister
 //   POST   /v1/notify   Authorization: Bearer <key>
 //                       {kind, sessionID, enc}
-//   GET    /v1/app-version                     minimum app version per platform,
-//                                              plus the ad switches
+//   GET    /v1/app-version                     minimum app version per platform
 //
 // Bindings: D1 database DB (schema in migrations/), rate limiters
 // IP_LIMIT and KEY_LIMIT, secret FCM_SERVICE_ACCOUNT (the Firebase service
 // account JSON). An optional KV namespace DEVICES holds registrations from
 // before D1; they move to D1 the first time their key is used. Vars
 // MIN_VERSION_IOS / MIN_VERSION_ANDROID / STORE_URL_IOS / STORE_URL_ANDROID
-// and ADS_REWARDED / ADS_FREE_MESSAGES / ADS_MESSAGES_PER_REWARD (all
-// optional) feed /v1/app-version.
+// (all optional) feed /v1/app-version.
 
 const MIN_KEY_LENGTH = 32;
 const MAX_DEVICES_PER_KEY = 10;
@@ -94,31 +92,10 @@ function appVersion(env) {
     {
       ios: platform(env.MIN_VERSION_IOS, env.STORE_URL_IOS),
       android: platform(env.MIN_VERSION_ANDROID, env.STORE_URL_ANDROID),
-      ads: {
-        rewarded: flag(env.ADS_REWARDED),
-        freeMessages: count(env.ADS_FREE_MESSAGES),
-        messagesPerReward: count(env.ADS_MESSAGES_PER_REWARD),
-      },
     },
     200,
     { "cache-control": "public, max-age=300" },
   );
-}
-
-// Ad switches read by the app. Null leaves the app's built-in value, so an
-// unset or mistyped variable never changes anything.
-function flag(value) {
-  const text = String(value ?? "").trim().toLowerCase();
-  if (text === "true") return true;
-  if (text === "false") return false;
-  return null;
-}
-
-function count(value) {
-  const text = String(value ?? "").trim();
-  if (!/^\d+$/.test(text)) return null;
-  const n = Number(text);
-  return n >= 1 && n <= 1000 ? n : null;
 }
 
 async function readJson(request) {

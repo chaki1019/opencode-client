@@ -30,7 +30,8 @@ class RequiredUpdate {
   final String? storeUrl;
 }
 
-/// Asks the update server whether this version may still run. Every
+/// Asks the relay whether this version may still run; used by builds
+/// without Remote Config. Every
 /// failure (offline, timeout, bad response) lets the app run, so an outage
 /// never locks users out.
 class UpdateChecker {
@@ -43,26 +44,25 @@ class UpdateChecker {
   final String url;
   final Dio _dio;
 
-  /// The server's response, or null when it could not be read. The same
-  /// response carries the ad switches (`ads`).
-  Future<Object?> fetch() async {
+  Future<RequiredUpdate?> check({
+    required String installedVersion,
+    required String platform,
+  }) async {
     try {
-      return (await _dio.get<Object?>(url)).data;
+      final response = await _dio.get<Object?>(url);
+      return requiredUpdate(
+        response.data,
+        installedVersion: installedVersion,
+        platform: platform,
+      );
     } on DioException {
       return null;
     }
   }
 
-  Future<RequiredUpdate?> check({
-    required String installedVersion,
-    required String platform,
-  }) async => requiredUpdate(
-    await fetch(),
-    installedVersion: installedVersion,
-    platform: platform,
-  );
-
-  /// The update [response] asks of [installedVersion], if any.
+  /// The update a `/v1/app-version`-shaped [response] asks of
+  /// [installedVersion], if any. Remote Config's values come in the same
+  /// shape.
   static RequiredUpdate? requiredUpdate(
     Object? response, {
     required String installedVersion,
