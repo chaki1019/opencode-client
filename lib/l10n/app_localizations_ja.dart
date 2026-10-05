@@ -783,7 +783,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pushSetupSteps =>
-      '1. ~/.config/opencode/opencode.json に下の項目を追加\n2. OpenCode を再起動\n\nプラグインは npm から自動で入り、通知用のキーも PC 側で作られます。アプリはそのキーを自動で読み取るので、コピーは不要です。';
+      '1. ~/.config/opencode/opencode.json（または opencode.jsonc）に下の項目を追加\n2. OpenCode を再起動\n\nプラグインは npm から自動で入り、通知用のキーも PC 側で作られます。アプリはそのキーを自動で読み取るので、コピーは不要です。';
 
   @override
   String get pushSendTest => 'テスト通知を送る';
@@ -960,7 +960,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pushComputerTitle => 'PC/Mac 側の状態';
 
   @override
-  String get pushComputerActive => 'プラグインが動いています';
+  String get pushComputerActive => '稼働中';
 
   @override
   String pushComputerFailed(Object error) {
@@ -969,7 +969,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pushComputerOtherKey =>
-      'PC のプラグインが別のリレーかキーを使っています。opencode.json のプラグインの項目を下の内容にしてください。';
+      'PC のプラグインが別のリレーかキーを使っています。opencode.json(c) のプラグインの項目を下の内容にしてください。';
 
   @override
   String get pushComputerNotLoaded =>
@@ -1013,7 +1013,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get diagnosticsLiveUpdates => 'イベントの受信';
 
   @override
-  String get diagnosticsLiveConnected => 'つながっています';
+  String get diagnosticsLiveConnected => '接続中';
 
   @override
   String get diagnosticsLiveStopped => '止まっています';

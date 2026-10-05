@@ -798,7 +798,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pushSetupSteps =>
-      '1. Add the entry below to ~/.config/opencode/opencode.json\n2. Restart OpenCode\n\nOpenCode installs the plugin from npm, and the plugin makes its own pairing key on the computer. The app reads that key by itself, so there is nothing to copy.';
+      '1. Add the entry below to ~/.config/opencode/opencode.json (or opencode.jsonc)\n2. Restart OpenCode\n\nOpenCode installs the plugin from npm, and the plugin makes its own pairing key on the computer. The app reads that key by itself, so there is nothing to copy.';
 
   @override
   String get pushSendTest => 'Send a test notification';
@@ -979,7 +979,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pushComputerTitle => 'On the computer';
 
   @override
-  String get pushComputerActive => 'The plugin is running';
+  String get pushComputerActive => 'Running';
 
   @override
   String pushComputerFailed(Object error) {
@@ -988,7 +988,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pushComputerOtherKey =>
-      'The plugin on the computer uses another relay or key. Change its entry in opencode.json to the one below.';
+      'The plugin on the computer uses another relay or key. Change its entry in opencode.json(c) to the one below.';
 
   @override
   String get pushComputerNotLoaded =>

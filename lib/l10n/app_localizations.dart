@@ -1397,7 +1397,7 @@ abstract class AppLocalizations {
   /// No description provided for @pushSetupSteps.
   ///
   /// In en, this message translates to:
-  /// **'1. Add the entry below to ~/.config/opencode/opencode.json\n2. Restart OpenCode\n\nOpenCode installs the plugin from npm, and the plugin makes its own pairing key on the computer. The app reads that key by itself, so there is nothing to copy.'**
+  /// **'1. Add the entry below to ~/.config/opencode/opencode.json (or opencode.jsonc)\n2. Restart OpenCode\n\nOpenCode installs the plugin from npm, and the plugin makes its own pairing key on the computer. The app reads that key by itself, so there is nothing to copy.'**
   String get pushSetupSteps;
 
   /// No description provided for @pushSendTest.
@@ -1721,7 +1721,7 @@ abstract class AppLocalizations {
   /// No description provided for @pushComputerActive.
   ///
   /// In en, this message translates to:
-  /// **'The plugin is running'**
+  /// **'Running'**
   String get pushComputerActive;
 
   /// No description provided for @pushComputerFailed.
@@ -1733,7 +1733,7 @@ abstract class AppLocalizations {
   /// No description provided for @pushComputerOtherKey.
   ///
   /// In en, this message translates to:
-  /// **'The plugin on the computer uses another relay or key. Change its entry in opencode.json to the one below.'**
+  /// **'The plugin on the computer uses another relay or key. Change its entry in opencode.json(c) to the one below.'**
   String get pushComputerOtherKey;
 
   /// No description provided for @pushComputerNotLoaded.

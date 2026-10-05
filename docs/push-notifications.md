@@ -86,13 +86,13 @@ Apple Developer の Identifiers に `app.opencodemobile`（Push Notifications �
 
 ## 4. アプリと PC/Mac の設定
 
-1. `~/.config/opencode/opencode.json` に `"plugins": ["opencode-mobile-push"]` を追加し、OpenCode を再起動する。プラグインは npm から入り、最初の起動時にペアリングキーを作って `~/.config/opencode/opencode-mobile-push.json` に保存します。中継は既定で `https://relay.opencodemobile.app` を使います。
+1. `~/.config/opencode/opencode.json`（または `opencode.jsonc`）に `"plugins": ["opencode-mobile-push"]` を追加し、OpenCode を再起動する。プラグインは npm から入り、最初の起動時にペアリングキーを作って `~/.config/opencode/opencode-mobile-push.json` に保存します。中継は既定で `https://relay.opencodemobile.app` を使います。
 2. アプリでサーバーに接続し、プロジェクト一覧右上のベルから「このサーバーの通知を受け取る」をオンにする。アプリは `GET /api/config` で設定ファイルの場所を知り、`GET /api/fs/read/opencode-mobile-push.json` で PC のキーを読んで、自動でそのキーに合わせます。キーのコピーは要りません。2台目以降の端末も同じキーに合わせるので、全部の端末に通知が届きます（1つのキーで最大10台）。
 3. アプリの通知画面の「PC/Mac 側の状態」で、プラグインが動いているかを確認できます（`GET /api/plugin` と `GET /api/config` を読みます）。
 
 アプリが PC に書き込むことはありません。キーの持ち主は常に PC 側です。
 
-自前の中継を使う場合や、キーを自分で決めたい場合は、オプションで渡します。`opencode.json` のオプションは設定ファイルより優先されます。アプリは `opencode.json` のキーも読み取って合わせます。npm を使わない場合は、`push/plugin/opencode-mobile-push.js` を `~/.config/opencode/plugins/` にコピーします（v2 は `"package"` にファイルのパスを書くと無視します）。オプションを渡せないので、プラグインは同じ設定ファイルから中継とキーを読みます。
+自前の中継を使う場合や、キーを自分で決めたい場合は、オプションで渡します。`opencode.json` / `opencode.jsonc` のオプションは設定ファイルより優先されます。アプリは `opencode.json` のキーも読み取って合わせます。npm を使わない場合は、`push/plugin/opencode-mobile-push.js` を `~/.config/opencode/plugins/` にコピーします（v2 は `"package"` にファイルのパスを書くと無視します）。オプションを渡せないので、プラグインは同じ設定ファイルから中継とキーを読みます。
 
 ```jsonc
 "plugins": [

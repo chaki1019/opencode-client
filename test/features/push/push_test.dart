@@ -247,7 +247,7 @@ void main() {
     ]);
     await tester.tap(find.byKey(const Key('push-computer-refresh')));
     await tester.pumpAndSettle();
-    expect(find.text('プラグインが動いています'), findsOneWidget);
+    expect(find.text('稼働中'), findsOneWidget);
     // The relay only ever gets the derived auth key, and the iOS extension
     // gets the decryption key.
     final keys = await tester.runAsync(() => PushKeys.derive(key));
@@ -336,7 +336,7 @@ void main() {
     expect(register.method, 'POST');
     expect(body(register)['key'], sharedKeys!.auth);
     expect(messaging.shared, {sharedKeys.keyId});
-    expect(find.text('プラグインが動いています'), findsOneWidget);
+    expect(find.text('稼働中'), findsOneWidget);
     final saved = (await ServerStore().loadServers()).single;
     expect((await PushStore().load(saved.id))!.key, shared);
   });

@@ -116,7 +116,8 @@ void main() {
     expect(find.textContaining('OpenCode 2.1.0'), findsOneWidget);
     expect(find.text('Stopped'), findsOneWidget);
     expect(find.text('github'), findsOneWidget);
-    expect(find.text('failed: token expired'), findsOneWidget);
+    expect(find.text('Connected'), findsOneWidget);
+    expect(find.text('Failed: token expired'), findsOneWidget);
     // The push plugin sits with the server; the app's own details live in
     // settings.
     expect(
@@ -129,6 +130,6 @@ void main() {
     await tester.tap(find.byKey(const Key('diagnostics-copy')));
     await tester.pumpAndSettle();
     expect(clipboard, contains('[Server]\nAddress: http://pc.local:4096'));
-    expect(clipboard, contains('linear: failed: token expired'));
+    expect(clipboard, contains('linear: Failed: token expired'));
   });
 }

@@ -201,7 +201,7 @@ class DiagnosticsScreen extends ConsumerWidget {
       'failed' => _Level.error,
       _ => _Level.warning,
     };
-    final value = [server.status, ?server.error].join(': ');
+    final value = [l10n.mcpStatus(server.status), ?server.error].join(': ');
     return _Row(server.name, value, level);
   }
 }
