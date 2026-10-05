@@ -14,8 +14,12 @@ class FakeDiscovery implements ServerDiscovery {
   final List<DiscoveredServer>? finished;
   final controller = StreamController<List<DiscoveredServer>>.broadcast();
 
+  /// How many times discovery was started.
+  var started = 0;
+
   @override
   Stream<List<DiscoveredServer>> watch() {
+    started++;
     final result = finished;
     return result != null ? Stream.value(result) : controller.stream;
   }

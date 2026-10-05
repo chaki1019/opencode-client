@@ -65,6 +65,7 @@
   "discoveredServers": "Found on this network",
   "discoveringServers": "Searching the network for OpenCode servers…",
   "discoveryNoneFound": "No servers found",
+  "scanNetwork": "Search the network",
   "rescanNetwork": "Search again",
   "discoveryHint": "Looks for servers on port 4096 that accept connections from the network (opencode serve --hostname 0.0.0.0), and for servers announced over mDNS",
   "reconnecting": "Reconnecting to the server…",

@@ -146,6 +146,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get discoveryNoneFound => 'No servers found';
 
   @override
+  String get scanNetwork => 'Search the network';
+
+  @override
   String get rescanNetwork => 'Search again';
 
   @override

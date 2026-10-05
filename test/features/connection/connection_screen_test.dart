@@ -341,8 +341,21 @@ void main() {
     expect(await store.readPassword('s1'), 'secret');
   });
 
+  testWidgets('does not search the network until asked', (tester) async {
+    await pumpApp(tester);
+    expect(discovery.started, 0);
+    expect(find.text('見つかりませんでした'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('scan')));
+    await tester.pumpAndSettle();
+    expect(discovery.started, 1);
+    expect(find.byKey(const Key('scan')), findsNothing);
+  });
+
   testWidgets('a server found on the network fills the URL', (tester) async {
     await pumpApp(tester);
+    await tester.tap(find.byKey(const Key('scan')));
+    await tester.pumpAndSettle();
     expect(find.text('見つかりませんでした'), findsOneWidget);
 
     discovery.controller.add(const [

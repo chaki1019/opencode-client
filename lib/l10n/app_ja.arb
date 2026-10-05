@@ -34,6 +34,7 @@
   "discoveredServers": "このネットワークで見つかったサーバー",
   "discoveringServers": "ネットワーク上の OpenCode サーバーを探しています…",
   "discoveryNoneFound": "見つかりませんでした",
+  "scanNetwork": "ネットワークを探す",
   "rescanNetwork": "もう一度探す",
   "discoveryHint": "ポート 4096 でネットワークからの接続を受け付けているサーバー（opencode serve --hostname 0.0.0.0）と、mDNS で知らせているサーバーを探します",
   "reconnecting": "サーバーに再接続しています…",

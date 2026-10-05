@@ -401,24 +401,56 @@ class _SaveServerSheetState extends State<_SaveServerSheet> {
 }
 
 /// Servers found on the network (mDNS or a LAN scan) that are not saved
-/// yet. Tapping one fills the form.
-class _DiscoveredServers extends ConsumerWidget {
+/// yet. Tapping one fills the form. Nothing is sent to the network until
+/// the user asks for a search.
+class _DiscoveredServers extends ConsumerStatefulWidget {
   const _DiscoveredServers({required this.saved, required this.onPick});
 
   final List<ServerConfig> saved;
   final void Function(DiscoveredServer server)? onPick;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_DiscoveredServers> createState() => _DiscoveredServersState();
+}
+
+class _DiscoveredServersState extends ConsumerState<_DiscoveredServers> {
+  var _started = false;
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final muted = theme.colorScheme.onSurfaceVariant;
+    if (!_started) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            context.l10n.discoveredServers,
+            style: theme.textTheme.labelLarge?.copyWith(color: muted),
+          ),
+          const SizedBox(height: 8),
+          OutlinedButton.icon(
+            key: const Key('scan'),
+            icon: const Icon(Icons.wifi_find),
+            label: Text(context.l10n.scanNetwork),
+            onPressed: () => setState(() => _started = true),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            context.l10n.discoveryHint,
+            style: theme.textTheme.bodySmall?.copyWith(color: muted),
+          ),
+        ],
+      );
+    }
     final snapshot = ref.watch(discoveredServersProvider).value;
     final scanning = snapshot?.scanning ?? true;
-    final savedUrls = {for (final s in saved) s.baseUrl};
+    final savedUrls = {for (final s in widget.saved) s.baseUrl};
     final found = [
       for (final server in snapshot?.servers ?? const <DiscoveredServer>[])
         if (!savedUrls.contains(server.baseUrl)) server,
     ];
+    final onPick = widget.onPick;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -472,7 +504,7 @@ class _DiscoveredServers extends ConsumerWidget {
                 color: muted,
               ),
             ),
-            onTap: onPick == null ? null : () => onPick!(server),
+            onTap: onPick == null ? null : () => onPick(server),
           ),
       ],
     );
