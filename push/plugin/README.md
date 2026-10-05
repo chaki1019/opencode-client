@@ -6,7 +6,7 @@ answer. It works with the opencode-mobile app.
 
 ## Setup
 
-1. Add the plugin to `~/.config/opencode/opencode.json` and restart OpenCode:
+1. Add the plugin to `~/.config/opencode/opencode.json` (or `opencode.jsonc`) and restart OpenCode:
 
 ```jsonc
 "plugins": ["opencode-mobile-push"]
@@ -41,7 +41,7 @@ Without npm, copy `opencode-mobile-push.js` to `~/.config/opencode/plugins/`
 { "relay": "https://<your-relay>", "key": "<pairing key>" }
 ```
 
-Options given in `opencode.json` take precedence over this file.
+Options given in `opencode.json` / `opencode.jsonc` take precedence over this file.
 
 ### Options
 

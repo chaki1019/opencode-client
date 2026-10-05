@@ -783,7 +783,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pushSetupSteps =>
-      '1. ~/.config/opencode/opencode.json に下の項目を追加\n2. OpenCode を再起動\n\nプラグインは npm から自動で入り、通知用のキーも PC 側で作られます。アプリはそのキーを自動で読み取るので、コピーは不要です。';
+      '1. ~/.config/opencode/opencode.json（または opencode.jsonc）に下の項目を追加\n2. OpenCode を再起動\n\nプラグインは npm から自動で入り、通知用のキーも PC 側で作られます。アプリはそのキーを自動で読み取るので、コピーは不要です。';
 
   @override
   String get pushSendTest => 'テスト通知を送る';
@@ -969,7 +969,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pushComputerOtherKey =>
-      'PC のプラグインが別のリレーかキーを使っています。opencode.json のプラグインの項目を下の内容にしてください。';
+      'PC のプラグインが別のリレーかキーを使っています。opencode.json(c) のプラグインの項目を下の内容にしてください。';
 
   @override
   String get pushComputerNotLoaded =>
