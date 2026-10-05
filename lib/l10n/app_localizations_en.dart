@@ -949,12 +949,36 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAds => 'Ads';
 
   @override
-  String get adsFreeLeft => 'Messages without ads today';
+  String get settingsMessages => 'Messages';
 
   @override
-  String adsFreeLeftValue(int left) {
-    return '$left left';
+  String get messagesToday => 'Sent today';
+
+  @override
+  String messagesTodayValue(int sent, int allowance) {
+    return '$sent/$allowance';
   }
+
+  @override
+  String get rewardEarnMore => 'Watch an ad for more messages';
+
+  @override
+  String rewardEarnMoreSubtitle(int more) {
+    return 'A short ad adds $more messages for today';
+  }
+
+  @override
+  String rewardAdded(int more) {
+    return 'Added $more messages for today';
+  }
+
+  @override
+  String get rewardEarnSkipped =>
+      'Watch the ad to the end to get more messages.';
+
+  @override
+  String get rewardUnavailable =>
+      'No ad is available right now. Please try again later.';
 
   @override
   String get removeAds => 'Remove ads';

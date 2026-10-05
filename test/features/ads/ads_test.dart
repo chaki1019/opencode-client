@@ -209,13 +209,13 @@ void main() {
       tester,
       extra: AdsSettingsSection(header: (title) => Text(title)),
     );
-    expect(find.text('広告'), findsOneWidget);
-    expect(find.text('残り10回'), findsOneWidget);
+    expect(find.text('メッセージ回数'), findsOneWidget);
+    expect(find.text('0/10回'), findsOneWidget);
     // The purchase stays hidden until the store has the product.
     expect(find.byKey(const Key('remove-ads')), findsNothing);
 
     await send(tester, 3);
-    expect(find.text('残り7回'), findsOneWidget);
+    expect(find.text('3/10回'), findsOneWidget);
   });
 
   testWidgets('with rewarded ads switched off, sending is never limited', (
@@ -231,7 +231,7 @@ void main() {
     );
     // The banner stays; only the limit and its row go.
     expect(find.byKey(const Key('fake-banner')), findsOneWidget);
-    expect(find.byKey(const Key('ads-free-left')), findsNothing);
+    expect(find.byKey(const Key('messages-today')), findsNothing);
 
     await send(tester, 12);
     expect(results, List.filled(12, true));
@@ -279,5 +279,29 @@ void main() {
     await send(tester, 12);
     expect(results, List.filled(12, true));
     expect(ads.rewardedShown, 0);
+  });
+
+  testWidgets('settings can earn more messages before they run out', (
+    tester,
+  ) async {
+    final (container, _) = await pumpGate(
+      tester,
+      extra: AdsSettingsSection(header: (title) => Text(title)),
+    );
+    await send(tester, 2);
+
+    await tester.tap(find.byKey(const Key('earn-messages')));
+    await tester.pumpAndSettle();
+    expect(ads.rewardedShown, 1);
+    expect(find.text('2/20回'), findsOneWidget);
+    expect(find.text('今日の送信回数を10回増やしました'), findsOneWidget);
+
+    // Closing early or a missing ad earns nothing here.
+    for (final outcome in [RewardOutcome.skipped, RewardOutcome.unavailable]) {
+      ads.outcome = outcome;
+      await tester.tap(find.byKey(const Key('earn-messages')));
+      await tester.pumpAndSettle();
+    }
+    expect(container.read(messageQuotaProvider).allowance, 20);
   });
 }

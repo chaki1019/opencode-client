@@ -1664,17 +1664,53 @@ abstract class AppLocalizations {
   /// **'Ads'**
   String get settingsAds;
 
-  /// No description provided for @adsFreeLeft.
+  /// No description provided for @settingsMessages.
   ///
   /// In en, this message translates to:
-  /// **'Messages without ads today'**
-  String get adsFreeLeft;
+  /// **'Messages'**
+  String get settingsMessages;
 
-  /// No description provided for @adsFreeLeftValue.
+  /// No description provided for @messagesToday.
   ///
   /// In en, this message translates to:
-  /// **'{left} left'**
-  String adsFreeLeftValue(int left);
+  /// **'Sent today'**
+  String get messagesToday;
+
+  /// No description provided for @messagesTodayValue.
+  ///
+  /// In en, this message translates to:
+  /// **'{sent}/{allowance}'**
+  String messagesTodayValue(int sent, int allowance);
+
+  /// No description provided for @rewardEarnMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch an ad for more messages'**
+  String get rewardEarnMore;
+
+  /// No description provided for @rewardEarnMoreSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'A short ad adds {more} messages for today'**
+  String rewardEarnMoreSubtitle(int more);
+
+  /// No description provided for @rewardAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Added {more} messages for today'**
+  String rewardAdded(int more);
+
+  /// No description provided for @rewardEarnSkipped.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch the ad to the end to get more messages.'**
+  String get rewardEarnSkipped;
+
+  /// No description provided for @rewardUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'No ad is available right now. Please try again later.'**
+  String get rewardUnavailable;
 
   /// No description provided for @removeAds.
   ///
