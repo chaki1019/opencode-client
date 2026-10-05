@@ -913,11 +913,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get updateFromStore => 'App Store または Google Play からアプリを更新してください。';
 
   @override
-  String get rewardTitle => '今日の無料送信回数を使い切りました';
+  String get rewardTitle => '今日の送信回数を使い切りました';
 
   @override
   String rewardBody(int free, int more) {
-    return '広告なしで送れるのは1日$free回までです。短い広告を見ると、今日はさらに$more回送れます。';
+    return '広告なしで送れるのは1日$free回までです。短い広告を見ると、さらに$more回送れます。';
   }
 
   @override
@@ -941,9 +941,31 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String messagesLeft(int left) {
-    return '本日の残り$left回';
+  String messagesTodayEarned(int sent, int allowance, int earned) {
+    return '$sent/$allowance回（内、広告獲得分 $earned回）';
   }
+
+  @override
+  String messagesLeft(int left) {
+    return '残り$left回';
+  }
+
+  @override
+  String get quotaReminder => '回数回復の通知';
+
+  @override
+  String get quotaReminderSubtitle => 'メッセージを送った日は、0時に回数が回復したらお知らせします';
+
+  @override
+  String get quotaReminderTitle => '本日分の送信回数が回復しました';
+
+  @override
+  String quotaReminderBody(int free) {
+    return '今日も$free回まで広告なしで送れます';
+  }
+
+  @override
+  String get quotaReminderChannel => '送信回数のお知らせ';
 
   @override
   String get rewardEarnMore => '広告を見て回数を増やす';
@@ -954,8 +976,13 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
+  String rewardEarnMoreCarry(int more, int limit) {
+    return '短い広告を見ると$more回増えます。使わなかった分は$limit回まで翌日に持ち越せます';
+  }
+
+  @override
   String rewardAdded(int more) {
-    return '今日の送信回数を$more回増やしました';
+    return '送信回数を$more回増やしました';
   }
 
   @override

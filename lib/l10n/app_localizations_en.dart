@@ -932,11 +932,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Update the app from the App Store or Google Play.';
 
   @override
-  String get rewardTitle => 'Today\'s free messages are used up';
+  String get rewardTitle => 'Today\'s messages are used up';
 
   @override
   String rewardBody(int free, int more) {
-    return 'You can send $free messages a day without ads. Watch a short ad to send $more more today.';
+    return 'You can send $free messages a day without ads. Watch a short ad to send $more more.';
   }
 
   @override
@@ -960,9 +960,32 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String messagesLeft(int left) {
-    return '$left messages left today';
+  String messagesTodayEarned(int sent, int allowance, int earned) {
+    return '$sent/$allowance ($earned earned from ads)';
   }
+
+  @override
+  String messagesLeft(int left) {
+    return '$left messages left';
+  }
+
+  @override
+  String get quotaReminder => 'Notify when messages reset';
+
+  @override
+  String get quotaReminderSubtitle =>
+      'On days you send messages, get a notice at midnight when they are back';
+
+  @override
+  String get quotaReminderTitle => 'Today\'s messages are back';
+
+  @override
+  String quotaReminderBody(int free) {
+    return 'You can send $free messages without ads today';
+  }
+
+  @override
+  String get quotaReminderChannel => 'Message count';
 
   @override
   String get rewardEarnMore => 'Watch an ad for more messages';
@@ -973,8 +996,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String rewardEarnMoreCarry(int more, int limit) {
+    return 'A short ad adds $more messages. Up to $limit unused ones carry over to the next day';
+  }
+
+  @override
   String rewardAdded(int more) {
-    return 'Added $more messages for today';
+    return 'Added $more messages';
   }
 
   @override

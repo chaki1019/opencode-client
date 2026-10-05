@@ -1637,13 +1637,13 @@ abstract class AppLocalizations {
   /// No description provided for @rewardTitle.
   ///
   /// In en, this message translates to:
-  /// **'Today\'s free messages are used up'**
+  /// **'Today\'s messages are used up'**
   String get rewardTitle;
 
   /// No description provided for @rewardBody.
   ///
   /// In en, this message translates to:
-  /// **'You can send {free} messages a day without ads. Watch a short ad to send {more} more today.'**
+  /// **'You can send {free} messages a day without ads. Watch a short ad to send {more} more.'**
   String rewardBody(int free, int more);
 
   /// No description provided for @rewardWatch.
@@ -1682,11 +1682,47 @@ abstract class AppLocalizations {
   /// **'{sent}/{allowance}'**
   String messagesTodayValue(int sent, int allowance);
 
+  /// No description provided for @messagesTodayEarned.
+  ///
+  /// In en, this message translates to:
+  /// **'{sent}/{allowance} ({earned} earned from ads)'**
+  String messagesTodayEarned(int sent, int allowance, int earned);
+
   /// No description provided for @messagesLeft.
   ///
   /// In en, this message translates to:
-  /// **'{left} messages left today'**
+  /// **'{left} messages left'**
   String messagesLeft(int left);
+
+  /// No description provided for @quotaReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Notify when messages reset'**
+  String get quotaReminder;
+
+  /// No description provided for @quotaReminderSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'On days you send messages, get a notice at midnight when they are back'**
+  String get quotaReminderSubtitle;
+
+  /// No description provided for @quotaReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s messages are back'**
+  String get quotaReminderTitle;
+
+  /// No description provided for @quotaReminderBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You can send {free} messages without ads today'**
+  String quotaReminderBody(int free);
+
+  /// No description provided for @quotaReminderChannel.
+  ///
+  /// In en, this message translates to:
+  /// **'Message count'**
+  String get quotaReminderChannel;
 
   /// No description provided for @rewardEarnMore.
   ///
@@ -1700,10 +1736,16 @@ abstract class AppLocalizations {
   /// **'A short ad adds {more} messages for today'**
   String rewardEarnMoreSubtitle(int more);
 
+  /// No description provided for @rewardEarnMoreCarry.
+  ///
+  /// In en, this message translates to:
+  /// **'A short ad adds {more} messages. Up to {limit} unused ones carry over to the next day'**
+  String rewardEarnMoreCarry(int more, int limit);
+
   /// No description provided for @rewardAdded.
   ///
   /// In en, this message translates to:
-  /// **'Added {more} messages for today'**
+  /// **'Added {more} messages'**
   String rewardAdded(int more);
 
   /// No description provided for @rewardEarnSkipped.

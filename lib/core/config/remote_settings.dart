@@ -128,6 +128,7 @@ Map<String, Object?> remoteSettingsJson(Map<String, String> values) {
       'rewarded': flag('rewarded_ads_enabled'),
       'freeMessages': count('daily_free_messages'),
       'messagesPerReward': count('ads_messages_per_reward'),
+      'carryOver': count('ads_carryover_limit'),
     },
   };
 }

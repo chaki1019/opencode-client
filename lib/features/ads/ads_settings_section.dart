@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/ads/message_quota.dart';
 import '../../l10n/l10n.dart';
 import '../chat/context_sheet.dart' show UsageRing;
 import 'ads_providers.dart';
@@ -95,6 +96,14 @@ class AdsSettingsSection extends ConsumerWidget {
           header(l10n.settingsMessages),
           const MessageCountTile(),
           const EarnMessagesTile(),
+          SwitchListTile(
+            key: const Key('quota-reminder'),
+            title: Text(l10n.quotaReminder),
+            subtitle: Text(l10n.quotaReminderSubtitle),
+            value: ref.watch(quotaReminderOnProvider) ?? true,
+            onChanged: (on) =>
+                ref.read(quotaReminderOnProvider.notifier).set(on),
+          ),
         ],
         if (adRows.isNotEmpty) ...[header(l10n.settingsAds), ...adRows],
       ],
@@ -102,7 +111,14 @@ class AdsSettingsSection extends ConsumerWidget {
   }
 }
 
-/// Today's sent messages against today's allowance, as a ring and a count.
+/// How much of today's messages, free and earned, is used: full only when
+/// none are left.
+double quotaRingFraction(MessageQuota quota) => quota.allowance == 0
+    ? 1.0
+    : (quota.sentToday / quota.allowance).clamp(0.0, 1.0);
+
+/// Today's messages sent against all available, as a ring and a count,
+/// with the part earned from ads.
 class MessageCountTile extends ConsumerWidget {
   const MessageCountTile({super.key});
 
@@ -111,23 +127,26 @@ class MessageCountTile extends ConsumerWidget {
     ref.watch(messageQuotaProvider);
     final quota = ref.read(messageQuotaProvider.notifier).today;
     final scheme = Theme.of(context).colorScheme;
-    final fraction = quota.allowance == 0
-        ? 1.0
-        : (quota.sent / quota.allowance).clamp(0.0, 1.0);
+    final l10n = context.l10n;
     return ListTile(
       key: const Key('messages-today'),
       leading: UsageRing(
-        fraction: fraction,
+        fraction: quotaRingFraction(quota),
         // Icon-sized, so the titles line up with the row below.
         size: 24,
         strokeWidth: 3.5,
         color: quota.remaining == 0 ? scheme.error : scheme.primary,
         trackColor: scheme.outlineVariant,
       ),
-      title: Text(context.l10n.messagesToday),
-      trailing: Text(
-        context.l10n.messagesTodayValue(quota.sent, quota.allowance),
-        style: Theme.of(context).textTheme.titleMedium,
+      title: Text(l10n.messagesToday),
+      subtitle: Text(
+        quota.earnedToday == 0
+            ? l10n.messagesTodayValue(quota.sentToday, quota.allowance)
+            : l10n.messagesTodayEarned(
+                quota.sentToday,
+                quota.allowance,
+                quota.earnedToday,
+              ),
       ),
     );
   }
@@ -166,19 +185,38 @@ class _EarnMessagesTileState extends ConsumerState<EarnMessagesTile> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final more = ref.watch(adsPolicyProvider).messagesPerReward;
-    return ListTile(
-      key: const Key('earn-messages'),
-      leading: const Icon(Icons.play_circle_outline),
-      title: Text(l10n.rewardEarnMore),
-      subtitle: Text(l10n.rewardEarnMoreSubtitle(more)),
-      trailing: _loading
-          ? const SizedBox.square(
-              dimension: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            )
-          : null,
-      onTap: _loading ? null : _watch,
+    final policy = ref.watch(adsPolicyProvider);
+    final more = policy.messagesPerReward;
+    final theme = Theme.of(context);
+    // A real button, so it does not read as one more line of the count.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          FilledButton.tonalIcon(
+            key: const Key('earn-messages'),
+            onPressed: _loading ? null : _watch,
+            icon: _loading
+                ? const SizedBox.square(
+                    dimension: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.play_circle_outline),
+            label: Text(l10n.rewardEarnMore),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            policy.carryOver > 0
+                ? l10n.rewardEarnMoreCarry(more, policy.carryOver)
+                : l10n.rewardEarnMoreSubtitle(more),
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

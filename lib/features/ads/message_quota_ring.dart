@@ -19,9 +19,7 @@ class MessageQuotaRing extends ConsumerWidget {
     final quota = ref.read(messageQuotaProvider.notifier).today;
     final scheme = Theme.of(context).colorScheme;
     final color = quota.remaining == 0 ? scheme.error : scheme.primary;
-    final fraction = quota.allowance == 0
-        ? 1.0
-        : (quota.sent / quota.allowance).clamp(0.0, 1.0);
+    final fraction = quotaRingFraction(quota);
     final label = context.l10n.messagesLeft(quota.remaining);
     return Semantics(
       button: true,
