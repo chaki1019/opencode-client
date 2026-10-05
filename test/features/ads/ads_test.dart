@@ -230,7 +230,7 @@ void main() {
 
   testWidgets('Remote Config sets the counts', (tester) async {
     remote = FakeRemoteSettings({
-      'ads_free_messages': '3',
+      'daily_free_messages': '3',
       'ads_messages_per_reward': '5',
     });
     final (container, _) = await pumpGate(tester);

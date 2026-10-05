@@ -126,7 +126,7 @@ Map<String, Object?> remoteSettingsJson(Map<String, String> values) {
     'android': minimum,
     'ads': {
       'rewarded': flag('ads_rewarded'),
-      'freeMessages': count('ads_free_messages'),
+      'freeMessages': count('daily_free_messages'),
       'messagesPerReward': count('ads_messages_per_reward'),
     },
   };

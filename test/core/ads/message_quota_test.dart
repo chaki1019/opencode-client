@@ -90,7 +90,7 @@ void main() {
     final json = remoteSettingsJson({
       'app_version': ' 1.2.0 ',
       'ads_rewarded': 'FALSE',
-      'ads_free_messages': '20',
+      'daily_free_messages': '20',
       'ads_messages_per_reward': 'ten',
     });
     expect(json['ios'], {'minimum': '1.2.0'});
