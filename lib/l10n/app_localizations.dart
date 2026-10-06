@@ -350,6 +350,30 @@ abstract class AppLocalizations {
   /// **'Current'**
   String get currentProject;
 
+  /// No description provided for @hideProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from list'**
+  String get hideProject;
+
+  /// No description provided for @hideProjectNote.
+  ///
+  /// In en, this message translates to:
+  /// **'The project and its sessions stay on the server. Open it again with + to bring it back.'**
+  String get hideProjectNote;
+
+  /// No description provided for @projectHidden.
+  ///
+  /// In en, this message translates to:
+  /// **'Removed \"{name}\" from the list'**
+  String projectHidden(Object name);
+
+  /// No description provided for @undo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get undo;
+
   /// No description provided for @addProject.
   ///
   /// In en, this message translates to:

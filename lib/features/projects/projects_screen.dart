@@ -12,6 +12,7 @@ import '../connection/connection_providers.dart';
 import '../home/pane_selection.dart';
 import '../home/two_pane_home.dart';
 import '../live/live_widgets.dart';
+import '../settings/haptics.dart';
 import 'app_drawer.dart';
 import 'folder_picker_sheet.dart';
 import 'project_providers.dart';
@@ -111,6 +112,7 @@ class ProjectsPane extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final connection = ref.watch(connectionProvider);
     final projects = ref.watch(projectsProvider);
+    final hidden = ref.watch(hiddenOnServerProvider);
     final health = connection?.health;
 
     return Scaffold(
@@ -180,40 +182,44 @@ class ProjectsPane extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () => ref.refresh(projectsProvider.future),
-        child: projects.when(
-          data: (bootstrap) => ListView(
-            // Room under the last project for the FAB.
-            padding: const EdgeInsets.only(bottom: 88),
-            children: [
-              _SectionHeader(title: context.l10n.projects),
-              if (bootstrap.projects.isNotEmpty)
-                Card(
-                  key: const Key('project-list'),
-                  margin: const EdgeInsets.symmetric(horizontal: _edge),
-                  clipBehavior: Clip.antiAlias,
-                  shape: _listShape(Theme.of(context)),
-                  child: Column(
-                    children: [
-                      for (final (i, project) in _sorted(
-                        bootstrap.projects,
-                      ).indexed) ...[
-                        if (i > 0) const Divider(),
-                        _ProjectTile(
-                          project: project,
-                          isCurrent: project.id == bootstrap.current?.id,
-                        ),
+        // Waits for the hidden projects too, so they never flash in.
+        child: switch (ref.watch(hiddenProjectsProvider).isLoading) {
+          true => const Center(child: CircularProgressIndicator()),
+          false => projects.when(
+            data: (bootstrap) => ListView(
+              // Room under the last project for the FAB.
+              padding: const EdgeInsets.only(bottom: 88),
+              children: [
+                _SectionHeader(title: context.l10n.projects),
+                if (_visible(bootstrap.projects, hidden).isNotEmpty)
+                  Card(
+                    key: const Key('project-list'),
+                    margin: const EdgeInsets.symmetric(horizontal: _edge),
+                    clipBehavior: Clip.antiAlias,
+                    shape: _listShape(Theme.of(context)),
+                    child: Column(
+                      children: [
+                        for (final (i, project) in _sorted(
+                          _visible(bootstrap.projects, hidden),
+                        ).indexed) ...[
+                          if (i > 0) const Divider(),
+                          _ProjectTile(
+                            project: project,
+                            isCurrent: project.id == bootstrap.current?.id,
+                          ),
+                        ],
                       ],
-                    ],
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (e, _) => ListView(
+              padding: const EdgeInsets.all(24),
+              children: [Text(context.l10n.projectsLoadFailed(e))],
+            ),
           ),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => ListView(
-            padding: const EdgeInsets.all(24),
-            children: [Text(context.l10n.projectsLoadFailed(e))],
-          ),
-        ),
+        },
       ),
     );
   }
@@ -233,9 +239,19 @@ class ProjectsPane extends ConsumerWidget {
   Future<void> _addProject(BuildContext context, WidgetRef ref) async {
     final project = await FolderPickerSheet.show(context);
     if (project == null || !context.mounted) return;
+    // Opening a project again puts it back on the list.
+    if (ref.read(serverUrlProvider) case final url?) {
+      await ref.read(hiddenProjectsProvider.notifier).show(url, project);
+      if (!context.mounted) return;
+    }
     ref.invalidate(projectsProvider);
     openProject(context, ref, project);
   }
+
+  List<Project> _visible(List<Project> projects, Set<String> hidden) => [
+    for (final p in projects)
+      if (!hidden.contains(p.directory)) p,
+  ];
 
   List<Project> _sorted(List<Project> projects) {
     double updated(Project p) => p.time?.updated ?? p.time?.created ?? 0;
@@ -243,15 +259,104 @@ class ProjectsPane extends ConsumerWidget {
   }
 }
 
+/// A project row. Swipe left or long-press to take it off the list.
 class _ProjectTile extends ConsumerWidget {
   const _ProjectTile({required this.project, required this.isCurrent});
 
   final Project project;
   final bool isCurrent;
 
+  /// Takes the project off this server's list, with a way to undo it. The
+  /// project itself stays on the server.
+  Future<void> _hide(BuildContext context, WidgetRef ref) async {
+    final url = ref.read(serverUrlProvider);
+    if (url == null) return;
+    final hidden = ref.read(hiddenProjectsProvider.notifier);
+    final messenger = ScaffoldMessenger.of(context);
+    final l10n = context.l10n;
+    final panes = ref.read(paneSelectionProvider.notifier);
+    if (ref.read(paneSelectionProvider).project?.id == project.id) {
+      panes.clear();
+    }
+    await hidden.hide(url, project);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(l10n.projectHidden(project.displayName)),
+          action: SnackBarAction(
+            label: l10n.undo,
+            onPressed: () => hidden.show(url, project),
+          ),
+        ),
+      );
+  }
+
+  Future<void> _menu(BuildContext context, WidgetRef ref) async {
+    ref.read(hapticsProvider).play(HapticCue.longPress);
+    final hide = await showModalBottomSheet<bool>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              key: const Key('project-hide'),
+              leading: const Icon(Icons.visibility_off_outlined),
+              title: Text(context.l10n.hideProject),
+              subtitle: Text(context.l10n.hideProjectNote),
+              onTap: () => Navigator.pop(context, true),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (hide != true || !context.mounted) return;
+    await _hide(context, ref);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    return Dismissible(
+      key: ValueKey(project.directory),
+      direction: DismissDirection.endToStart,
+      background: ColoredBox(
+        color: scheme.secondaryContainer,
+        child: Align(
+          alignment: Alignment.centerRight,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.visibility_off_outlined,
+                  color: scheme.onSecondaryContainer,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  context.l10n.hideProject,
+                  style: TextStyle(color: scheme.onSecondaryContainer),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+      onUpdate: (details) {
+        if (details.reached && !details.previousReached) {
+          ref.read(hapticsProvider).play(HapticCue.swipeThreshold);
+        }
+      },
+      onDismissed: (_) => _hide(context, ref),
+      child: _tile(context, ref, theme),
+    );
+  }
+
+  Widget _tile(BuildContext context, WidgetRef ref, ThemeData theme) {
     final scheme = theme.colorScheme;
     final name = project.displayName;
     return ListTile(
@@ -302,6 +407,7 @@ class _ProjectTile extends ConsumerWidget {
             )
           : null,
       onTap: () => openProject(context, ref, project),
+      onLongPress: () => _menu(context, ref),
     );
   }
 }
