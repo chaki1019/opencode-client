@@ -256,7 +256,9 @@ class _ConnectionScreenState extends ConsumerState<ConnectionScreen> {
                     leading: const Icon(Icons.dns_outlined),
                     title: Text(server.displayName),
                     subtitle: Text(
-                      '${server.username} @ ${server.baseUrl}',
+                      server.baseUrl,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontFamily: AppFonts.mono,
                         color: theme.colorScheme.onSurfaceVariant,
@@ -361,7 +363,7 @@ class _SaveServerSheetState extends State<_SaveServerSheet> {
             style: theme.textTheme.titleMedium,
           ),
           Text(
-            '${widget.server.username} @ ${widget.server.baseUrl}',
+            widget.server.baseUrl,
             style: theme.textTheme.bodySmall?.copyWith(
               fontFamily: AppFonts.mono,
               color: theme.colorScheme.onSurfaceVariant,
