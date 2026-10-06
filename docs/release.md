@@ -23,7 +23,7 @@ git push origin v1.0.1
 - バージョン名（`1.0.1`）はタグから取ります。`pubspec.yaml` の `version` を書き換える必要はありません。
 - ビルド番号は TestFlight と Google Play に上がっている最大の番号に 1 を足したものを自動で使います。
 - iOS は TestFlight に上げたうえで App Store の審査に出し、承認されると公開されます。「このバージョンの最新情報」には `release_notes.json` の内容が入ります。
-- Play は製品版トラックにリリースを作り、そのまま審査に出します。承認されると公開されます。事前に動作確認したいときは、タグを打つ前に `Android AAB (manual upload)` で作った AAB を内部テストに手で上げて確かめてください。
+- Play は製品版トラックにリリースを作るところまで行います。Play Console の「公開の概要」で「変更を審査に送信」を押すと審査に出て、承認されると公開されます。審査に一度リジェクトされたアプリは Play が API からの自動送信を受け付けないため、この手順にしています。事前に動作確認したいときは、タグを打つ前に `Android AAB (manual upload)` で作った AAB を内部テストに手で上げて確かめてください。
 
 ## リリースノート
 
@@ -120,3 +120,5 @@ Codemagic のアプリ設定 →「Environment variables」で、次の 2 つの
 ## 費用の目安
 
 1 回のリリースは iOS と Android を続けてビルドして 20〜25 分ほどの見込みで、無料枠では月 20 回前後です。足りなくなったら、ビルド時間を見ながら iOS と Android でワークフローを分ける（片方だけ出す）こともできます。
+
+「Language 'ja-JP' is not supported by App Store Connect」というログは、App Store が `ja-JP` を読み飛ばしたという意味です。日本語は `ja` で入るので問題ありません。

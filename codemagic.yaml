@@ -1,8 +1,9 @@
 # Store release on Codemagic (see docs/release.md).
 #
-# Pushing a tag like v1.0.1 builds the iOS and Android release binaries and
-# submits them for review on the App Store and the Play production track.
-# Each goes live once Apple or Google approves it. Pull
+# Pushing a tag like v1.0.1 builds the iOS and Android release binaries,
+# submits the iOS one for App Store review and creates a Play production
+# release to send for review from the Play Console. Each goes live once Apple
+# or Google approves it. Pull
 # request checks run on GitHub Actions (.github/workflows/ci.yml), so this
 # workflow spends Codemagic's free macOS minutes on releases only.
 workflows:
@@ -109,10 +110,12 @@ workflows:
         release_type: AFTER_APPROVAL
       google_play:
         credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        # Straight to production: the release is sent for review and goes
-        # live once Google approves it (see docs/release.md).
+        # Creates the production release; it is sent for review from the
+        # Play Console ("Publishing overview"), because Google Play refuses to
+        # send it automatically after a rejection (see docs/release.md).
         track: production
         submit_as_draft: false
+        changes_not_sent_for_review: true
 
   # Builds only a signed Android App Bundle, without uploading it. Start it
   # by hand from Codemagic ("Start new build") for the first upload to Google
