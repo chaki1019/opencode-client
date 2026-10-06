@@ -1,1 +1,1 @@
-OpenCode Mobile の最初のリリースです。
+Pocket Agent の最初のリリースです。

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/layout.dart';
@@ -11,7 +12,6 @@ import '../../l10n/l10n.dart';
 import '../push/push_providers.dart';
 import '../settings/support_section.dart';
 import 'connection_providers.dart';
-import 'opencode_logo.dart';
 
 class ConnectionScreen extends ConsumerStatefulWidget {
   const ConnectionScreen({super.key, this.adding = false});
@@ -624,14 +624,21 @@ class _Brand extends StatelessWidget {
     final scheme = theme.colorScheme;
     return Row(
       children: [
-        const OpenCodeLogo(height: 52),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: SvgPicture.asset(
+            'branding/app-icon/icon.svg',
+            width: 52,
+            height: 52,
+          ),
+        ),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'OpenCode Mobile',
+                'Pocket Agent',
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.4,

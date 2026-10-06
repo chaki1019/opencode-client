@@ -60,7 +60,7 @@ class OpenCodeMobileApp extends ConsumerWidget {
     ref.listen(removeAdsProvider, (_, _) {});
     final settings = ref.watch(settingsProvider);
     return MaterialApp.router(
-      title: 'OpenCode Mobile',
+      title: 'Pocket Agent',
       scaffoldMessengerKey: ref.watch(scaffoldMessengerKeyProvider),
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,

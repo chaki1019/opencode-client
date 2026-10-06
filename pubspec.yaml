@@ -110,6 +110,7 @@ flutter:
           weight: 600
 
   assets:
+    - branding/app-icon/icon.svg
     - assets/fonts/OFL-IBMPlexSans.txt
     - assets/fonts/OFL-JetBrainsMono.txt
 
