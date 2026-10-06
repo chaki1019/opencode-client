@@ -1847,7 +1847,7 @@ abstract class AppLocalizations {
   /// No description provided for @contactSubject.
   ///
   /// In en, this message translates to:
-  /// **'OpenCode Mobile feedback'**
+  /// **'Pocket Agent feedback'**
   String get contactSubject;
 
   /// No description provided for @contactBodyPrompt.

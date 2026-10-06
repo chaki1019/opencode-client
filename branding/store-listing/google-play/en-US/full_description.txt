@@ -1,4 +1,4 @@
-OpenCode Mobile is a client app that connects your phone to the OpenCode server running on your own computer. Away from your desk, you can still give your AI agent instructions, check on its progress, and approve its requests on the spot.
+Pocket Agent is an unofficial client for OpenCode, the open-source AI coding agent. It connects your phone to the OpenCode server running on your own computer. Away from your desk, you can still give your AI agent instructions, check on its progress, and approve its requests on the spot.
 
 WHAT YOU CAN DO
 • Chat: send instructions, watch responses stream in live, interrupt at any time
@@ -26,7 +26,7 @@ PRICING
 The app is free and shows a banner ad on list screens. You can send a set number of messages a day for free; after that, watch a short video ad to add more. A one-time "Remove Ads" purchase hides ads.
 
 PLEASE NOTE
-• OpenCode Mobile is not built by the OpenCode team and is not affiliated with OpenCode in any way. It is an unofficial client.
+• Pocket Agent is not built by the OpenCode team and is not affiliated with OpenCode in any way. It is an unofficial client.
 • You need your own server (such as a PC or Mac) running OpenCode v2.
 • AI model usage is billed by the provider you configure on your server.
 

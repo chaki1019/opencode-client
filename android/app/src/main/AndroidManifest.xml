@@ -7,7 +7,7 @@
     <!-- Conversation mode: speech recognition. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
-        android:label="OpenCode Mobile"
+        android:label="Pocket Agent"
         android:name="${applicationName}"
         android:usesCleartextTraffic="true"
         android:icon="@mipmap/ic_launcher">

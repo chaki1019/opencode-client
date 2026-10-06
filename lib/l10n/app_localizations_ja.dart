@@ -1037,7 +1037,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get contactUs => 'お問い合わせ';
 
   @override
-  String get contactSubject => 'OpenCode Mobile へのお問い合わせ';
+  String get contactSubject => 'Pocket Agent へのお問い合わせ';
 
   @override
   String get contactBodyPrompt => '（お問い合わせ内容や、起きた問題をここにお書きください）';

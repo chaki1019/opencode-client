@@ -24,7 +24,7 @@ const url = (p) => 'file://' + path.resolve(p);
 
 const copy = {
   ja: {
-    chat: ['席を離れても、', 'エージェントに指示', 'PC の OpenCode をスマホから操作'],
+    chat: ['席を離れても、', 'エージェントに指示', 'PC の AI エージェントをスマホから操作'],
     permission: ['許可や質問に、', 'その場で回答', '確認待ちで作業が止まらない'],
     notify: ['終わったら、', '通知でお知らせ', '完了・エラー・許可待ちを通知'],
     diff: ['変更を', 'スマホでレビュー', 'Git の差分をその場で確認'],
@@ -35,11 +35,11 @@ const copy = {
       body: 'ログインの入力チェックを修正',
       now: '今',
     },
-    feature: ['自分の OpenCode を、', 'ポケットに。'],
+    feature: ['AI エージェントを、', 'ポケットに。'],
     unofficial: 'OpenCode 非公式クライアント',
   },
   en: {
-    chat: ['Keep your agent', 'working from anywhere', 'Drive OpenCode on your computer from your phone'],
+    chat: ['Keep your agent', 'working from anywhere', 'Drive the agent on your computer from your phone'],
     permission: ['Approve requests', 'on the spot', 'Never leave your agent waiting'],
     notify: ['Get notified', "when it's done", 'Replies, errors and permission requests'],
     diff: ['Review changes', 'on the go', 'Git diffs right on your phone'],
@@ -50,7 +50,7 @@ const copy = {
       body: 'Fix login form validation',
       now: 'now',
     },
-    feature: ['Your OpenCode,', 'in your pocket.'],
+    feature: ['Your coding agent,', 'in your pocket.'],
     unofficial: 'Unofficial OpenCode client',
   },
 };
@@ -230,7 +230,7 @@ body { flex-direction: row; align-items: center; padding-left: 64px; }
   box-shadow: 0 0 0 3px #2A323D, 0 30px 80px rgba(0,0,0,.6), 0 0 120px rgba(124,196,255,.18); }
 .p img { display: block; width: 100%; border-radius: 34px; }
 </style></head><body>
-<div class="l"><div class="brand"><img src="${url(icon)}"><span>OpenCode Mobile</span></div>
+<div class="l"><div class="brand"><img src="${url(icon)}"><span>Pocket Agent</span></div>
 <div class="tag">${c.feature[0]}<br><span class="ai">${c.feature[1]}</span></div>
 <div class="small">${c.unofficial}</div></div>
 <div class="p"><img src="${url(phoneShot)}"></div>
@@ -285,8 +285,8 @@ img { width: 220px; height: 220px; border-radius: 50px; box-shadow: 0 20px 60px 
 </style></head><body>
 <img src="${url(icon)}">
 ${closing
-    ? `<div class="name">OpenCode Mobile</div><div class="small">opencodemobile.app · ${c.unofficial}</div>`
-    : `<div class="tag">${c.feature[0]}<br><span class="ai">${c.feature[1]}</span></div><div class="small">OpenCode Mobile · ${c.unofficial}</div>`}
+    ? `<div class="name">Pocket Agent</div><div class="small">opencodemobile.app · ${c.unofficial}</div>`
+    : `<div class="tag">${c.feature[0]}<br><span class="ai">${c.feature[1]}</span></div><div class="small">Pocket Agent · ${c.unofficial}</div>`}
 </body></html>`;
 }
 

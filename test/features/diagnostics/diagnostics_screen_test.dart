@@ -98,7 +98,7 @@ void main() {
           packageInfoProvider.overrideWithValue(
             Future.value(
               PackageInfo(
-                appName: 'OpenCode Mobile',
+                appName: 'Pocket Agent',
                 packageName: 'app.opencodemobile',
                 version: '1.0.0',
                 buildNumber: '5',

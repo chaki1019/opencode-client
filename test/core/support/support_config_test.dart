@@ -31,7 +31,7 @@ void main() {
   test('the contact mail keeps spaces and line breaks', () {
     const config = SupportConfig(email: 'help@example.com');
     final mail = config.contactMail(
-      subject: 'OpenCode Mobile へのお問い合わせ',
+      subject: 'Pocket Agent へのお問い合わせ',
       body: contactBody(prompt: 'Hi there', version: '1.0.0 (1)', os: 'ios 18'),
     )!;
     expect(mail.scheme, 'mailto');
@@ -43,7 +43,7 @@ void main() {
     );
     expect(
       Uri.decodeComponent(mail.query.split('&').first.substring(8)),
-      'OpenCode Mobile へのお問い合わせ',
+      'Pocket Agent へのお問い合わせ',
     );
   });
 

@@ -1060,7 +1060,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get contactUs => 'Contact us';
 
   @override
-  String get contactSubject => 'OpenCode Mobile feedback';
+  String get contactSubject => 'Pocket Agent feedback';
 
   @override
   String get contactBodyPrompt =>
