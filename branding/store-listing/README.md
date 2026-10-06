@@ -45,6 +45,7 @@ google-play/
 - App Store のプレビュー動画は用意していません。Apple はプレビューにアプリの実際の画面収録を求めるため、静止画をつないだ動画は却下されることがあります。作る場合は実機の画面収録から作ってください。
 - カテゴリは App Store が「デベロッパツール」、Google Play が「ツール」の想定です。
 - アプリ名とサブタイトルには「OpenCode」を入れません。2026-10-06 に App Store の Guideline 4.1(a)（Copycats）で、名前「OpenCode Mobile」とサブタイトルが他社の製品と誤認させると指摘され、「Pocket Agent」に変えました。OpenCode への対応は説明文で「非公式クライアント」として書くだけにします。
+- App Store の英語版ストア名は「Pocket Agent」が他のアプリと重複して使えなかったため、「Pocket Agent: AI Coding」にしています（2026-10-06）。ホーム画面の表示名は「Pocket Agent」のままです。
 
 ## スクリーンショットの作り直し
 
