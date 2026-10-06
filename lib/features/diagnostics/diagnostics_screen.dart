@@ -198,8 +198,8 @@ class DiagnosticsScreen extends ConsumerWidget {
     };
     final version = check.value?.version;
     return _Row(
-      label,
-      [if (version != null) l10n.pushPluginVersion(version), value].join(' '),
+      version == null ? label : '$label ($version)',
+      value,
       level,
       action: PushPluginUpdate(serverId: serverId),
     );
@@ -249,7 +249,17 @@ class _RowTile extends StatelessWidget {
         ),
       );
     }
-    if (row.level == _Level.note) return ListTile(title: Text(row.label));
+    if (row.level == _Level.note) {
+      // Styled like a check's value, not its title: it reports an absence.
+      return ListTile(
+        title: Text(
+          row.label,
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: colors.onSurfaceVariant,
+          ),
+        ),
+      );
+    }
     final (icon, color) = switch (row.level) {
       _Level.ok => (Icons.check_circle_outline, colors.primary),
       _Level.warning => (Icons.warning_amber_outlined, colors.tertiary),
