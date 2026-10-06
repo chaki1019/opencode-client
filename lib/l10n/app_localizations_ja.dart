@@ -1075,7 +1075,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pushComputerOtherKey =>
-      'PC のプラグインが別のリレーかキーを使っています。opencode.json(c) のプラグインの項目を下の内容にしてください。';
+      'プラグインが別のリレーかキーを使っています。opencode.json(c) のプラグインの項目を下の内容にしてください。';
 
   @override
   String get pushComputerNotLoaded =>
@@ -1153,7 +1153,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get diagnosticsPluginOtherKey =>
-      'PC のプラグインが別のリレーかキーを使っています。メニューの「通知」で確認してください。';
+      'プラグインが別のリレーかキーを使っています。メニューの「通知」で確認してください。';
 
   @override
   String get diagnosticsMcpNone => 'MCP サーバーはありません';

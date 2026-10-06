@@ -29,9 +29,12 @@ enum _Level {
 
 /// One checked item: what it is, how it went, and a short value.
 class _Row {
-  const _Row(this.label, this.value, this.level, {this.action});
+  const _Row(this.label, this.value, this.level, {this.version, this.action});
 
   final String label;
+
+  /// Shown small beside the label, for example a plugin's version.
+  final String? version;
   final String value;
   final _Level level;
 
@@ -196,11 +199,11 @@ class DiagnosticsScreen extends ConsumerWidget {
       AsyncLoading() => (l10n.diagnosticsChecking, _Level.neutral),
       _ => (l10n.pushComputerUnknown, _Level.neutral),
     };
-    final version = check.value?.version;
     return _Row(
-      version == null ? label : '$label ($version)',
+      label,
       value,
       level,
+      version: check.value?.version,
       action: PushPluginUpdate(serverId: serverId),
     );
   }
@@ -225,7 +228,9 @@ String _report(List<(String, List<_Row>)> sections) {
     if (lines.isNotEmpty) lines.add('');
     lines.add('[$title]');
     for (final row in rows) {
-      lines.add(row.value.isEmpty ? row.label : '${row.label}: ${row.value}');
+      final version = row.version;
+      final label = version == null ? row.label : '${row.label} ($version)';
+      lines.add(row.value.isEmpty ? label : '$label: ${row.value}');
     }
   }
   return lines.join('\n');
@@ -268,9 +273,24 @@ class _RowTile extends StatelessWidget {
       _Level.info ||
       _Level.note => (Icons.circle_outlined, colors.onSurfaceVariant),
     };
+    final version = row.version;
     final tile = ListTile(
       leading: Icon(icon, color: color),
-      title: Text(row.label),
+      title: version == null
+          ? Text(row.label)
+          : Text.rich(
+              TextSpan(
+                text: row.label,
+                children: [
+                  TextSpan(
+                    text: ' ($version)',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colors.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+            ),
       subtitle: row.value.isEmpty ? null : Text(row.value),
     );
     final action = row.action;

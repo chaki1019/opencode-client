@@ -1099,7 +1099,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pushComputerOtherKey =>
-      'The plugin on the computer uses another relay or key. Change its entry in opencode.json(c) to the one below.';
+      'The plugin uses another relay or key. Change its entry in opencode.json(c) to the one below.';
 
   @override
   String get pushComputerNotLoaded =>
@@ -1178,7 +1178,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get diagnosticsPluginOtherKey =>
-      'The plugin on the computer uses another relay or key. Check it under Notifications in the menu.';
+      'The plugin uses another relay or key. Check it under Notifications in the menu.';
 
   @override
   String get diagnosticsMcpNone => 'No MCP servers';

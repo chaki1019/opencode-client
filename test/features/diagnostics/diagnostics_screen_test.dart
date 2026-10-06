@@ -125,7 +125,11 @@ void main() {
     // The push plugin sits with the server; the app's own details live in
     // settings.
     expect(
-      tester.getTopLeft(find.text('Push notification plugin (0.2.0)')).dy,
+      tester
+          .getTopLeft(
+            find.text('Push notification plugin (0.2.0)', findRichText: true),
+          )
+          .dy,
       lessThan(tester.getTopLeft(find.text('Live updates')).dy),
     );
     // The installed version beside the name, and OpenCode's update when a
