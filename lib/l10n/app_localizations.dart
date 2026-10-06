@@ -1913,7 +1913,7 @@ abstract class AppLocalizations {
   /// No description provided for @pushComputerOtherKey.
   ///
   /// In en, this message translates to:
-  /// **'The plugin on the computer uses another relay or key. Change its entry in opencode.json(c) to the one below.'**
+  /// **'The plugin uses another relay or key. Change its entry in opencode.json(c) to the one below.'**
   String get pushComputerOtherKey;
 
   /// No description provided for @pushComputerNotLoaded.
@@ -2045,7 +2045,7 @@ abstract class AppLocalizations {
   /// No description provided for @diagnosticsPluginOtherKey.
   ///
   /// In en, this message translates to:
-  /// **'The plugin on the computer uses another relay or key. Check it under Notifications in the menu.'**
+  /// **'The plugin uses another relay or key. Check it under Notifications in the menu.'**
   String get diagnosticsPluginOtherKey;
 
   /// No description provided for @diagnosticsMcpNone.
