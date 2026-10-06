@@ -78,6 +78,15 @@
     }
   },
   "currentProject": "Current",
+  "hideProject": "Remove from list",
+  "hideProjectNote": "The project and its sessions stay on the server. Open it again with + to bring it back.",
+  "projectHidden": "Removed \"{name}\" from the list",
+  "@projectHidden": {
+    "placeholders": {
+      "name": {}
+    }
+  },
+  "undo": "Undo",
   "addProject": "Add project",
   "projectFolderLabel": "Folder path on the server",
   "projectFolderHint": "/home/me/my-app",

@@ -168,6 +168,21 @@ class AppLocalizationsJa extends AppLocalizations {
   String get currentProject => '現在';
 
   @override
+  String get hideProject => '一覧から外す';
+
+  @override
+  String get hideProjectNote =>
+      'サーバー上のプロジェクトとセッションはそのまま残ります。「＋」から開き直すと一覧に戻ります。';
+
+  @override
+  String projectHidden(Object name) {
+    return '「$name」を一覧から外しました';
+  }
+
+  @override
+  String get undo => '元に戻す';
+
+  @override
   String get addProject => 'プロジェクトを追加';
 
   @override
