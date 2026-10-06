@@ -28,6 +28,8 @@ class ServerPlugin {
     this.path,
     required this.active,
     this.error,
+    this.version,
+    this.outdated = false,
   });
 
   static ServerPlugin? tryParse(Object? json) {
@@ -45,6 +47,8 @@ class ServerPlugin {
           : null,
       active: state['status'] == 'active',
       error: state['error'] is String ? state['error'] as String : null,
+      version: source['version'] is String ? source['version'] as String : null,
+      outdated: source['outdated'] == true,
     );
   }
 
@@ -57,6 +61,13 @@ class ServerPlugin {
   final String? path;
   final bool active;
   final String? error;
+
+  /// The installed version of a package plugin, when OpenCode reports it.
+  final String? version;
+
+  /// OpenCode found a newer version of this package on npm. It checks at
+  /// start and once a day, and installs one only when asked to update.
+  final bool outdated;
 
   bool get isPush =>
       _pluginIds.contains(id) ||
@@ -207,10 +218,28 @@ enum ComputerPluginStatus {
 }
 
 class ComputerPluginCheck {
-  const ComputerPluginCheck(this.status, {this.error, this.sharedKey});
+  const ComputerPluginCheck(
+    this.status, {
+    this.error,
+    this.sharedKey,
+    this.updateTarget,
+    this.version,
+    this.latestVersion,
+  });
 
   final ComputerPluginStatus status;
   final String? error;
+
+  /// The npm target to pass to OpenCode's plugin update when a newer
+  /// version of the plugin is out; null when it is current or not a
+  /// package.
+  final String? updateTarget;
+
+  /// The installed plugin version, when known.
+  final String? version;
+
+  /// The newest version on npm, when known.
+  final String? latestVersion;
 
   /// With [ComputerPluginStatus.otherKey]: the pairing key the plugin uses
   /// with this relay. The computer's key is the one that counts, so this
@@ -223,14 +252,35 @@ ComputerPluginCheck checkComputerPlugin({
   required ComputerConfig config,
   required String relayUrl,
   required String key,
+  String? latestVersion,
 }) {
+  final loaded = plugins.where((p) => p.isPush).toList();
+  final package = loaded.where((p) => p.package != null).firstOrNull;
+  // A pinned version ("opencode-mobile-push@0.3.0") stays as written, so
+  // only an unpinned or "@latest" entry can be updated in place.
+  final follows =
+      package != null &&
+      (!package.package!.contains('@', 1) ||
+          package.package!.endsWith('@latest'));
+  final behind =
+      package != null &&
+      (package.outdated ||
+          (latestVersion != null &&
+              package.version != null &&
+              latestVersion != package.version));
   ComputerPluginCheck result(
     ComputerPluginStatus status, {
     String? error,
     String? sharedKey,
-  }) => ComputerPluginCheck(status, error: error, sharedKey: sharedKey);
+  }) => ComputerPluginCheck(
+    status,
+    error: error,
+    sharedKey: sharedKey,
+    updateTarget: follows && behind ? package.package : null,
+    version: package?.version,
+    latestVersion: latestVersion,
+  );
 
-  final loaded = plugins.where((p) => p.isPush).toList();
   final explicit = config.entries.where((e) => e.key != null).toList();
   final matches = explicit.any(
     (e) => e.key == key && _sameRelay(e.relay, relayUrl),

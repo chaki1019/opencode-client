@@ -88,8 +88,12 @@ void main() {
           ),
           serverEventStreamProvider.overrideWith((ref, _) => null),
           computerPluginProvider.overrideWith(
-            (ref, id) async =>
-                const ComputerPluginCheck(ComputerPluginStatus.active),
+            (ref, id) async => const ComputerPluginCheck(
+              ComputerPluginStatus.active,
+              version: '0.2.0',
+              latestVersion: '0.3.0',
+              updateTarget: 'opencode-mobile-push',
+            ),
           ),
           packageInfoProvider.overrideWithValue(
             Future.value(
@@ -124,6 +128,10 @@ void main() {
       tester.getTopLeft(find.text('Push notification plugin')).dy,
       lessThan(tester.getTopLeft(find.text('Live updates')).dy),
     );
+    // The installed version, and OpenCode's update when a newer one is out.
+    expect(find.textContaining('Version 0.2.0'), findsOneWidget);
+    expect(find.text('Version 0.3.0 is available'), findsOneWidget);
+    expect(find.byKey(const Key('push-plugin-update')), findsOneWidget);
     expect(find.text('Address'), findsNothing);
     expect(find.text('1.0.0 (5)'), findsNothing);
 

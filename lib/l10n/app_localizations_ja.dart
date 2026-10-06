@@ -800,8 +800,11 @@ class AppLocalizationsJa extends AppLocalizations {
   String get pushSetupTitle => 'PC/Mac の OpenCode の設定';
 
   @override
-  String get pushSetupSteps =>
-      '1. ~/.config/opencode/opencode.json（または opencode.jsonc）に下の項目を追加\n2. OpenCode を再起動\n\nプラグインは npm から自動で入り、通知用のキーも PC 側で作られます。アプリはそのキーを自動で読み取るので、コピーは不要です。';
+  String get pushSetupStep1 =>
+      '1. ~/.config/opencode/opencode.json（または opencode.jsonc）に次の項目を追加';
+
+  @override
+  String get pushSetupStep2 => '2. OpenCode を再起動';
 
   @override
   String get pushSendTest => 'テスト通知を送る';
@@ -1045,7 +1048,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get linkOpenFailed => '開けませんでした:';
 
   @override
-  String get pushComputerTitle => 'PC/Mac 側の状態';
+  String get pushComputerTitle => 'プッシュ通知プラグイン';
 
   @override
   String get pushComputerActive => '稼働中';
@@ -1071,6 +1074,30 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get pushComputerRefresh => 'もう一度確認';
+
+  @override
+  String pushPluginVersion(String version) {
+    return 'バージョン $version';
+  }
+
+  @override
+  String get pushPluginOutdated => '新しいバージョンがあります';
+
+  @override
+  String pushPluginOutdatedTo(String version) {
+    return '新しいバージョン $version があります';
+  }
+
+  @override
+  String get pushPluginUpdate => 'プラグインを更新';
+
+  @override
+  String get pushPluginUpdated => 'プラグインを更新しました';
+
+  @override
+  String pushPluginUpdateFailed(Object error) {
+    return 'プラグインを更新できませんでした: $error';
+  }
 
   @override
   String get diagnosticsTitle => '接続の診断';

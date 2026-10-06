@@ -87,8 +87,10 @@ void main() {
   late _FakeMessaging messaging;
   late FakeAdapter server;
   late FakeAdapter relay;
+  String? latestPlugin;
 
   setUp(() {
+    latestPlugin = null;
     FlutterSecureStorage.setMockInitialValues({});
     messaging = _FakeMessaging();
     server = FakeAdapter({
@@ -153,6 +155,9 @@ void main() {
             ),
           ),
           pushConfigProvider.overrideWithValue(_config),
+          latestPushPluginVersionProvider.overrideWith(
+            (ref) async => latestPlugin,
+          ),
           pushMessagingProvider.overrideWithValue(messaging),
           relayClientProvider.overrideWithValue(
             RelayClient(_config.relayUrl, dio: fakeDio(relay)),
@@ -569,5 +574,55 @@ void main() {
     });
     expect(PushMessage.fromData({'kind': 'completed'}), isNull);
     expect(PushPairing.newKey(), matches(RegExp(r'^[A-Za-z0-9_-]{43}$')));
+  });
+
+  testWidgets('an outdated plugin on the computer is updated through '
+      'OpenCode', (tester) async {
+    latestPlugin = '0.3.0';
+    Map<String, Object?> plugin(String version) => {
+      'location': {'directory': '/home/me'},
+      'data': [
+        {
+          'id': 'opencode-mobile-push',
+          'source': {
+            'type': 'package',
+            'target': 'opencode-mobile-push',
+            'version': version,
+          },
+          'features': {'server': true},
+          'state': {'status': 'active'},
+        },
+      ],
+    };
+    server.routes['/api/plugin'] = FakeRoute.json(plugin('0.2.0'));
+    server.routes['/api/plugin/update'] = (RequestOptions request) {
+      server.routes['/api/plugin'] = FakeRoute.json(plugin('0.3.0'));
+      return const FakeRoute(204, '');
+    };
+    await pumpConnected(tester);
+    await tester.tap(find.byKey(const Key('open-drawer')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('push-settings')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('push-switch')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('プッシュ通知プラグイン'), findsOneWidget);
+    expect(find.textContaining('バージョン 0.2.0'), findsOneWidget);
+    expect(find.text('新しいバージョン 0.3.0 があります'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('push-plugin-update')));
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
+    final update = server.requests.lastWhere(
+      (r) => r.path == '/api/plugin/update',
+    );
+    expect(update.method, 'POST');
+    expect(jsonDecode(update.data as String), {
+      'targets': ['opencode-mobile-push'],
+    });
+    expect(find.textContaining('バージョン 0.3.0'), findsOneWidget);
+    expect(find.byKey(const Key('push-plugin-update')), findsNothing);
+    expect(find.text('プラグインを更新しました'), findsOneWidget);
   });
 }
