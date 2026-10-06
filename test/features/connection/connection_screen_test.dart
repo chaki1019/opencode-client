@@ -65,8 +65,12 @@ void main() {
         overrides: [
           serverEventStreamProvider.overrideWith((ref, serverId) {
             final events = serverEvents[serverId] = StreamController();
-            final stream = EventStream(open: (_) async => events.stream)
-              ..start();
+            // A closed feed is a server that went away.
+            final stream = EventStream(
+              open: (_) async => events.isClosed
+                  ? throw StateError('unreachable')
+                  : events.stream,
+            )..start();
             ref.onDispose(stream.dispose);
             return stream;
           }),
@@ -178,22 +182,45 @@ void main() {
       label: '停止中',
     );
 
-    testWidgets('switches to another saved server', (tester) async {
-      await saveServers([home, work, down]);
-      await pumpApp(tester);
-      await tester.tap(find.text('自宅'));
-      await tester.pumpAndSettle();
-      expect(title(tester), '自宅');
-
+    /// Connects one more saved server from the drawer's add screen.
+    Future<void> addSaved(WidgetTester tester, String name) async {
       await openDrawer(tester);
-      expect(find.byKey(const Key('drawer-server-work')), findsOneWidget);
-      await tester.tap(find.byKey(const Key('drawer-server-work')));
+      await tester.tap(find.byKey(const Key('add-server')));
       await tester.pumpAndSettle();
-      expect(find.byType(Drawer), findsNothing);
-      expect(title(tester), '職場');
-    });
+      await tester.tap(find.text(name));
+      await tester.pumpAndSettle();
+    }
 
-    testWidgets('keeps the other servers connected and shows their progress', (
+    Future<void> switchTo(WidgetTester tester, String id) async {
+      await openDrawer(tester);
+      await tester.tap(find.byKey(Key('drawer-server-$id')));
+      await tester.pumpAndSettle();
+    }
+
+    List<String> listed(WidgetTester tester) {
+      final tiles = find.descendant(
+        of: find.byType(Drawer),
+        matching: find.byWidgetPredicate(
+          (w) =>
+              w is ListTile &&
+              (w.key as ValueKey<String>?)?.value.startsWith(
+                    'drawer-server-',
+                  ) ==
+                  true,
+        ),
+      );
+      return [
+        for (final tile in tester.widgetList<ListTile>(tiles))
+          (tile.key! as ValueKey<String>).value.substring(
+            'drawer-server-'.length,
+          ),
+      ];
+    }
+
+    bool selected(WidgetTester tester, String id) =>
+        tester.widget<ListTile>(find.byKey(Key('drawer-server-$id'))).selected;
+
+    testWidgets('lists the servers connected to, in a fixed order', (
       tester,
     ) async {
       await saveServers([home, work, down]);
@@ -201,8 +228,41 @@ void main() {
       await tester.tap(find.text('自宅'));
       await tester.pumpAndSettle();
 
-      // The other saved servers connected in the background.
-      expect(serverEvents.keys, containsAll(['work']));
+      // Saved servers not connected to are not listed.
+      await openDrawer(tester);
+      expect(listed(tester), ['home']);
+      expect(serverEvents.keys, ['home']);
+      await tester.tapAt(const Offset(420, 300));
+      await tester.pumpAndSettle();
+
+      await addSaved(tester, '職場');
+      expect(title(tester), '職場');
+      await openDrawer(tester);
+      expect(listed(tester), ['home', 'work']);
+      expect(selected(tester, 'work'), isTrue);
+      expect(selected(tester, 'home'), isFalse);
+
+      // Switching moves the highlight, not the rows.
+      await tester.tap(find.byKey(const Key('drawer-server-home')));
+      await tester.pumpAndSettle();
+      expect(find.byType(Drawer), findsNothing);
+      expect(title(tester), '自宅');
+      await openDrawer(tester);
+      expect(listed(tester), ['home', 'work']);
+      expect(selected(tester, 'home'), isTrue);
+      expect(selected(tester, 'work'), isFalse);
+    });
+
+    testWidgets('keeps the other servers connected and shows their progress', (
+      tester,
+    ) async {
+      await saveServers([home, work]);
+      await pumpApp(tester);
+      await tester.tap(find.text('自宅'));
+      await tester.pumpAndSettle();
+      await addSaved(tester, '職場');
+      await switchTo(tester, 'home');
+
       send('work', 'session.execution.started', 'w1');
       send('work', 'session.execution.started', 'w2');
       send('work', 'session.execution.succeeded', 'w1');
@@ -217,7 +277,6 @@ void main() {
         find.byKey(const Key('drawer-server-finished-work')),
         findsOneWidget,
       );
-      expect(status('down'), '接続できません');
       expect(status('home'), 'http://home.test:4096');
 
       // Switching is instant and clears what was counted.
@@ -242,6 +301,32 @@ void main() {
       expect(status('home'), '1件作業中');
     });
 
+    testWidgets('keeps a server that dropped, saying it is unreachable', (
+      tester,
+    ) async {
+      await saveServers([home, work]);
+      await pumpApp(tester);
+      await tester.tap(find.text('自宅'));
+      await tester.pumpAndSettle();
+      await addSaved(tester, '職場');
+      await switchTo(tester, 'home');
+
+      // The feed ends; the stream waits a moment before trying again.
+      await serverEvents['work']!.close();
+      await tester.pump(const Duration(seconds: 1));
+      await openDrawer(tester);
+      expect(listed(tester), ['home', 'work']);
+      expect(
+        tester
+            .widget<Text>(find.byKey(const Key('drawer-server-status-work')))
+            .data,
+        '接続できません',
+      );
+      // Lets the retry waiting on its backoff finish.
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump(const Duration(seconds: 10));
+    });
+
     testWidgets('opens diagnostics from the project list, not the drawer', (
       tester,
     ) async {
@@ -257,21 +342,6 @@ void main() {
       await tester.tapAt(const Offset(420, 300));
       await tester.pumpAndSettle();
       expect(find.byKey(const Key('diagnostics')), findsOneWidget);
-    });
-
-    testWidgets('stays on the current server when switching fails', (
-      tester,
-    ) async {
-      await saveServers([home, down]);
-      await pumpApp(tester);
-      await tester.tap(find.text('自宅'));
-      await tester.pumpAndSettle();
-
-      await openDrawer(tester);
-      await tester.tap(find.byKey(const Key('drawer-server-down')));
-      await tester.pumpAndSettle();
-      expect(find.textContaining('停止中 に接続できませんでした'), findsOneWidget);
-      expect(title(tester), '自宅');
     });
 
     testWidgets('adds a server and comes back to its projects', (tester) async {
