@@ -284,7 +284,7 @@ class _RowTile extends StatelessWidget {
                 children: [
                   TextSpan(
                     text: ' ($version)',
-                    style: theme.textTheme.bodySmall?.copyWith(
+                    style: theme.textTheme.bodyMedium?.copyWith(
                       color: colors.onSurfaceVariant,
                     ),
                   ),
