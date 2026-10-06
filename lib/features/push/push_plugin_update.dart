@@ -57,7 +57,7 @@ class _PushPluginUpdateState extends ConsumerState<PushPluginUpdate> {
               latest == null
                   ? l10n.pushPluginOutdated
                   : l10n.pushPluginOutdatedTo(latest),
-              style: Theme.of(context).textTheme.bodyLarge,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
           const SizedBox(width: 12),
