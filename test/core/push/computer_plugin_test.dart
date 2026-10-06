@@ -206,4 +206,61 @@ void main() {
       ComputerPluginStatus.active,
     );
   });
+
+  test('an unpinned plugin behind npm can be updated, a pinned one cannot', () {
+    ComputerPluginCheck check(
+      String target, {
+      String? version,
+      bool outdated = false,
+      String? latest,
+    }) => checkComputerPlugin(
+      plugins: [
+        ServerPlugin.tryParse({
+          'id': 'opencode-mobile-push',
+          'source': {
+            'type': 'package',
+            'target': target,
+            'version': ?version,
+            if (outdated) 'outdated': true,
+          },
+          'features': {'server': true},
+          'state': {'status': 'active'},
+        })!,
+      ],
+      config: const ComputerConfig(),
+      relayUrl: _relay,
+      key: _key,
+      latestVersion: latest,
+    );
+
+    final behind = check(
+      'opencode-mobile-push',
+      version: '0.2.0',
+      latest: '0.3.0',
+    );
+    expect(behind.updateTarget, 'opencode-mobile-push');
+    expect(behind.version, '0.2.0');
+    expect(behind.latestVersion, '0.3.0');
+    // OpenCode's own check counts even when npm can't be reached.
+    expect(
+      check('opencode-mobile-push@latest', outdated: true).updateTarget,
+      'opencode-mobile-push@latest',
+    );
+    expect(
+      check(
+        'opencode-mobile-push',
+        version: '0.3.0',
+        latest: '0.3.0',
+      ).updateTarget,
+      isNull,
+    );
+    expect(
+      check(
+        'opencode-mobile-push@0.2.0',
+        version: '0.2.0',
+        latest: '0.3.0',
+      ).updateTarget,
+      isNull,
+    );
+  });
 }

@@ -9,6 +9,7 @@ import '../../core/models/server_config.dart';
 import '../../core/push/computer_plugin.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
+import 'push_plugin_update.dart';
 import 'push_providers.dart';
 
 /// The `opencode.json` entry that loads the plugin. The plugin makes its
@@ -289,7 +290,7 @@ class _ComputerStatus extends ConsumerWidget {
         l10n.pushComputerUnknown,
       ),
     };
-    return ListTile(
+    final tile = ListTile(
       key: const Key('push-computer'),
       leading: icon == null
           ? const SizedBox.square(
@@ -298,13 +299,28 @@ class _ComputerStatus extends ConsumerWidget {
             )
           : Icon(icon, color: color),
       title: Text(l10n.pushComputerTitle),
-      subtitle: text == null ? null : Text(text),
+      subtitle: text == null
+          ? null
+          : Text(
+              [
+                text,
+                if (check.value?.version case final v?)
+                  l10n.pushPluginVersion(v),
+              ].join('\n'),
+            ),
       trailing: IconButton(
         key: const Key('push-computer-refresh'),
         tooltip: l10n.pushComputerRefresh,
         icon: const Icon(Icons.refresh),
         onPressed: () => ref.invalidate(provider),
       ),
+    );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        tile,
+        PushPluginUpdate(serverId: serverId),
+      ],
     );
   }
 }
@@ -325,8 +341,8 @@ class _Setup extends StatelessWidget {
         children: [
           Text(context.l10n.pushSetupTitle, style: theme.textTheme.titleSmall),
           const SizedBox(height: 8),
-          Text(context.l10n.pushSetupSteps, style: theme.textTheme.bodyMedium),
-          const SizedBox(height: 12),
+          Text(context.l10n.pushSetupStep1, style: theme.textTheme.bodyMedium),
+          const SizedBox(height: 8),
           DecoratedBox(
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
@@ -362,6 +378,8 @@ class _Setup extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(height: 8),
+          Text(context.l10n.pushSetupStep2, style: theme.textTheme.bodyMedium),
         ],
       ),
     );

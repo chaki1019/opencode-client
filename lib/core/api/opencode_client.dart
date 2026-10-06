@@ -434,6 +434,15 @@ class OpenCodeClient {
     ];
   }
 
+  /// Has OpenCode install the newest version of the npm plugins [targets]
+  /// (as `GET /api/plugin` names them) and load it. Returns once every
+  /// install has finished, which can take a while.
+  Future<void> updatePlugins(List<String> targets) => _sendJson(
+    '/api/plugin/update',
+    body: {'targets': targets},
+    receiveTimeout: const Duration(minutes: 3),
+  );
+
   /// The server's configuration documents, lowest priority first.
   Future<ComputerConfig> readConfig() async {
     final body = await _getJson('/api/config');
@@ -795,12 +804,14 @@ class OpenCodeClient {
     Object? body = const <String, Object>{},
     String method = 'POST',
     Map<String, Object>? query,
+    Duration? receiveTimeout,
   }) async {
     final response = await _request(
       path,
       method: method,
       query: query,
       body: body,
+      receiveTimeout: receiveTimeout,
     );
     _ensureSuccess(response);
     final text = response.data ?? '';
@@ -890,6 +901,7 @@ class OpenCodeClient {
     String? directory,
     Map<String, Object>? query,
     Object? body,
+    Duration? receiveTimeout,
   }) async {
     try {
       return await _dio.request<String>(
@@ -898,6 +910,7 @@ class OpenCodeClient {
         queryParameters: {'directory': ?directory, ...?query},
         options: Options(
           method: method,
+          receiveTimeout: receiveTimeout,
           headers: {
             'x-opencode-directory': ?directory,
             if (body != null) 'Content-Type': 'application/json',

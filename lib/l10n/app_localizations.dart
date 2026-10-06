@@ -1430,11 +1430,17 @@ abstract class AppLocalizations {
   /// **'Set up OpenCode on your computer'**
   String get pushSetupTitle;
 
-  /// No description provided for @pushSetupSteps.
+  /// No description provided for @pushSetupStep1.
   ///
   /// In en, this message translates to:
-  /// **'1. Add the entry below to ~/.config/opencode/opencode.json (or opencode.jsonc)\n2. Restart OpenCode\n\nOpenCode installs the plugin from npm, and the plugin makes its own pairing key on the computer. The app reads that key by itself, so there is nothing to copy.'**
-  String get pushSetupSteps;
+  /// **'1. Add this entry to ~/.config/opencode/opencode.json (or opencode.jsonc)'**
+  String get pushSetupStep1;
+
+  /// No description provided for @pushSetupStep2.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Restart OpenCode'**
+  String get pushSetupStep2;
 
   /// No description provided for @pushSendTest.
   ///
@@ -1865,7 +1871,7 @@ abstract class AppLocalizations {
   /// No description provided for @pushComputerTitle.
   ///
   /// In en, this message translates to:
-  /// **'On the computer'**
+  /// **'Push notification plugin'**
   String get pushComputerTitle;
 
   /// No description provided for @pushComputerActive.
@@ -1909,6 +1915,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Check again'**
   String get pushComputerRefresh;
+
+  /// No description provided for @pushPluginVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version}'**
+  String pushPluginVersion(String version);
+
+  /// No description provided for @pushPluginOutdated.
+  ///
+  /// In en, this message translates to:
+  /// **'A newer version is available'**
+  String get pushPluginOutdated;
+
+  /// No description provided for @pushPluginOutdatedTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Version {version} is available'**
+  String pushPluginOutdatedTo(String version);
+
+  /// No description provided for @pushPluginUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Update the plugin'**
+  String get pushPluginUpdate;
+
+  /// No description provided for @pushPluginUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Plugin updated'**
+  String get pushPluginUpdated;
+
+  /// No description provided for @pushPluginUpdateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t update the plugin: {error}'**
+  String pushPluginUpdateFailed(Object error);
 
   /// No description provided for @diagnosticsTitle.
   ///

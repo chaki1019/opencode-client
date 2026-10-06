@@ -10,6 +10,7 @@ import '../../core/push/computer_plugin.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
+import '../push/push_plugin_update.dart';
 import '../push/push_providers.dart';
 import 'diagnostics_providers.dart';
 
@@ -25,11 +26,14 @@ enum _Level {
 
 /// One checked item: what it is, how it went, and a short value.
 class _Row {
-  const _Row(this.label, this.value, this.level);
+  const _Row(this.label, this.value, this.level, {this.action});
 
   final String label;
   final String value;
   final _Level level;
+
+  /// Shown under the row, for example a button that fixes what it reports.
+  final Widget? action;
 }
 
 /// Shows whether the parts the app depends on work: the server, live
@@ -73,7 +77,7 @@ class DiagnosticsScreen extends ConsumerWidget {
             ),
             _ => _Row(l10n.diagnosticsHealth, checking, _Level.neutral),
           },
-          _pluginRow(l10n, plugin),
+          _pluginRow(l10n, plugin, connection.server.id),
         ],
       ),
       (
@@ -163,6 +167,7 @@ class DiagnosticsScreen extends ConsumerWidget {
   static _Row _pluginRow(
     AppLocalizations l10n,
     AsyncValue<ComputerPluginCheck?> check,
+    String serverId,
   ) {
     final label = l10n.diagnosticsPlugin;
     final (value, level) = switch (check) {
@@ -188,7 +193,13 @@ class DiagnosticsScreen extends ConsumerWidget {
       AsyncLoading() => (l10n.diagnosticsChecking, _Level.neutral),
       _ => (l10n.pushComputerUnknown, _Level.neutral),
     };
-    return _Row(label, value, level);
+    final version = check.value?.version;
+    return _Row(
+      label,
+      [value, if (version != null) l10n.pushPluginVersion(version)].join('\n'),
+      level,
+      action: PushPluginUpdate(serverId: serverId),
+    );
   }
 
   static _Row _mcpRow(AppLocalizations l10n, McpServer server) {
@@ -243,10 +254,16 @@ class _RowTile extends StatelessWidget {
       _Level.neutral ||
       _Level.info => (Icons.circle_outlined, colors.onSurfaceVariant),
     };
-    return ListTile(
+    final tile = ListTile(
       leading: Icon(icon, color: color),
       title: Text(row.label),
       subtitle: row.value.isEmpty ? null : Text(row.value),
+    );
+    final action = row.action;
+    if (action == null) return tile;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [tile, action],
     );
   }
 }

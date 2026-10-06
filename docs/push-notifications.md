@@ -88,9 +88,10 @@ Apple Developer の Identifiers に `app.opencodemobile`（Push Notifications �
 
 1. `~/.config/opencode/opencode.json`（または `opencode.jsonc`）に `"plugins": ["opencode-mobile-push"]` を追加し、OpenCode を再起動する。プラグインは npm から入り、最初の起動時にペアリングキーを作って `~/.config/opencode/opencode-mobile-push.json` に保存します。中継は既定で `https://relay.opencodemobile.app` を使います。
 2. アプリでサーバーに接続し、プロジェクト一覧右上のベルから「このサーバーの通知を受け取る」をオンにする。アプリは `GET /api/config` で設定ファイルの場所を知り、`GET /api/fs/read/opencode-mobile-push.json` で PC のキーを読んで、自動でそのキーに合わせます。キーのコピーは要りません。2台目以降の端末も同じキーに合わせるので、全部の端末に通知が届きます（1つのキーで最大10台）。
-3. アプリの通知画面の「PC/Mac 側の状態」で、プラグインが動いているかを確認できます（`GET /api/plugin` と `GET /api/config` を読みます）。
+3. アプリの通知画面の「プッシュ通知プラグイン」で、プラグインが動いているかと今の版を確認できます（`GET /api/plugin` と `GET /api/config` を読みます）。
+4. プラグインに新しい版が出ると、通知画面と接続の診断に今の版と新しい版、「プラグインを更新」ボタンが出ます。押すと OpenCode の `POST /api/plugin/update` で入れ替えて読み込み直します。OpenCode は版を書かない npm プラグインを一度入れたら自分では入れ替えないので、`opencode.json` を書き換えずに版を上げるにはこれを使います。新しい版の有無は OpenCode の確認結果（`GET /api/plugin` の `outdated`）と npm の `latest` で判断します。版を指定した書き方（`@0.3.0` など）のときはボタンを出しません。
 
-アプリが PC に書き込むことはありません。キーの持ち主は常に PC 側です。
+アプリが PC のファイルを書き換えることはありません（プラグインの更新は OpenCode 自身の更新機能を呼ぶだけです）。キーの持ち主は常に PC 側です。
 
 OpenCode のログに `[opencode-mobile-push] "relay" and "key" options are required; notifications are off.` と出る場合は、0.2.0 以前の古いプラグインが動いています（このメッセージは 0.3.0 以降にはありません）。
 

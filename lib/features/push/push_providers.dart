@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -148,6 +149,27 @@ final pushPairingProvider = AsyncNotifierProvider.autoDispose
 /// key with this relay (one it created, or one another device set up), this
 /// device switches to it, so every device connected to that computer gets
 /// its notifications.
+/// The newest push plugin version on npm, or null when the registry can't
+/// be reached. Read straight from the public registry; the version number
+/// is all the app asks for.
+final latestPushPluginVersionProvider = FutureProvider<String?>((ref) async {
+  try {
+    final response =
+        await Dio(
+          BaseOptions(
+            connectTimeout: const Duration(seconds: 10),
+            receiveTimeout: const Duration(seconds: 10),
+          ),
+        ).get<Map<String, dynamic>>(
+          'https://registry.npmjs.org/$pushPluginPackage/latest',
+        );
+    final version = response.data?['version'];
+    return version is String ? version : null;
+  } on Object {
+    return null;
+  }
+});
+
 final computerPluginProvider = FutureProvider.autoDispose
     .family<ComputerPluginCheck?, String>((ref, serverId) async {
       final client = ref.watch(serverClientProvider(serverId));
@@ -156,9 +178,10 @@ final computerPluginProvider = FutureProvider.autoDispose
       final relayUrl = ref.watch(pushConfigProvider).relayUrl;
       final ComputerPluginCheck check;
       try {
-        final (plugins, raw) = await (
+        final (plugins, raw, latest) = await (
           client.listPlugins(),
           client.readConfig(),
+          ref.watch(latestPushPluginVersionProvider.future),
         ).wait;
         var config = raw;
         final fromFolder =
@@ -175,6 +198,7 @@ final computerPluginProvider = FutureProvider.autoDispose
           config: config,
           relayUrl: relayUrl,
           key: pairing.key,
+          latestVersion: latest,
         );
       } on Object {
         return null;
@@ -190,6 +214,23 @@ final computerPluginProvider = FutureProvider.autoDispose
       }
       return check;
     });
+
+/// Has OpenCode on the computer of [serverId] install the newest version of
+/// the push plugin ([target] as `GET /api/plugin` names it), then checks
+/// the plugin again. The new version reads or creates its pairing key as it
+/// starts, so the check waits [settle] for that first.
+Future<void> updatePushPlugin(
+  WidgetRef ref,
+  String serverId,
+  String target, {
+  Duration settle = const Duration(seconds: 2),
+}) async {
+  final client = ref.read(serverClientProvider(serverId));
+  if (client == null) return;
+  await client.updatePlugins([target]);
+  await Future<void>.delayed(settle);
+  ref.invalidate(computerPluginProvider(serverId));
+}
 
 /// The first settings file found in [directories], read through the
 /// OpenCode server.

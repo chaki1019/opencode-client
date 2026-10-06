@@ -816,8 +816,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pushSetupTitle => 'Set up OpenCode on your computer';
 
   @override
-  String get pushSetupSteps =>
-      '1. Add the entry below to ~/.config/opencode/opencode.json (or opencode.jsonc)\n2. Restart OpenCode\n\nOpenCode installs the plugin from npm, and the plugin makes its own pairing key on the computer. The app reads that key by itself, so there is nothing to copy.';
+  String get pushSetupStep1 =>
+      '1. Add this entry to ~/.config/opencode/opencode.json (or opencode.jsonc)';
+
+  @override
+  String get pushSetupStep2 => '2. Restart OpenCode';
 
   @override
   String get pushSendTest => 'Send a test notification';
@@ -1069,7 +1072,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get linkOpenFailed => 'Couldn\'t open this:';
 
   @override
-  String get pushComputerTitle => 'On the computer';
+  String get pushComputerTitle => 'Push notification plugin';
 
   @override
   String get pushComputerActive => 'Running';
@@ -1096,6 +1099,30 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pushComputerRefresh => 'Check again';
+
+  @override
+  String pushPluginVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get pushPluginOutdated => 'A newer version is available';
+
+  @override
+  String pushPluginOutdatedTo(String version) {
+    return 'Version $version is available';
+  }
+
+  @override
+  String get pushPluginUpdate => 'Update the plugin';
+
+  @override
+  String get pushPluginUpdated => 'Plugin updated';
+
+  @override
+  String pushPluginUpdateFailed(Object error) {
+    return 'Couldn\'t update the plugin: $error';
+  }
 
   @override
   String get diagnosticsTitle => 'Connection check';
