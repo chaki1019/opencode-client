@@ -1089,7 +1089,7 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get pushPluginUpdate => 'プラグインを更新';
+  String get pushPluginUpdate => '更新';
 
   @override
   String get pushPluginUpdated => 'プラグインを更新しました';

@@ -568,7 +568,7 @@
   "pushPluginOutdated": "A newer version is available",
   "pushPluginOutdatedTo": "Version {version} is available",
   "@pushPluginOutdatedTo": {"placeholders": {"version": {"type": "String"}}},
-  "pushPluginUpdate": "Update the plugin",
+  "pushPluginUpdate": "Update",
   "pushPluginUpdated": "Plugin updated",
   "pushPluginUpdateFailed": "Couldn't update the plugin: {error}",
   "@pushPluginUpdateFailed": {"placeholders": {"error": {}}},

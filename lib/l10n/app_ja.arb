@@ -306,7 +306,7 @@
   "pushPluginVersion": "バージョン {version}",
   "pushPluginOutdated": "新しいバージョンがあります",
   "pushPluginOutdatedTo": "新しいバージョン {version} があります",
-  "pushPluginUpdate": "プラグインを更新",
+  "pushPluginUpdate": "更新",
   "pushPluginUpdated": "プラグインを更新しました",
   "pushPluginUpdateFailed": "プラグインを更新できませんでした: {error}",
   "diagnosticsTitle": "接続の診断",

@@ -196,7 +196,7 @@ class DiagnosticsScreen extends ConsumerWidget {
     final version = check.value?.version;
     return _Row(
       label,
-      [value, if (version != null) l10n.pushPluginVersion(version)].join('\n'),
+      [if (version != null) l10n.pushPluginVersion(version), value].join(' '),
       level,
       action: PushPluginUpdate(serverId: serverId),
     );

@@ -1937,7 +1937,7 @@ abstract class AppLocalizations {
   /// No description provided for @pushPluginUpdate.
   ///
   /// In en, this message translates to:
-  /// **'Update the plugin'**
+  /// **'Update'**
   String get pushPluginUpdate;
 
   /// No description provided for @pushPluginUpdated.
