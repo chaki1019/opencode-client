@@ -47,18 +47,20 @@ class _PushPluginUpdateState extends ConsumerState<PushPluginUpdate> {
     if (target == null) return const SizedBox.shrink();
     final l10n = context.l10n;
     final latest = check?.latestVersion;
+    // Lines up with the title of the list tile above, past its icon.
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.fromLTRB(56, 0, 16, 12),
+      child: Row(
         children: [
-          Text(
-            latest == null
-                ? l10n.pushPluginOutdated
-                : l10n.pushPluginOutdatedTo(latest),
-            style: Theme.of(context).textTheme.bodySmall,
+          Expanded(
+            child: Text(
+              latest == null
+                  ? l10n.pushPluginOutdated
+                  : l10n.pushPluginOutdatedTo(latest),
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(width: 12),
           FilledButton.tonalIcon(
             key: const Key('push-plugin-update'),
             icon: _busy

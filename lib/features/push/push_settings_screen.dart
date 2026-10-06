@@ -303,10 +303,10 @@ class _ComputerStatus extends ConsumerWidget {
           ? null
           : Text(
               [
-                text,
                 if (check.value?.version case final v?)
                   l10n.pushPluginVersion(v),
-              ].join('\n'),
+                text,
+              ].join(' '),
             ),
       trailing: IconButton(
         key: const Key('push-computer-refresh'),

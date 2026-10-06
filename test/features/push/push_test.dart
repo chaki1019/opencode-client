@@ -610,6 +610,15 @@ void main() {
     expect(find.text('プッシュ通知プラグイン'), findsOneWidget);
     expect(find.textContaining('バージョン 0.2.0'), findsOneWidget);
     expect(find.text('新しいバージョン 0.3.0 があります'), findsOneWidget);
+    expect(find.text('バージョン 0.2.0 稼働中'), findsOneWidget);
+    // The update notice sits under the title, with its button on the same
+    // line.
+    final title = tester.getTopLeft(find.text('プッシュ通知プラグイン'));
+    final notice = tester.getRect(find.text('新しいバージョン 0.3.0 があります'));
+    final button = tester.getRect(find.byKey(const Key('push-plugin-update')));
+    expect(notice.left, title.dx);
+    expect(button.center.dy, closeTo(notice.center.dy, 1));
+    expect(find.text('更新'), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('push-plugin-update')));
     await tester.pump(const Duration(seconds: 3));

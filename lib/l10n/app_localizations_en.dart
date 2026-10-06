@@ -1114,7 +1114,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get pushPluginUpdate => 'Update the plugin';
+  String get pushPluginUpdate => 'Update';
 
   @override
   String get pushPluginUpdated => 'Plugin updated';
