@@ -22,6 +22,9 @@ enum _Level {
 
   /// Plain information, not a check: shown as its value alone.
   info,
+
+  /// A remark, not a check: shown as its label alone.
+  note,
 }
 
 /// One checked item: what it is, how it went, and a short value.
@@ -107,7 +110,7 @@ class DiagnosticsScreen extends ConsumerWidget {
         'MCP',
         switch (mcp) {
           AsyncData(value: final servers) when servers.isEmpty => [
-            _Row(l10n.diagnosticsMcpNone, '', _Level.neutral),
+            _Row(l10n.diagnosticsMcpNone, '', _Level.note),
           ],
           AsyncData(value: final servers) => [
             for (final s in servers) _mcpRow(l10n, s),
@@ -237,22 +240,23 @@ class _RowTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colors = theme.colorScheme;
+    // No icon: the text starts where the section title does.
     if (row.level == _Level.info) {
-      // Leaves the icon column empty so the text lines up with the checks.
       return ListTile(
-        leading: const SizedBox(width: 24),
         title: Text(
           row.value,
           style: theme.textTheme.bodyLarge?.copyWith(fontFamily: AppFonts.mono),
         ),
       );
     }
+    if (row.level == _Level.note) return ListTile(title: Text(row.label));
     final (icon, color) = switch (row.level) {
       _Level.ok => (Icons.check_circle_outline, colors.primary),
       _Level.warning => (Icons.warning_amber_outlined, colors.tertiary),
       _Level.error => (Icons.error_outline, colors.error),
       _Level.neutral ||
-      _Level.info => (Icons.circle_outlined, colors.onSurfaceVariant),
+      _Level.info ||
+      _Level.note => (Icons.circle_outlined, colors.onSurfaceVariant),
     };
     final tile = ListTile(
       leading: Icon(icon, color: color),
