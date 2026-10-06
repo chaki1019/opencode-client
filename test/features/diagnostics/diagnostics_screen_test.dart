@@ -125,11 +125,12 @@ void main() {
     // The push plugin sits with the server; the app's own details live in
     // settings.
     expect(
-      tester.getTopLeft(find.text('Push notification plugin')).dy,
+      tester.getTopLeft(find.text('Push notification plugin (0.2.0)')).dy,
       lessThan(tester.getTopLeft(find.text('Live updates')).dy),
     );
-    // The installed version, and OpenCode's update when a newer one is out.
-    expect(find.textContaining('Version 0.2.0'), findsOneWidget);
+    // The installed version beside the name, and OpenCode's update when a
+    // newer one is out.
+    expect(find.textContaining('Version 0.2.0'), findsNothing);
     expect(find.text('Version 0.3.0 is available'), findsOneWidget);
     expect(find.byKey(const Key('push-plugin-update')), findsOneWidget);
     expect(find.text('Address'), findsNothing);
