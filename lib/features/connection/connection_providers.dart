@@ -49,8 +49,7 @@ class SavedServersNotifier extends AsyncNotifier<List<ServerConfig>> {
     // A background connection reconnects with the new details.
     if (ref.read(connectionProvider)?.server.id != server.id &&
         ref.read(connectionPoolProvider).containsKey(server.id)) {
-      final pool = ref.read(connectionPoolProvider.notifier)..remove(server.id);
-      unawaited(pool.connectSaved());
+      unawaited(ref.read(connectionPoolProvider.notifier).reconnect(server));
     }
   }
 
@@ -59,9 +58,6 @@ class SavedServersNotifier extends AsyncNotifier<List<ServerConfig>> {
     await _store.saveServers(updated);
     await _store.deletePassword(id);
     state = AsyncData(updated);
-    if (ref.read(connectionProvider)?.server.id != id) {
-      ref.read(connectionPoolProvider.notifier).remove(id);
-    }
   }
 
   static String _declineKey(String baseUrl, String username) =>
@@ -122,65 +118,55 @@ class ActiveConnection {
   final ServerHealth health;
 }
 
-/// One saved server's place in the pool of open connections: connecting
-/// while both fields are null, then either connected or failed.
+/// One server's place in the pool of open connections: connecting while
+/// both fields are null, then either connected or failed.
 class ServerLink {
-  const ServerLink.connecting() : connection = null, error = null;
+  const ServerLink.connecting(this.server) : connection = null, error = null;
 
-  const ServerLink.connected(ActiveConnection this.connection) : error = null;
+  ServerLink.connected(ActiveConnection this.connection)
+    : server = connection.server,
+      error = null;
 
-  const ServerLink.failed(Object this.error) : connection = null;
+  const ServerLink.failed(this.server, Object this.error) : connection = null;
 
+  final ServerConfig server;
   final ActiveConnection? connection;
   final Object? error;
 
   bool get isConnecting => connection == null && error == null;
 }
 
-/// Every server the app keeps a connection to, by server ID. The one on
-/// screen is [connectionProvider]; the others stay connected in the
-/// background so switching is instant and their progress shows in the
-/// drawer.
+/// Every server the user connected to in this run of the app, by server ID
+/// in the order they were first connected. The one on screen is
+/// [connectionProvider]; the others stay connected in the background so
+/// switching is instant and their progress shows in the drawer.
 class ConnectionPoolNotifier extends Notifier<Map<String, ServerLink>> {
   @override
   Map<String, ServerLink> build() => const {};
 
+  // Replacing an existing key keeps its place in the map's order.
   void _set(String id, ServerLink link) => state = {...state, id: link};
 
   void add(ActiveConnection connection) =>
       _set(connection.server.id, ServerLink.connected(connection));
 
-  /// Connects to each saved server not in the pool yet. Failures stay in
-  /// the pool, so the drawer can say which servers can't be reached.
-  Future<void> connectSaved() async {
-    final servers = await ref.read(savedServersProvider.future);
-    final store = ref.read(serverStoreProvider);
-    final factory = ref.read(clientFactoryProvider);
-    await Future.wait([
-      for (final server in servers)
-        if (!state.containsKey(server.id))
-          () async {
-            _set(server.id, const ServerLink.connecting());
-            try {
-              final client = factory(
-                server,
-                await store.readPassword(server.id),
-              );
-              final health = await client.connect();
-              if (!ref.mounted || !state.containsKey(server.id)) return;
-              add(
-                ActiveConnection(
-                  server: server,
-                  client: client,
-                  health: health,
-                ),
-              );
-            } catch (e) {
-              if (!ref.mounted || !state.containsKey(server.id)) return;
-              _set(server.id, ServerLink.failed(e));
-            }
-          }(),
-    ]);
+  /// Connects to [server] again, with its saved password, keeping its place
+  /// in the pool. A failure stays in the pool, so the drawer can say the
+  /// server can't be reached.
+  Future<void> reconnect(ServerConfig server) async {
+    _set(server.id, ServerLink.connecting(server));
+    try {
+      final client = ref.read(clientFactoryProvider)(
+        server,
+        await ref.read(serverStoreProvider).readPassword(server.id),
+      );
+      final health = await client.connect();
+      if (!ref.mounted || !state.containsKey(server.id)) return;
+      add(ActiveConnection(server: server, client: client, health: health));
+    } catch (e) {
+      if (!ref.mounted || !state.containsKey(server.id)) return;
+      _set(server.id, ServerLink.failed(server, e));
+    }
   }
 
   void remove(String id) => state = {...state}..remove(id);
@@ -225,18 +211,16 @@ class ConnectionNotifier extends Notifier<ActiveConnection?> {
             client: connection.client,
             health: connection.health,
           );
-    final pool = ref.read(connectionPoolProvider.notifier)..add(opened);
+    ref.read(connectionPoolProvider.notifier).add(opened);
     state = opened;
-    // The other saved servers connect in the background.
-    unawaited(pool.connectSaved());
   }
 
   /// Probes and opens in one step.
   Future<void> connect(ServerConfig server, String password) async =>
       open(await probe(server, password), password);
 
-  /// Switches to a saved server, reusing its background connection when
-  /// there is one.
+  /// Switches to a saved or already connected server, reusing its
+  /// background connection when there is one.
   Future<void> connectSaved(ServerConfig server) async {
     final password = await ref
         .read(serverStoreProvider)
@@ -257,14 +241,28 @@ final connectionProvider =
       ConnectionNotifier.new,
     );
 
-/// The servers the app lists: the saved ones, plus the one on screen when
-/// it was connected without saving.
-final listedServersProvider = Provider<List<ServerConfig>>((ref) {
-  final current = ref.watch(connectionProvider)?.server;
+/// The servers the user connected to, for the drawer, in the order they
+/// were first connected; switching between them never reorders the list.
+/// Whether a server is saved does not matter, but a saved one shows its
+/// saved details, so a rename shows at once.
+final connectedServersProvider = Provider<List<ServerConfig>>((ref) {
+  final pool = ref.watch(connectionPoolProvider);
   final saved = ref.watch(savedServersProvider).value ?? const [];
   return [
-    if (current != null && !saved.any((s) => s.id == current.id)) current,
-    ...saved,
+    for (final link in pool.values)
+      saved.where((s) => s.id == link.server.id).firstOrNull ?? link.server,
+  ];
+});
+
+/// The servers whose notifications can be managed: the connected ones,
+/// then the saved ones not connected in this run.
+final listedServersProvider = Provider<List<ServerConfig>>((ref) {
+  final connected = ref.watch(connectedServersProvider);
+  final saved = ref.watch(savedServersProvider).value ?? const [];
+  return [
+    ...connected,
+    for (final s in saved)
+      if (!connected.any((c) => c.id == s.id)) s,
   ];
 });
 

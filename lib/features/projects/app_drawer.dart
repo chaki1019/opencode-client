@@ -3,15 +3,18 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/theme.dart';
+import '../../core/events/event_stream.dart';
 import '../../core/models/server_config.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
+import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
 import '../live/server_activity.dart';
 
-/// The project list's side menu: servers to switch between on top, app
-/// settings at the bottom. Every saved server stays connected; the drawer
-/// shows what the ones in the background are doing.
+/// The project list's side menu: the servers the user connected to on top,
+/// app settings at the bottom. Every connected server stays in the list,
+/// even after it drops; the drawer shows what the ones in the background
+/// are doing. The one on screen is the highlighted row.
 class AppDrawer extends ConsumerStatefulWidget {
   const AppDrawer({super.key});
 
@@ -57,7 +60,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     final l10n = context.l10n;
     final theme = Theme.of(context);
     final current = ref.watch(connectionProvider)?.server;
-    final servers = ref.watch(listedServersProvider);
+    final servers = ref.watch(connectedServersProvider);
     final pool = ref.watch(connectionPoolProvider);
     return Drawer(
       child: SafeArea(
@@ -142,28 +145,33 @@ class _ServerTile extends ConsumerWidget {
     final scheme = theme.colorScheme;
     final colors = AppColors.of(context);
     final activity = ref.watch(serverActivityProvider(server.id));
+    final stream = ref.watch(serverStreamStatusProvider(server.id));
     final link = this.link;
-    final failed = !isCurrent && link?.error != null;
+    // A connection that failed, or one whose live updates dropped.
+    final failed =
+        link?.error != null ||
+        stream == EventStreamStatus.reconnecting ||
+        stream == EventStreamStatus.stopped;
     // What the server is up to while it is not on screen.
-    final status = isCurrent || link == null
+    final status = link == null
         ? null
         : failed
         ? l10n.serverUnreachable
         : [
-            if (activity.running.isNotEmpty)
+            if (!isCurrent && activity.running.isNotEmpty)
               l10n.serverRunning(activity.running.length),
-            if (activity.finished > 0) l10n.serverFinished(activity.finished),
+            if (!isCurrent && activity.finished > 0)
+              l10n.serverFinished(activity.finished),
           ].join(' · ');
-    final Widget? indicator =
-        isSwitching || (!isCurrent && link?.isConnecting == true)
+    final Widget? indicator = isSwitching || link?.isConnecting == true
         ? const SizedBox.square(
             dimension: 18,
             child: CircularProgressIndicator(strokeWidth: 2),
           )
-        : isCurrent
-        ? LiveDot(size: 8, color: colors.success, pulse: false)
         : failed
         ? Icon(Icons.cloud_off_outlined, size: 18, color: scheme.error)
+        : isCurrent
+        ? LiveDot(size: 8, color: colors.success, pulse: false)
         : activity.finished > 0
         ? Badge(
             key: Key('drawer-server-finished-${server.id}'),
@@ -172,7 +180,7 @@ class _ServerTile extends ConsumerWidget {
         : activity.running.isNotEmpty
         ? LiveDot(size: 8, color: colors.running, pulse: false)
         : link?.connection != null
-        ? LiveDot(size: 8, color: scheme.outline, pulse: false)
+        ? LiveDot(size: 8, color: colors.success, pulse: false)
         : null;
     return ListTile(
       key: Key('drawer-server-${server.id}'),

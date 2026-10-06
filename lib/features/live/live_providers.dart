@@ -23,6 +23,30 @@ final serverEventStreamProvider = Provider.family<EventStream?, String>((
   return stream;
 });
 
+/// Whether a pooled server's event stream is up, for the drawer. Null while
+/// the server is not connected.
+class ServerStreamStatusNotifier extends Notifier<EventStreamStatus?> {
+  ServerStreamStatusNotifier(this.serverId);
+
+  final String serverId;
+
+  @override
+  EventStreamStatus? build() {
+    final stream = ref.watch(serverEventStreamProvider(serverId));
+    if (stream == null) return null;
+    final subscription = stream.statusChanges.listen((s) => state = s);
+    ref.onDispose(subscription.cancel);
+    return stream.status;
+  }
+}
+
+final serverStreamStatusProvider =
+    NotifierProvider.family<
+      ServerStreamStatusNotifier,
+      EventStreamStatus?,
+      String
+    >(ServerStreamStatusNotifier.new);
+
 /// The event stream of the server on screen, or null when disconnected.
 /// The same stream keeps running while the server is in the background.
 final eventStreamProvider = Provider<EventStream?>((ref) {
