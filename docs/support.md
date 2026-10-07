@@ -33,9 +33,13 @@ flutter build ipa \
 | `/ja/support/` , `/en/support/` | サポートページ（お問い合わせ先、よくある質問） |
 | `/ja/privacy/` , `/en/privacy/` | プライバシーポリシー |
 | `/app-ads.txt` | AdMob の app-ads.txt |
+| `/robots.txt` , `/sitemap.xml` | 検索エンジン向け。sitemap は `scripts/site_seo.py` が書き出します |
+| `/404.html` | 存在しない URL で返すページ（これがないと Cloudflare Pages は SPA とみなして `/` を 200 で返します） |
 | `/favicon.svg` , `/favicon.ico` , `/apple-touch-icon.png` | アプリアイコンと同じ図柄の favicon。`branding/app-icon/generate.mjs` で書き出します |
 
-ページは言語コードのフォルダーに分けています。左側のメニューは `python3 scripts/site_nav.py` で全ページに書き込みます。各ページの見出し（`h2` の `id`、`data-toc` があればその文言）から目次を作るので、ページや見出しを変えたらこのスクリプトを実行します。ページを足すときはスクリプトの `PAGES` にも足します。言語を増やすときは `site/<言語コード>/` を作り、各ページの言語切替リンク、`hreflang`、`site/index.html` の `langs` に足します。
+ページは言語コードのフォルダーに分けています。左側のメニューは `python3 scripts/site_nav.py` で全ページに書き込みます。各ページの見出し（`h2` の `id`、`data-toc` があればその文言）から目次を作るので、ページや見出しを変えたらこのスクリプトを実行します。ページを足すときはスクリプトの `PAGES` にも足します。
+
+検索結果やリンクのプレビューに使うタグ（canonical、`hreflang`、Open Graph、X のカード、LP の構造化データ）と `site/sitemap.xml` は `python3 scripts/site_seo.py` で書き出します。各ページの `<title>` と `<meta name="description">` が元になるので、ページを足したりタイトルや説明文を変えたりしたら、`site_nav.py` のあとにこのスクリプトも実行します。ページを足すときは `site_seo.py` の `PAGES` にも足します。プレビュー画像は `site/img/og-<言語>.jpg`（Google Play のフィーチャーグラフィックと同じ絵）です。言語を増やすときは `site/<言語コード>/` を作り、各ページの言語切替リンクと `site/index.html` の `langs` に足し、`site_seo.py` の `LOCALE` と `CURRENCY` にも足します（`hreflang` はスクリプトが書きます）。
 
 ### 公開前に直すところ
 
