@@ -275,6 +275,12 @@ class AppLocalizationsJa extends AppLocalizations {
   String get forkFailed => 'フォークできませんでした';
 
   @override
+  String get compacting => '会話を要約中…';
+
+  @override
+  String get compactBusy => '実行中は要約できません。終わってから試してください。';
+
+  @override
   String get compactFailed => '要約を依頼できませんでした';
 
   @override

@@ -493,9 +493,11 @@ class CompactionView extends StatelessWidget {
         onExpansionChanged: onExpansionChanged,
         tilePadding: EdgeInsets.zero,
         dense: true,
-        leading: const Icon(Icons.compress, size: 18),
+        leading: entry.running
+            ? const LiveDot(size: 8)
+            : const Icon(Icons.compress, size: 18),
         title: Text(
-          context.l10n.compacted,
+          entry.running ? context.l10n.compacting : context.l10n.compacted,
           style: Theme.of(context).textTheme.labelLarge,
         ),
         children: [

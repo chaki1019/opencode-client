@@ -11,6 +11,7 @@ import '../../core/models/session.dart';
 import '../../core/models/timeline.dart';
 import '../../l10n/l10n.dart';
 import '../connection/connection_providers.dart';
+import '../live/live_providers.dart';
 import 'chat_providers.dart';
 import 'composer_providers.dart';
 import 'session_actions.dart';
@@ -73,6 +74,19 @@ final contextUsageProvider = Provider.autoDispose.family<ContextUsage, Session>(
     );
   },
 );
+
+/// Whether the session's latest summary is still being written.
+final compactingProvider = Provider.autoDispose.family<bool, String>((
+  ref,
+  sessionId,
+) {
+  final entries =
+      ref.watch(timelineProvider(sessionId)).value?.items ?? const [];
+  for (final entry in entries.reversed) {
+    if (entry is CompactionEntry) return entry.running;
+  }
+  return false;
+});
 
 /// The latest session record, for its running cost and token totals.
 final sessionDetailsProvider = FutureProvider.autoDispose
@@ -147,6 +161,12 @@ class ContextSheet extends ConsumerWidget {
     final current = details ?? session;
     final tokens = usage.tokens;
     final fraction = usage.fraction;
+    // A summary runs like a reply, so the session counts as running until
+    // it is done. Requests made meanwhile would only queue more summaries.
+    final running = ref.watch(
+      activeSessionsProvider.select((ids) => ids.contains(session.id)),
+    );
+    final compacting = running && ref.watch(compactingProvider(session.id));
     String count(int n) => formatCount(n, locale);
     String percent(double f) => NumberFormat.percentPattern(locale).format(f);
     String date(double ms) =>
@@ -217,17 +237,19 @@ class ContextSheet extends ConsumerWidget {
           OutlinedButton.icon(
             key: const Key('compact'),
             icon: const Icon(Icons.compress),
-            label: Text(l10n.compact),
-            onPressed: () {
-              // Reads what it needs before the sheet closes.
-              compactSession(context, ref, session);
-              Navigator.pop(context);
-            },
+            label: Text(compacting ? l10n.compacting : l10n.compact),
+            onPressed: running
+                ? null
+                : () {
+                    // Reads what it needs before the sheet closes.
+                    compactSession(context, ref, session);
+                    Navigator.pop(context);
+                  },
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(4, 8, 4, 0),
             child: Text(
-              l10n.compactHelp,
+              running && !compacting ? l10n.compactBusy : l10n.compactHelp,
               style: theme.textTheme.bodySmall?.copyWith(
                 color: scheme.onSurfaceVariant,
               ),

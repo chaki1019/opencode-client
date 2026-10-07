@@ -135,6 +135,8 @@
   "compactHelp": "Summarizes the conversation so far to free up context. Use it when the window is getting full.",
   "renameFailed": "Couldn't rename",
   "forkFailed": "Couldn't fork",
+  "compacting": "Summarizing the conversation…",
+  "compactBusy": "You can summarize once the current run finishes.",
   "compactFailed": "Couldn't request a summary",
   "compactRequested": "Requested a summary of the conversation",
   "deleteSessionTitle": "Delete this session?",

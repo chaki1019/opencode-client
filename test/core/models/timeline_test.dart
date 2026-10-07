@@ -100,6 +100,17 @@ void main() {
             })!
             as CompactionEntry;
     expect(compaction.summary, 'S\n\nR');
+    expect(compaction.running, isFalse);
+    final running =
+        TimelineEntry.tryParse({
+              'id': 'c2',
+              'type': 'compaction',
+              'status': 'running',
+              'summary': '',
+              'recent': '',
+            })!
+            as CompactionEntry;
+    expect(running.running, isTrue);
 
     final shell =
         TimelineEntry.tryParse({
