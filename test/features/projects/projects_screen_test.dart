@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:opencode_mobile/app/theme.dart';
 import 'package:opencode_mobile/core/api/opencode_client.dart';
 import 'package:opencode_mobile/core/models/project.dart';
-import 'package:opencode_mobile/core/storage/hidden_projects_store.dart';
+import 'package:opencode_mobile/core/storage/project_directories_store.dart';
 import 'package:opencode_mobile/features/projects/project_providers.dart';
 import 'package:opencode_mobile/features/projects/projects_screen.dart';
 import 'package:opencode_mobile/l10n/app_localizations.dart';
@@ -80,14 +80,14 @@ void main() {
     expect(projectRow('old'), findsNothing);
     expect(projectRow('app'), findsOneWidget);
     expect(find.text('「old」を一覧から外しました'), findsOneWidget);
-    expect(await HiddenProjectsStore().load(), {
+    expect(await ProjectDirectoriesStore.hidden().load(), {
       _server: {'/srv/old'},
     });
 
     await tester.tap(find.text('元に戻す'));
     await tester.pumpAndSettle();
     expect(projectRow('old'), findsOneWidget);
-    expect(await HiddenProjectsStore().load(), isEmpty);
+    expect(await ProjectDirectoriesStore.hidden().load(), isEmpty);
   });
 
   testWidgets('long-pressing a project offers to take it off the list', (
@@ -98,7 +98,7 @@ void main() {
     await tester.longPress(projectRow('old'));
     await tester.pumpAndSettle();
     expect(
-      find.text('サーバー上のプロジェクトとセッションはそのまま残ります。「＋」から開き直すと一覧に戻ります。'),
+      find.text('サーバー上のプロジェクトとセッションはそのまま残ります。一覧右上の目のボタンから戻せます。'),
       findsOneWidget,
     );
     await tester.tap(find.byKey(const Key('project-hide')));
@@ -107,7 +107,7 @@ void main() {
   });
 
   testWidgets('projects hidden on another server stay listed', (tester) async {
-    await HiddenProjectsStore().save({
+    await ProjectDirectoriesStore.hidden().save({
       _server: {'/srv/old'},
       'http://other.test:4096': {'/srv/app'},
     });
@@ -115,5 +115,101 @@ void main() {
 
     expect(projectRow('app'), findsOneWidget);
     expect(projectRow('old'), findsNothing);
+  });
+
+  testWidgets('show all lists hidden projects and the eye switches them', (
+    tester,
+  ) async {
+    await ProjectDirectoriesStore.hidden().save({
+      _server: {'/srv/old'},
+    });
+    await pumpScreen(tester, projects: two);
+    expect(projectRow('old'), findsNothing);
+    // The badge counts the hidden project.
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('show-all-projects')),
+        matching: find.text('1'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byKey(const Key('show-all-projects')));
+    await tester.pumpAndSettle();
+    expect(projectRow('old'), findsOneWidget);
+    expect(projectRow('app'), findsOneWidget);
+    expect(find.byKey(const Key('project-visibility')), findsNWidgets(2));
+
+    // Shows the hidden one again.
+    await tester.tap(
+      find.descendant(
+        of: find.ancestor(
+          of: find.text('old'),
+          matching: find.byType(ListTile),
+        ),
+        matching: find.byKey(const Key('project-visibility')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(await ProjectDirectoriesStore.hidden().load(), isEmpty);
+
+    // Hides the other one.
+    await tester.tap(
+      find.descendant(
+        of: find.ancestor(
+          of: find.text('app'),
+          matching: find.byType(ListTile),
+        ),
+        matching: find.byKey(const Key('project-visibility')),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(await ProjectDirectoriesStore.hidden().load(), {
+      _server: {'/srv/app'},
+    });
+    // Still listed while showing all.
+    expect(projectRow('app'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('show-all-projects')));
+    await tester.pumpAndSettle();
+    expect(projectRow('app'), findsNothing);
+    expect(projectRow('old'), findsOneWidget);
+  });
+
+  testWidgets('pinned projects come first', (tester) async {
+    const projects = [
+      Project(
+        id: 'p1',
+        directory: '/srv/new',
+        time: ProjectTime(created: 2, updated: 2),
+      ),
+      Project(
+        id: 'p2',
+        directory: '/srv/old',
+        time: ProjectTime(created: 1, updated: 1),
+      ),
+    ];
+    await pumpScreen(tester, projects: projects);
+    double top(String name) => tester.getTopLeft(projectRow(name)).dy;
+    expect(top('new'), lessThan(top('old')));
+    expect(find.byKey(const Key('project-pinned')), findsNothing);
+
+    await tester.longPress(projectRow('old'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('project-pin')));
+    await tester.pumpAndSettle();
+    expect(top('old'), lessThan(top('new')));
+    expect(find.byKey(const Key('project-pinned')), findsOneWidget);
+    expect(await ProjectDirectoriesStore.pinned().load(), {
+      _server: {'/srv/old'},
+    });
+
+    await tester.longPress(projectRow('old'));
+    await tester.pumpAndSettle();
+    expect(find.text('ピン留めを外す'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('project-pin')));
+    await tester.pumpAndSettle();
+    expect(top('new'), lessThan(top('old')));
+    expect(await ProjectDirectoriesStore.pinned().load(), isEmpty);
   });
 }
