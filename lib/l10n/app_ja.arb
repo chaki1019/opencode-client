@@ -307,7 +307,6 @@
   "pushComputerMissing": "まだ設定されていません。下の手順で追加してください。",
   "pushComputerUnknown": "状態を確認できませんでした",
   "pushComputerRefresh": "もう一度確認",
-  "pushPluginVersion": "バージョン {version}",
   "pushPluginOutdated": "新しいバージョンがあります",
   "pushPluginOutdatedTo": "新しいバージョン {version} があります",
   "pushPluginUpdate": "更新",

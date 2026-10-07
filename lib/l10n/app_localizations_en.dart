@@ -1116,11 +1116,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pushComputerRefresh => 'Check again';
 
   @override
-  String pushPluginVersion(String version) {
-    return 'Version $version';
-  }
-
-  @override
   String get pushPluginOutdated => 'A newer version is available';
 
   @override
