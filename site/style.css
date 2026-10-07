@@ -195,15 +195,16 @@ a[target="_blank"]::after { content: "\2197"; content: "\2197" / ""; display: in
 .hero h1 { font-size: clamp(2rem, 5vw, 2.9rem); line-height: 1.2; margin: 0 0 16px; letter-spacing: -0.01em; }
 .hero .lead { color: var(--muted); font-size: 1.05rem; margin: 0 0 24px; }
 .hero-shot { width: 100%; height: auto; border-radius: 22px; border: 1px solid var(--line); box-shadow: 0 24px 60px -24px rgba(0, 0, 0, 0.45); }
-.cta-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
 .btn {
   display: inline-flex; flex-direction: column; justify-content: center;
   min-height: 48px; padding: 6px 18px; border-radius: 10px;
   font-weight: 600; font-size: 0.95rem; line-height: 1.3; text-decoration: none;
 }
 .btn small { font-weight: 400; font-size: 0.75rem; opacity: 0.75; }
-.btn-store { background: var(--fg); color: var(--bg); }
-.btn-store[aria-disabled="true"] { opacity: 0.55; cursor: default; }
+/* 公式ストアバッジ（Apple / Google の配布物を改変せず使う。高さだけ揃える） */
+.store-badge { display: inline-block; line-height: 0; border-radius: 8px; }
+.store-badge img { display: block; height: 48px; width: auto; }
 .btn-ghost { color: var(--fg); border: 1px solid var(--line); }
 .btn-ghost:hover { background: var(--card); }
 .chips { list-style: none; padding: 0; margin: 20px 0 0; display: flex; flex-wrap: wrap; gap: 8px; }
