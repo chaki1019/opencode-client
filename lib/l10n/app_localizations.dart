@@ -344,12 +344,6 @@ abstract class AppLocalizations {
   /// **'Couldn\'t load projects: {error}'**
   String projectsLoadFailed(Object error);
 
-  /// No description provided for @currentProject.
-  ///
-  /// In en, this message translates to:
-  /// **'Current'**
-  String get currentProject;
-
   /// No description provided for @hideProject.
   ///
   /// In en, this message translates to:
@@ -359,7 +353,7 @@ abstract class AppLocalizations {
   /// No description provided for @hideProjectNote.
   ///
   /// In en, this message translates to:
-  /// **'The project and its sessions stay on the server. Open it again with + to bring it back.'**
+  /// **'The project and its sessions stay on the server. Bring it back with the eye button at the top right of the list.'**
   String get hideProjectNote;
 
   /// No description provided for @projectHidden.
@@ -367,6 +361,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Removed \"{name}\" from the list'**
   String projectHidden(Object name);
+
+  /// No description provided for @showAllProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Show all projects'**
+  String get showAllProjects;
+
+  /// No description provided for @showListedProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'Show listed projects only'**
+  String get showListedProjects;
+
+  /// No description provided for @pinProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Pin to top'**
+  String get pinProject;
+
+  /// No description provided for @unpinProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Unpin'**
+  String get unpinProject;
+
+  /// No description provided for @pinnedProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Pinned'**
+  String get pinnedProject;
+
+  /// No description provided for @unhideProject.
+  ///
+  /// In en, this message translates to:
+  /// **'Show in list'**
+  String get unhideProject;
 
   /// No description provided for @undo.
   ///

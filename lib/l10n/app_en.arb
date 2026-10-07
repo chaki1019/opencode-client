@@ -77,15 +77,20 @@
       "error": {}
     }
   },
-  "currentProject": "Current",
   "hideProject": "Remove from list",
-  "hideProjectNote": "The project and its sessions stay on the server. Open it again with + to bring it back.",
+  "hideProjectNote": "The project and its sessions stay on the server. Bring it back with the eye button at the top right of the list.",
   "projectHidden": "Removed \"{name}\" from the list",
   "@projectHidden": {
     "placeholders": {
       "name": {}
     }
   },
+  "showAllProjects": "Show all projects",
+  "showListedProjects": "Show listed projects only",
+  "pinProject": "Pin to top",
+  "unpinProject": "Unpin",
+  "pinnedProject": "Pinned",
+  "unhideProject": "Show in list",
   "undo": "Undo",
   "addProject": "Add project",
   "projectFolderLabel": "Folder path on the server",

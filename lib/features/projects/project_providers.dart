@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/opencode_client.dart';
 import '../../core/models/project.dart';
 import '../../core/models/project_tools.dart';
-import '../../core/storage/hidden_projects_store.dart';
+import '../../core/storage/project_directories_store.dart';
 import '../connection/connection_providers.dart';
 
 final projectsProvider = FutureProvider.autoDispose<ProjectBootstrap>((ref) {
@@ -14,46 +14,62 @@ final projectsProvider = FutureProvider.autoDispose<ProjectBootstrap>((ref) {
   return connection.client.loadProjects();
 });
 
-final hiddenProjectsStoreProvider = Provider<HiddenProjectsStore>(
-  (ref) => HiddenProjectsStore(),
+final hiddenProjectsStoreProvider = Provider<ProjectDirectoriesStore>(
+  (ref) => ProjectDirectoriesStore.hidden(),
 );
 
-/// Project directories taken off the list, by server URL.
-class HiddenProjectsNotifier extends AsyncNotifier<Map<String, Set<String>>> {
-  HiddenProjectsStore get _store => ref.read(hiddenProjectsStoreProvider);
+final pinnedProjectsStoreProvider = Provider<ProjectDirectoriesStore>(
+  (ref) => ProjectDirectoriesStore.pinned(),
+);
+
+/// Project directories marked on the list (hidden or pinned), by server URL.
+class ProjectDirectoriesNotifier
+    extends AsyncNotifier<Map<String, Set<String>>> {
+  ProjectDirectoriesNotifier(this._storeProvider);
+
+  final Provider<ProjectDirectoriesStore> _storeProvider;
+
+  ProjectDirectoriesStore get _store => ref.read(_storeProvider);
 
   @override
   Future<Map<String, Set<String>>> build() => _store.load();
 
-  /// Takes [project] off the list of the server at [serverUrl].
-  Future<void> hide(String serverUrl, Project project) =>
-      _change(serverUrl, (hidden) => hidden.add(project.directory));
+  /// Marks [project] on the list of the server at [serverUrl].
+  Future<void> add(String serverUrl, Project project) =>
+      _change(serverUrl, (marked) => marked.add(project.directory));
 
-  /// Puts [project] back on the list, as when it is opened again.
-  Future<void> show(String serverUrl, Project project) =>
-      _change(serverUrl, (hidden) => hidden.remove(project.directory));
+  /// Clears the mark on [project], as when a hidden one is opened again.
+  Future<void> remove(String serverUrl, Project project) =>
+      _change(serverUrl, (marked) => marked.remove(project.directory));
 
   Future<void> _change(
     String serverUrl,
-    bool Function(Set<String> hidden) change,
+    bool Function(Set<String> marked) change,
   ) async {
     // Updates the list in the same frame when it is loaded, so a swiped
     // row leaves the tree right away.
     final current = state.value ?? await future;
-    final hidden = {...?current[serverUrl]};
-    if (!change(hidden)) return;
-    final updated = {...current, serverUrl: hidden};
+    final marked = {...?current[serverUrl]};
+    if (!change(marked)) return;
+    final updated = {...current, serverUrl: marked};
     state = AsyncData(updated);
     await _store.save(updated);
   }
 }
 
+/// Project directories taken off the list, by server URL.
 final hiddenProjectsProvider =
-    AsyncNotifierProvider<HiddenProjectsNotifier, Map<String, Set<String>>>(
-      HiddenProjectsNotifier.new,
+    AsyncNotifierProvider<ProjectDirectoriesNotifier, Map<String, Set<String>>>(
+      () => ProjectDirectoriesNotifier(hiddenProjectsStoreProvider),
     );
 
-/// URL of the server on screen, which hidden projects are kept under.
+/// Project directories pinned to the top of the list, by server URL.
+final pinnedProjectsProvider =
+    AsyncNotifierProvider<ProjectDirectoriesNotifier, Map<String, Set<String>>>(
+      () => ProjectDirectoriesNotifier(pinnedProjectsStoreProvider),
+    );
+
+/// URL of the server on screen, which marked projects are kept under.
 final serverUrlProvider = Provider.autoDispose<String?>(
   (ref) => ref.watch(connectionProvider.select((c) => c?.server.baseUrl)),
 );
@@ -64,6 +80,27 @@ final hiddenOnServerProvider = Provider.autoDispose<Set<String>>((ref) {
   if (url == null) return const {};
   return ref.watch(hiddenProjectsProvider).value?[url] ?? const {};
 });
+
+/// Directories pinned on the server on screen.
+final pinnedOnServerProvider = Provider.autoDispose<Set<String>>((ref) {
+  final url = ref.watch(serverUrlProvider);
+  if (url == null) return const {};
+  return ref.watch(pinnedProjectsProvider).value?[url] ?? const {};
+});
+
+/// Whether the project list shows hidden projects too, with a switch on
+/// each row to hide or show it.
+class ShowAllProjectsNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void toggle() => state = !state;
+}
+
+final showAllProjectsProvider =
+    NotifierProvider.autoDispose<ShowAllProjectsNotifier, bool>(
+      ShowAllProjectsNotifier.new,
+    );
 
 /// Where the folder picker starts: the server's working directory.
 final serverDirectoryProvider = FutureProvider.autoDispose<String>((ref) {

@@ -170,19 +170,34 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get currentProject => 'Current';
-
-  @override
   String get hideProject => 'Remove from list';
 
   @override
   String get hideProjectNote =>
-      'The project and its sessions stay on the server. Open it again with + to bring it back.';
+      'The project and its sessions stay on the server. Bring it back with the eye button at the top right of the list.';
 
   @override
   String projectHidden(Object name) {
     return 'Removed \"$name\" from the list';
   }
+
+  @override
+  String get showAllProjects => 'Show all projects';
+
+  @override
+  String get showListedProjects => 'Show listed projects only';
+
+  @override
+  String get pinProject => 'Pin to top';
+
+  @override
+  String get unpinProject => 'Unpin';
+
+  @override
+  String get pinnedProject => 'Pinned';
+
+  @override
+  String get unhideProject => 'Show in list';
 
   @override
   String get undo => 'Undo';

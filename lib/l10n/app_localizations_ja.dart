@@ -165,19 +165,33 @@ class AppLocalizationsJa extends AppLocalizations {
   }
 
   @override
-  String get currentProject => '現在';
-
-  @override
   String get hideProject => '一覧から外す';
 
   @override
-  String get hideProjectNote =>
-      'サーバー上のプロジェクトとセッションはそのまま残ります。「＋」から開き直すと一覧に戻ります。';
+  String get hideProjectNote => 'サーバー上のプロジェクトとセッションはそのまま残ります。一覧右上の目のボタンから戻せます。';
 
   @override
   String projectHidden(Object name) {
     return '「$name」を一覧から外しました';
   }
+
+  @override
+  String get showAllProjects => 'すべてのプロジェクトを表示';
+
+  @override
+  String get showListedProjects => '一覧のプロジェクトだけ表示';
+
+  @override
+  String get pinProject => '上にピン留め';
+
+  @override
+  String get unpinProject => 'ピン留めを外す';
+
+  @override
+  String get pinnedProject => 'ピン留め中';
+
+  @override
+  String get unhideProject => '一覧に戻す';
 
   @override
   String get undo => '元に戻す';
