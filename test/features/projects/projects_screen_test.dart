@@ -60,10 +60,14 @@ void main() {
     );
   });
 
-  Finder projectRow(String name) => find.descendant(
-    of: find.byKey(const Key('project-list')),
-    matching: find.text(name),
-  );
+  // Hidden rows stay in the list folded to nothing, so only rows that can
+  // be tapped count as listed.
+  Finder projectRow(String name) => find
+      .descendant(
+        of: find.byKey(const Key('project-list')),
+        matching: find.text(name),
+      )
+      .hitTestable();
 
   const two = [
     Project(id: 'p1', directory: '/srv/app'),
@@ -211,5 +215,43 @@ void main() {
     await tester.pumpAndSettle();
     expect(top('new'), lessThan(top('old')));
     expect(await ProjectDirectoriesStore.pinned().load(), isEmpty);
+  });
+
+  testWidgets('swiping a project right pins it and again unpins it', (
+    tester,
+  ) async {
+    await pumpScreen(tester, projects: two);
+
+    await tester.drag(projectRow('old'), const Offset(600, 0));
+    await tester.pumpAndSettle();
+    // Pinning keeps the row on the list.
+    expect(projectRow('old'), findsOneWidget);
+    expect(find.byKey(const Key('project-pinned')), findsOneWidget);
+    expect(await ProjectDirectoriesStore.pinned().load(), {
+      _server: {'/srv/old'},
+    });
+    expect(await ProjectDirectoriesStore.hidden().load(), isEmpty);
+
+    await tester.drag(projectRow('old'), const Offset(600, 0));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const Key('project-pinned')), findsNothing);
+    expect(await ProjectDirectoriesStore.pinned().load(), isEmpty);
+  });
+
+  testWidgets('while showing all, a right swipe still pins', (tester) async {
+    await pumpScreen(tester, projects: two);
+    await tester.tap(find.byKey(const Key('show-all-projects')));
+    await tester.pumpAndSettle();
+
+    await tester.drag(projectRow('old'), const Offset(600, 0));
+    await tester.pumpAndSettle();
+    expect(await ProjectDirectoriesStore.pinned().load(), {
+      _server: {'/srv/old'},
+    });
+    // A left swipe hides nothing here; the eye does that.
+    await tester.drag(projectRow('old'), const Offset(-600, 0));
+    await tester.pumpAndSettle();
+    expect(projectRow('old'), findsOneWidget);
+    expect(await ProjectDirectoriesStore.hidden().load(), isEmpty);
   });
 }

@@ -190,44 +190,50 @@ class ProjectsPane extends ConsumerWidget {
             ref.watch(pinnedProjectsProvider).isLoading) {
           true => const Center(child: CircularProgressIndicator()),
           false => projects.when(
-            data: (bootstrap) => ListView(
-              // Room under the last project for the FAB.
-              padding: const EdgeInsets.only(bottom: 88),
-              children: [
-                _SectionHeader(
-                  title: context.l10n.projects,
-                  trailing: _ShowAllButton(
-                    showAll: showAll,
-                    hiddenCount: bootstrap.projects
-                        .where((p) => hidden.contains(p.directory))
-                        .length,
-                  ),
-                ),
-                if (_listed(bootstrap.projects, hidden, showAll).isNotEmpty)
-                  Card(
-                    key: const Key('project-list'),
-                    margin: const EdgeInsets.symmetric(horizontal: _edge),
-                    clipBehavior: Clip.antiAlias,
-                    shape: _listShape(Theme.of(context)),
-                    child: Column(
-                      children: [
-                        for (final (i, project) in _sorted(
-                          _listed(bootstrap.projects, hidden, showAll),
-                          pinned,
-                        ).indexed) ...[
-                          if (i > 0) const Divider(),
-                          _ProjectTile(
-                            project: project,
-                            pinned: pinned.contains(project.directory),
-                            hidden: hidden.contains(project.directory),
-                            showAll: showAll,
-                          ),
-                        ],
-                      ],
+            data: (bootstrap) {
+              final sorted = _sorted(bootstrap.projects, pinned);
+              return ListView(
+                // Room under the last project for the FAB.
+                padding: const EdgeInsets.only(bottom: 88),
+                children: [
+                  _SectionHeader(
+                    title: context.l10n.projects,
+                    trailing: _ShowAllButton(
+                      showAll: showAll,
+                      hiddenCount: bootstrap.projects
+                          .where((p) => hidden.contains(p.directory))
+                          .length,
                     ),
                   ),
-              ],
-            ),
+                  if (_anyListed(bootstrap.projects, hidden, showAll))
+                    Card(
+                      key: const Key('project-list'),
+                      margin: const EdgeInsets.symmetric(horizontal: _edge),
+                      clipBehavior: Clip.antiAlias,
+                      shape: _listShape(Theme.of(context)),
+                      // Hidden projects stay in the column, folded away, so
+                      // showing all unfolds them in place.
+                      child: Column(
+                        children: [
+                          for (final (i, project) in sorted.indexed)
+                            _ProjectTile(
+                              key: ValueKey(project.directory),
+                              project: project,
+                              pinned: pinned.contains(project.directory),
+                              hidden: hidden.contains(project.directory),
+                              showAll: showAll,
+                              divider: _anyListed(
+                                sorted.take(i),
+                                hidden,
+                                showAll,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                ],
+              );
+            },
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => ListView(
               padding: const EdgeInsets.all(24),
@@ -263,16 +269,13 @@ class ProjectsPane extends ConsumerWidget {
     openProject(context, ref, project);
   }
 
-  /// The projects on the list: all of them while showing all, otherwise
-  /// the ones not hidden.
-  List<Project> _listed(
-    List<Project> projects,
+  /// Whether any of [projects] is on the list: all of them while showing
+  /// all, otherwise the ones not hidden.
+  bool _anyListed(
+    Iterable<Project> projects,
     Set<String> hidden,
     bool showAll,
-  ) => [
-    for (final p in projects)
-      if (showAll || !hidden.contains(p.directory)) p,
-  ];
+  ) => projects.any((p) => showAll || !hidden.contains(p.directory));
 
   /// Pinned projects first, each group by most recent update.
   List<Project> _sorted(List<Project> projects, Set<String> pinned) {
@@ -314,14 +317,18 @@ class _ShowAllButton extends ConsumerWidget {
   }
 }
 
-/// A project row. Swipe left or long-press to take it off the list; while
-/// the list shows all projects, the eye on the right hides or shows it.
-class _ProjectTile extends ConsumerWidget {
+/// A project row. Swipe left or long-press to take it off the list, swipe
+/// right to pin it. While the list shows all projects, the eye on the right
+/// hides or shows it. A hidden row stays in the list folded away, so it
+/// unfolds when all projects are shown.
+class _ProjectTile extends ConsumerStatefulWidget {
   const _ProjectTile({
+    super.key,
     required this.project,
     required this.pinned,
     required this.hidden,
     required this.showAll,
+    required this.divider,
   });
 
   final Project project;
@@ -329,9 +336,56 @@ class _ProjectTile extends ConsumerWidget {
   final bool hidden;
   final bool showAll;
 
+  /// Whether a listed row sits above this one.
+  final bool divider;
+
+  bool get listed => showAll || !hidden;
+
+  @override
+  ConsumerState<_ProjectTile> createState() => _ProjectTileState();
+}
+
+class _ProjectTileState extends ConsumerState<_ProjectTile>
+    with SingleTickerProviderStateMixin {
+  late final _fold = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 250),
+    value: widget.listed ? 1 : 0,
+  );
+  late final _foldCurve = CurvedAnimation(
+    parent: _fold,
+    curve: Curves.easeInOut,
+  );
+
+  /// Set when a swipe took the row off: the swipe already shrank it, so it
+  /// folds away at once rather than coming back to fold.
+  bool _swiped = false;
+
+  Project get project => widget.project;
+
+  @override
+  void didUpdateWidget(_ProjectTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.listed == oldWidget.listed) return;
+    final target = widget.listed ? 1.0 : 0.0;
+    if (_swiped && !widget.listed) {
+      _fold.value = target;
+    } else {
+      _fold.animateTo(target);
+    }
+    if (widget.listed) _swiped = false;
+  }
+
+  @override
+  void dispose() {
+    _foldCurve.dispose();
+    _fold.dispose();
+    super.dispose();
+  }
+
   /// Takes the project off this server's list, with a way to undo it. The
   /// project itself stays on the server.
-  Future<void> _hide(BuildContext context, WidgetRef ref) async {
+  Future<void> _hide() async {
     final url = ref.read(serverUrlProvider);
     if (url == null) return;
     final hidden = ref.read(hiddenProjectsProvider.notifier);
@@ -357,11 +411,11 @@ class _ProjectTile extends ConsumerWidget {
 
   /// Puts a hidden project back on the list, or hides a listed one, from
   /// the list of every project. No undo: the eye switches it back.
-  Future<void> _toggleHidden(WidgetRef ref) async {
+  Future<void> _toggleHidden() async {
     final url = ref.read(serverUrlProvider);
     if (url == null) return;
     final notifier = ref.read(hiddenProjectsProvider.notifier);
-    if (hidden) {
+    if (widget.hidden) {
       await notifier.remove(url, project);
     } else {
       if (ref.read(paneSelectionProvider).project?.id == project.id) {
@@ -371,15 +425,19 @@ class _ProjectTile extends ConsumerWidget {
     }
   }
 
-  Future<void> _togglePinned(WidgetRef ref) async {
+  Future<void> _togglePinned() async {
     final url = ref.read(serverUrlProvider);
     if (url == null) return;
     final notifier = ref.read(pinnedProjectsProvider.notifier);
-    await (pinned ? notifier.remove(url, project) : notifier.add(url, project));
+    await (widget.pinned
+        ? notifier.remove(url, project)
+        : notifier.add(url, project));
   }
 
-  Future<void> _menu(BuildContext context, WidgetRef ref) async {
+  Future<void> _menu() async {
     ref.read(hapticsProvider).play(HapticCue.longPress);
+    final pinned = widget.pinned;
+    final hidden = widget.hidden;
     final action = await showModalBottomSheet<_ProjectAction>(
       context: context,
       showDragHandle: true,
@@ -414,66 +472,99 @@ class _ProjectTile extends ConsumerWidget {
         ),
       ),
     );
-    if (!context.mounted) return;
+    if (!mounted) return;
     switch (action) {
       case _ProjectAction.pin:
-        await _togglePinned(ref);
-      case _ProjectAction.hide when hidden || showAll:
-        await _toggleHidden(ref);
+        await _togglePinned();
+      case _ProjectAction.hide when widget.hidden || widget.showAll:
+        await _toggleHidden();
       case _ProjectAction.hide:
-        await _hide(context, ref);
+        await _hide();
       case null:
         break;
     }
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    // While every project is listed, the eye hides and shows rows, so a
-    // swipe would only duplicate it.
-    if (showAll) return _tile(context, ref, theme);
-    return Dismissible(
-      key: ValueKey(project.directory),
-      direction: DismissDirection.endToStart,
-      background: ColoredBox(
-        color: scheme.secondaryContainer,
-        child: Align(
-          alignment: Alignment.centerRight,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.visibility_off_outlined,
-                  color: scheme.onSecondaryContainer,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  context.l10n.hideProject,
-                  style: TextStyle(color: scheme.onSecondaryContainer),
-                ),
-              ],
-            ),
-          ),
+    return SizeTransition(
+      sizeFactor: _foldCurve,
+      alignment: Alignment.topCenter,
+      child: FadeTransition(
+        opacity: _foldCurve,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (widget.divider) const Divider(),
+            // A folded row can't be swiped; after a swipe to hide, the
+            // dismissed row also has to leave the tree.
+            if (widget.listed)
+              _swipeable(context, theme)
+            else
+              ExcludeFocus(child: _tile(context, theme)),
+          ],
         ),
       ),
+    );
+  }
+
+  /// Swipe right pins or unpins; swipe left hides, except while all
+  /// projects are shown, where the eye does that.
+  Widget _swipeable(BuildContext context, ThemeData theme) {
+    final scheme = theme.colorScheme;
+    final pin = _SwipeBackground(
+      alignment: AlignmentDirectional.centerStart,
+      color: scheme.primaryContainer,
+      foreground: scheme.onPrimaryContainer,
+      icon: widget.pinned ? Icons.push_pin_outlined : Icons.push_pin,
+      label: widget.pinned
+          ? context.l10n.unpinProject
+          : context.l10n.pinProject,
+    );
+    final hide = _SwipeBackground(
+      alignment: AlignmentDirectional.centerEnd,
+      color: scheme.secondaryContainer,
+      foreground: scheme.onSecondaryContainer,
+      icon: Icons.visibility_off_outlined,
+      label: context.l10n.hideProject,
+    );
+    return Dismissible(
+      key: ValueKey(project.directory),
+      direction: widget.showAll
+          ? DismissDirection.startToEnd
+          : DismissDirection.horizontal,
+      background: pin,
+      secondaryBackground: hide,
       onUpdate: (details) {
         if (details.reached && !details.previousReached) {
           ref.read(hapticsProvider).play(HapticCue.swipeThreshold);
         }
       },
-      onDismissed: (_) => _hide(context, ref),
-      child: _tile(context, ref, theme),
+      // Pinning keeps the row, so it slides back into place.
+      confirmDismiss: (direction) async {
+        if (direction != DismissDirection.startToEnd) return true;
+        await _togglePinned();
+        return false;
+      },
+      onDismissed: (_) {
+        _swiped = true;
+        _hide();
+      },
+      child: _tile(context, theme),
     );
   }
 
-  Widget _tile(BuildContext context, WidgetRef ref, ThemeData theme) {
+  Widget _tile(BuildContext context, ThemeData theme) {
     final scheme = theme.colorScheme;
     final name = project.displayName;
+    final hidden = widget.hidden;
     final tile = ListTile(
+      // While showing all, the eye button's own padding stands in for the
+      // row's end padding, so it sits as far in as the badge on the left.
+      contentPadding: widget.showAll
+          ? const EdgeInsetsDirectional.only(start: 16, end: 4)
+          : null,
       leading: Container(
         width: 40,
         height: 40,
@@ -506,7 +597,7 @@ class _ProjectTile extends ConsumerWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (pinned)
+          if (widget.pinned)
             Icon(
               Icons.push_pin,
               key: const Key('project-pinned'),
@@ -514,28 +605,77 @@ class _ProjectTile extends ConsumerWidget {
               color: scheme.primary,
               semanticLabel: context.l10n.pinnedProject,
             ),
-          if (showAll)
+          if (widget.showAll)
             IconButton(
               key: const Key('project-visibility'),
               tooltip: hidden
                   ? context.l10n.unhideProject
                   : context.l10n.hideProject,
-              icon: Icon(
-                hidden
-                    ? Icons.visibility_off_outlined
-                    : Icons.visibility_outlined,
-                color: hidden ? scheme.onSurfaceVariant : scheme.primary,
+              icon: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                transitionBuilder: (child, animation) => ScaleTransition(
+                  scale: animation,
+                  child: FadeTransition(opacity: animation, child: child),
+                ),
+                child: Icon(
+                  hidden
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                  key: ValueKey(hidden),
+                  color: hidden ? scheme.onSurfaceVariant : scheme.primary,
+                ),
               ),
-              onPressed: () => _toggleHidden(ref),
+              onPressed: _toggleHidden,
             ),
         ],
       ),
       onTap: () => openProject(context, ref, project),
-      onLongPress: () => _menu(context, ref),
+      onLongPress: _menu,
     );
-    if (!hidden) return tile;
     // Hidden rows, listed only while showing all, read as switched off.
-    return Opacity(opacity: 0.5, child: tile);
+    return AnimatedOpacity(
+      opacity: hidden ? 0.5 : 1,
+      duration: const Duration(milliseconds: 200),
+      child: tile,
+    );
+  }
+}
+
+/// What shows under a row as it is swiped.
+class _SwipeBackground extends StatelessWidget {
+  const _SwipeBackground({
+    required this.alignment,
+    required this.color,
+    required this.foreground,
+    required this.icon,
+    required this.label,
+  });
+
+  final AlignmentDirectional alignment;
+  final Color color;
+  final Color foreground;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return ColoredBox(
+      color: color,
+      child: Align(
+        alignment: alignment,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: foreground),
+              const SizedBox(width: 8),
+              Text(label, style: TextStyle(color: foreground)),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
