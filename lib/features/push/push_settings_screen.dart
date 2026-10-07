@@ -252,7 +252,8 @@ class _ComputerStatus extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n;
-    final colors = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
     final provider = computerPluginProvider(serverId);
     final check = ref.watch(provider);
     final (icon, color, text) = switch (check) {
@@ -298,16 +299,24 @@ class _ComputerStatus extends ConsumerWidget {
               child: CircularProgressIndicator(strokeWidth: 2),
             )
           : Icon(icon, color: color),
-      title: Text(l10n.pushComputerTitle),
-      subtitle: text == null
-          ? null
-          : Text(
-              [
-                if (check.value?.version case final v?)
-                  l10n.pushPluginVersion(v),
-                text,
-              ].join(' '),
-            ),
+      // The version beside the name, as on the diagnostics page.
+      title: switch (check.value?.version) {
+        final version? => Text.rich(
+          TextSpan(
+            text: l10n.pushComputerTitle,
+            children: [
+              TextSpan(
+                text: ' ($version)',
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colors.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+        null => Text(l10n.pushComputerTitle),
+      },
+      subtitle: text == null ? null : Text(text),
       trailing: IconButton(
         key: const Key('push-computer-refresh'),
         tooltip: l10n.pushComputerRefresh,

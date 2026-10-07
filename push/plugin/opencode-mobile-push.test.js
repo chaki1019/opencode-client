@@ -54,8 +54,12 @@ const ev = (type, data, directory = "/Users/me/work/app") => ({
   location: { directory },
 });
 
-/** Runs the plugin over [events] and waits for the notifications to go out. */
-async function run(events, { options, sessions = {} } = {}) {
+/**
+ * Runs the plugin over [events] and waits for [expect] notifications to go
+ * out, then a little longer to catch any extra ones.
+ */
+async function run(events, { options, sessions = {}, expect = 1 } = {}) {
+  const before = sent.length;
   const ctx = {
     options: options ?? { relay: "https://relay.example/", key: KEY },
     location: { directory: "/fallback" },
@@ -74,6 +78,12 @@ async function run(events, { options, sessions = {} } = {}) {
     },
   };
   const cleanup = await plugin.setup(ctx);
+  // Sending is fire-and-forget, and the first one also sets up the crypto
+  // keys, so a fixed wait is too short on a slow runner.
+  const deadline = Date.now() + 5000;
+  while (sent.length < before + expect && Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, 10));
+  }
   await new Promise((resolve) => setTimeout(resolve, 100));
   cleanup?.();
   return sent;
@@ -102,7 +112,7 @@ test("tampering with kind or session breaks decryption", async () => {
 
 test("subagent sessions are skipped", async () => {
   const sessions = { ses_2: { id: "ses_2", parentID: "ses_1" } };
-  const out = await run([ev("session.execution.succeeded", { sessionID: "ses_2" })], { sessions });
+  const out = await run([ev("session.execution.succeeded", { sessionID: "ses_2" })], { sessions, expect: 0 });
   assert.equal(out.length, 0);
 });
 
@@ -129,7 +139,7 @@ test("disabled kinds and unrelated events send nothing", async () => {
       ev("session.execution.succeeded", { sessionID: "ses_5" }),
       ev("session.text.delta", { sessionID: "ses_5" }),
     ],
-    { options },
+    { options, expect: 0 },
   );
   assert.equal(out.length, 0);
 });

@@ -607,13 +607,14 @@ void main() {
     await tester.tap(find.byKey(const Key('push-switch')));
     await tester.pumpAndSettle();
 
-    expect(find.text('プッシュ通知プラグイン'), findsOneWidget);
-    expect(find.textContaining('バージョン 0.2.0'), findsOneWidget);
+    // The version sits beside the name, as on the diagnostics page.
+    final name = find.text('プッシュ通知プラグイン (0.2.0)', findRichText: true);
+    expect(name, findsOneWidget);
     expect(find.text('新しいバージョン 0.3.0 があります'), findsOneWidget);
-    expect(find.text('バージョン 0.2.0 稼働中'), findsOneWidget);
+    expect(find.text('稼働中'), findsOneWidget);
     // The update notice sits under the title, with its button on the same
     // line.
-    final title = tester.getTopLeft(find.text('プッシュ通知プラグイン'));
+    final title = tester.getTopLeft(name);
     final notice = tester.getRect(find.text('新しいバージョン 0.3.0 があります'));
     final button = tester.getRect(find.byKey(const Key('push-plugin-update')));
     expect(notice.left, title.dx);
@@ -630,7 +631,10 @@ void main() {
     expect(jsonDecode(update.data as String), {
       'targets': ['opencode-mobile-push'],
     });
-    expect(find.textContaining('バージョン 0.3.0'), findsOneWidget);
+    expect(
+      find.text('プッシュ通知プラグイン (0.3.0)', findRichText: true),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('push-plugin-update')), findsNothing);
     expect(find.text('プラグインを更新しました'), findsOneWidget);
   });

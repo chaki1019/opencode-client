@@ -1940,12 +1940,6 @@ abstract class AppLocalizations {
   /// **'Check again'**
   String get pushComputerRefresh;
 
-  /// No description provided for @pushPluginVersion.
-  ///
-  /// In en, this message translates to:
-  /// **'Version {version}'**
-  String pushPluginVersion(String version);
-
   /// No description provided for @pushPluginOutdated.
   ///
   /// In en, this message translates to:

@@ -572,8 +572,6 @@
   "pushComputerMissing": "Not set up yet. Add it with the steps below.",
   "pushComputerUnknown": "Couldn't check",
   "pushComputerRefresh": "Check again",
-  "pushPluginVersion": "Version {version}",
-  "@pushPluginVersion": {"placeholders": {"version": {"type": "String"}}},
   "pushPluginOutdated": "A newer version is available",
   "pushPluginOutdatedTo": "Version {version} is available",
   "@pushPluginOutdatedTo": {"placeholders": {"version": {"type": "String"}}},
