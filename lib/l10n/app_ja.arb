@@ -74,6 +74,8 @@
   "compactHelp": "これまでの会話を要約してコンテキストを空けます。使用率が高くなってきたときに使います。",
   "renameFailed": "名前を変更できませんでした",
   "forkFailed": "フォークできませんでした",
+  "compacting": "会話を要約中…",
+  "compactBusy": "実行中は要約できません。終わってから試してください。",
   "compactFailed": "要約を依頼できませんでした",
   "compactRequested": "会話の要約を依頼しました",
   "deleteSessionTitle": "セッションを削除しますか？",

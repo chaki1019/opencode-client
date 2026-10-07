@@ -226,5 +226,19 @@ void main() {
     );
     expect(find.byType(ContextSheet), findsNothing);
     expect(find.text('会話の要約を依頼しました'), findsOneWidget);
+
+    // While the summary runs, the session is running and the sheet offers
+    // no second summary until it ends.
+    OutlinedButton compactButton() =>
+        tester.widget<OutlinedButton>(find.byKey(const Key('compact')));
+    send('session.execution.started', {'sessionID': 's1'});
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('context-usage')));
+    await tester.pumpAndSettle();
+    expect(compactButton().onPressed, isNull);
+    expect(find.text('実行中は要約できません。終わってから試してください。'), findsOneWidget);
+    send('session.execution.succeeded', {'sessionID': 's1'});
+    await tester.pumpAndSettle();
+    expect(compactButton().onPressed, isNotNull);
   });
 }

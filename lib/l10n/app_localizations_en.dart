@@ -281,6 +281,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get forkFailed => 'Couldn\'t fork';
 
   @override
+  String get compacting => 'Summarizing the conversation…';
+
+  @override
+  String get compactBusy => 'You can summarize once the current run finishes.';
+
+  @override
   String get compactFailed => 'Couldn\'t request a summary';
 
   @override

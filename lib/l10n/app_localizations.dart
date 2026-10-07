@@ -542,6 +542,18 @@ abstract class AppLocalizations {
   /// **'Couldn\'t fork'**
   String get forkFailed;
 
+  /// No description provided for @compacting.
+  ///
+  /// In en, this message translates to:
+  /// **'Summarizing the conversation…'**
+  String get compacting;
+
+  /// No description provided for @compactBusy.
+  ///
+  /// In en, this message translates to:
+  /// **'You can summarize once the current run finishes.'**
+  String get compactBusy;
+
   /// No description provided for @compactFailed.
   ///
   /// In en, this message translates to:

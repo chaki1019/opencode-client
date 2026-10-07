@@ -71,6 +71,7 @@ sealed class TimelineEntry {
         return CompactionEntry(
           id: id,
           created: created,
+          running: json['status'] == 'running',
           summary: [
             json['summary'],
             json['recent'],
@@ -187,9 +188,13 @@ class CompactionEntry extends TimelineEntry {
     required super.id,
     super.created,
     required this.summary,
+    this.running = false,
   });
 
   final String summary;
+
+  /// Whether the server is still writing the summary.
+  final bool running;
 }
 
 /// A shell command the user ran directly in the session.
