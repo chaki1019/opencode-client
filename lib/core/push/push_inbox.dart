@@ -51,8 +51,13 @@ Future<ResolvedPush?> resolvePush(
     PushKind.question => l10n.pushHeadlineQuestion,
   };
   final project = content?.project ?? '';
+  // A failure's reason is worth more than the session title, so it gets
+  // its own line under it.
+  final body = kind == PushKind.failed
+      ? [content?.title, content?.detail].nonNulls.join('\n')
+      : content?.title ?? content?.detail ?? '';
   return (
     title: project.isEmpty ? headline : '$project: $headline',
-    body: content?.title ?? content?.detail ?? '',
+    body: body,
   );
 }

@@ -565,6 +565,19 @@ void main() {
       ),
       (title: 'my-app: 応答が完了しました', body: 'Fix login'),
     );
+    // A failure also says why, under the session title.
+    expect(
+      pushText(
+        l10n,
+        PushKind.failed,
+        const PushContent(
+          project: 'demo-project',
+          title: 'init',
+          detail: 'Invalid API key',
+        ),
+      ),
+      (title: 'demo-project: エラーで停止しました', body: 'init\nInvalid API key'),
+    );
     // Undecryptable content still says what happened.
     expect(pushText(l10n, PushKind.question, null), (
       title: '質問に回答を待っています',

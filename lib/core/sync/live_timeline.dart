@@ -138,6 +138,43 @@ class LiveTimeline {
           ),
         );
 
+      // A run that fails before or outside a step (model or provider
+      // errors) leaves nothing in the transcript; the event is the only
+      // place the reason appears, so show it on the turn.
+      case 'session.execution.failed':
+        final error = data['error'];
+        final message = error is Map ? error['message'] as String? : null;
+        if (message == null || message.isEmpty) return const Unchanged();
+        for (final e in entries.reversed) {
+          if (e is UserEntry) break;
+          if (e is AssistantEntry && e.errorMessage != null) {
+            return const Unchanged(); // the failed step already shows it
+          }
+        }
+        final streaming = _lastStreamingAssistant(entries);
+        if (streaming != null) {
+          return Changed(
+            _replace(
+              entries,
+              streaming.copyWith(
+                completed: () => event.created ?? streaming.created ?? 0,
+                finish: () => 'error',
+                errorMessage: () => message,
+              ),
+            ),
+          );
+        }
+        return Changed([
+          ...entries,
+          AssistantEntry(
+            id: 'execution-failed:${event.id ?? event.created}',
+            created: event.created,
+            completed: event.created ?? 0,
+            finish: 'error',
+            errorMessage: message,
+          ),
+        ]);
+
       case 'session.text.started' || 'session.reasoning.started':
         final ordinal = data['ordinal'];
         if (messageId == null || ordinal is! int || ordinal < 0) {
