@@ -101,7 +101,9 @@ void main() {
   }
 
   Future<void> disconnect(WidgetTester tester) async {
-    await tester.tap(find.byTooltip('切断'));
+    await tester.tap(find.byKey(const Key('server-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('disconnect')));
     await tester.pumpAndSettle();
   }
 
@@ -343,7 +345,11 @@ void main() {
       );
       await tester.tapAt(const Offset(420, 300));
       await tester.pumpAndSettle();
-      expect(find.byKey(const Key('diagnostics')), findsOneWidget);
+      await tester.tap(find.byKey(const Key('server-menu')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('diagnostics')));
+      await tester.pumpAndSettle();
+      expect(find.text('接続の診断'), findsWidgets);
     });
 
     testWidgets('adds a server and comes back to its projects', (tester) async {

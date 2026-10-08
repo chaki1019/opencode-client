@@ -290,9 +290,11 @@ final sessionSeenProvider = Provider.autoDispose.family<void, String>((
   }
 
   final chats = ref.read(openChatsProvider.notifier);
-  // Deferred: providers may not change others while they build.
-  scheduleMicrotask(() => chats.opened(sessionId));
-  ref.onDispose(() => scheduleMicrotask(() => chats.closed(sessionId)));
+  var disposed = false;
+  ref.onDispose(() {
+    disposed = true;
+    scheduleMicrotask(() => chats.closed(sessionId));
+  });
   ref.listen(serverAttentionProvider(serverId), (_, _) => check());
   final lifecycle = AppLifecycleListener(onResume: check);
   ref.onDispose(lifecycle.dispose);
@@ -302,5 +304,10 @@ final sessionSeenProvider = Provider.autoDispose.family<void, String>((
         ?.clearSession(sessionId)
         .catchError((Object _) {}),
   );
-  check();
+  // Deferred: providers may not change others while they build.
+  scheduleMicrotask(() {
+    if (disposed) return;
+    chats.opened(sessionId);
+    check();
+  });
 });

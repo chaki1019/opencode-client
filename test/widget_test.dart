@@ -100,8 +100,13 @@ void main() {
     expect(find.byType(ProjectsScreen), findsOneWidget);
     expect(find.byType(BackButton), findsNothing);
 
-    await tester.tap(find.byTooltip('切断'));
+    await tester.tap(find.byKey(const Key('server-menu')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('disconnect')));
+    // Disconnecting waits for the menu to close.
     await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 100));
     // The list pops off the connect screen, as the reverse of connecting,
     // instead of the connect screen pushing in over it.

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -146,21 +148,7 @@ class ProjectsPane extends ConsumerWidget {
           ),
         ),
         title: Text(connection?.server.displayName ?? context.l10n.projects),
-        actions: [
-          const _AttentionButton(),
-          // Diagnoses the server this list belongs to.
-          IconButton(
-            key: const Key('diagnostics'),
-            tooltip: context.l10n.diagnosticsTitle,
-            icon: const Icon(Icons.monitor_heart_outlined),
-            onPressed: () => context.push('/diagnostics'),
-          ),
-          IconButton(
-            tooltip: context.l10n.disconnect,
-            icon: const Icon(Icons.logout),
-            onPressed: () => ref.read(connectionProvider.notifier).disconnect(),
-          ),
-        ],
+        actions: [const _AttentionButton(), const _ServerMenuButton()],
         bottom: health == null
             ? null
             : PreferredSize(
@@ -743,6 +731,64 @@ class _AttentionButton extends ConsumerWidget {
         child: const Icon(Icons.inbox_outlined),
       ),
       onPressed: () => context.push('/attention'),
+    );
+  }
+}
+
+enum _ServerAction { diagnostics, disconnect }
+
+/// How long a popup menu takes to close (Material's default).
+const _menuClose = Duration(milliseconds: 300);
+
+/// The less used actions on the server this list belongs to, tucked behind
+/// "⋮" so the header has room for the needs-you button.
+class _ServerMenuButton extends ConsumerWidget {
+  const _ServerMenuButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
+    PopupMenuItem<_ServerAction> item(
+      _ServerAction action,
+      IconData icon,
+      String label,
+    ) => PopupMenuItem(
+      key: Key(action.name),
+      value: action,
+      child: Row(
+        children: [
+          Icon(icon, size: 20),
+          const SizedBox(width: 12),
+          Text(label),
+        ],
+      ),
+    );
+    return PopupMenuButton<_ServerAction>(
+      key: const Key('server-menu'),
+      icon: const Icon(Icons.more_vert),
+      onSelected: (action) {
+        switch (action) {
+          case _ServerAction.diagnostics:
+            context.push('/diagnostics');
+          case _ServerAction.disconnect:
+            // While the menu is still closing over this page, the navigator
+            // drops the page at once instead of sliding it out.
+            final connection = ref.read(connectionProvider.notifier);
+            unawaited(
+              Future<void>.delayed(_menuClose)
+                  .then((_) => WidgetsBinding.instance.endOfFrame)
+                  .then((_) => connection.disconnect()),
+            );
+        }
+      },
+      itemBuilder: (context) => [
+        item(
+          _ServerAction.diagnostics,
+          Icons.monitor_heart_outlined,
+          l10n.diagnosticsTitle,
+        ),
+        item(_ServerAction.disconnect, Icons.logout, l10n.disconnect),
+      ],
     );
   }
 }
