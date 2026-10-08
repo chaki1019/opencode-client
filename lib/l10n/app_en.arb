@@ -505,6 +505,7 @@
   "settingsAppearance": "Appearance",
   "settingsLanguage": "Language",
   "settingsFollowSystem": "Use system setting",
+  "themeSystem": "System",
   "themeLight": "Light",
   "themeDark": "Dark",
   "chatPaneEmpty": "Pick a session to show its chat here",

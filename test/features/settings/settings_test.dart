@@ -79,6 +79,9 @@ void main() {
     return container;
   }
 
+  // The language menu's text field is a Scrollable too.
+  final list = find.byType(Scrollable).first;
+
   ThemeMode themeMode(WidgetTester tester) =>
       tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode!;
 
@@ -94,6 +97,8 @@ void main() {
     expect(themeMode(tester), ThemeMode.dark);
 
     // The device is Japanese; choosing English switches the app over.
+    await tester.tap(find.byKey(const Key('language-menu')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('language-en')));
     await tester.pumpAndSettle();
     expect(find.text('Appearance'), findsOneWidget);
@@ -102,6 +107,8 @@ void main() {
     expect(stored.themeMode, ThemeMode.dark);
     expect(stored.languageCode, 'en');
 
+    await tester.tap(find.byKey(const Key('language-menu')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('language-system')));
     await tester.pumpAndSettle();
     expect(find.text('外観'), findsOneWidget);
@@ -113,13 +120,17 @@ void main() {
   ) async {
     await pumpSettings(tester);
     HapticsLevel shown() => tester
-        .widget<RadioGroup<HapticsLevel>>(find.byType(RadioGroup<HapticsLevel>))
-        .groupValue!;
+        .widget<SegmentedButton<HapticsLevel>>(
+          find.byType(SegmentedButton<HapticsLevel>),
+        )
+        .selected
+        .single;
     final strong = find.byKey(const Key('haptics-strong'));
-    await tester.scrollUntilVisible(strong, 100);
+    await tester.scrollUntilVisible(strong, 100, scrollable: list);
     await tester.ensureVisible(find.byKey(const Key('haptics-off')));
     await tester.pumpAndSettle();
     expect(shown(), HapticsLevel.light);
+    expect(find.text('送信時、AI の返信完了時、AI が回答を待っているときに振動します'), findsOneWidget);
 
     await tester.tap(strong);
     await tester.pumpAndSettle();
@@ -129,6 +140,7 @@ void main() {
     await tester.tap(find.byKey(const Key('haptics-off')));
     await tester.pumpAndSettle();
     expect((await SettingsStore().load()).haptics, HapticsLevel.off);
+    expect(find.byKey(const Key('haptics-help')), findsNothing);
   });
 
   test('the old on/off haptics value still loads', () {
@@ -167,7 +179,7 @@ void main() {
       ],
     );
     final toggle = find.byKey(const Key('crash-reports'));
-    await tester.scrollUntilVisible(toggle, 100);
+    await tester.scrollUntilVisible(toggle, 100, scrollable: list);
     await tester.ensureVisible(toggle);
     await tester.pumpAndSettle();
     expect(find.byKey(const Key('contact')), findsOneWidget);
@@ -192,7 +204,7 @@ void main() {
       ],
     );
     final toggle = find.byKey(const Key('usage-analytics'));
-    await tester.scrollUntilVisible(toggle, 100);
+    await tester.scrollUntilVisible(toggle, 100, scrollable: list);
     await tester.ensureVisible(toggle);
     await tester.pumpAndSettle();
     expect(find.text('利用状況を送信'), findsOneWidget);
@@ -219,7 +231,7 @@ void main() {
     expect(replay.calls, [true]);
     // The switch shows for session replay alone.
     final toggle = find.byKey(const Key('usage-analytics'));
-    await tester.scrollUntilVisible(toggle, 100);
+    await tester.scrollUntilVisible(toggle, 100, scrollable: list);
     await tester.ensureVisible(toggle);
     await tester.pumpAndSettle();
 
@@ -249,8 +261,11 @@ void main() {
     expect(find.text('Appearance'), findsOneWidget);
     expect(
       tester
-          .widget<RadioGroup<ThemeMode>>(find.byType(RadioGroup<ThemeMode>))
-          .groupValue,
+          .widget<SegmentedButton<ThemeMode>>(
+            find.byType(SegmentedButton<ThemeMode>),
+          )
+          .selected
+          .single,
       ThemeMode.light,
     );
   });
@@ -282,7 +297,11 @@ void main() {
       ],
     );
     final version = find.byKey(const Key('app-version'));
-    await tester.scrollUntilVisible(find.byKey(const Key('app-os')), 100);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('app-os')),
+      100,
+      scrollable: list,
+    );
     expect(
       find.descendant(of: version, matching: find.text('1.2.0 (7)')),
       findsOneWidget,

@@ -35,79 +35,80 @@ class SettingsScreen extends ConsumerWidget {
         ),
         children: [
           _SectionHeader(l10n.settingsAppearance),
-          RadioGroup<ThemeMode>(
-            groupValue: settings.themeMode,
-            onChanged: (mode) {
-              if (mode != null) notifier.setThemeMode(mode);
-            },
-            child: Column(
-              children: [
-                for (final (mode, label) in [
-                  (ThemeMode.system, l10n.settingsFollowSystem),
-                  (ThemeMode.light, l10n.themeLight),
-                  (ThemeMode.dark, l10n.themeDark),
-                ])
-                  RadioListTile<ThemeMode>(
-                    key: Key('theme-${mode.name}'),
-                    value: mode,
-                    title: Text(label),
-                  ),
-              ],
-            ),
+          _Choices<ThemeMode>(
+            keyPrefix: 'theme',
+            selected: settings.themeMode,
+            onChanged: notifier.setThemeMode,
+            options: [
+              (ThemeMode.system, ThemeMode.system.name, l10n.themeSystem),
+              (ThemeMode.light, ThemeMode.light.name, l10n.themeLight),
+              (ThemeMode.dark, ThemeMode.dark.name, l10n.themeDark),
+            ],
           ),
           _SectionHeader(l10n.settingsLanguage),
-          RadioGroup<String>(
-            groupValue: settings.languageCode ?? '',
-            onChanged: (code) => notifier.setLanguage(
-              code == null || code.isEmpty ? null : code,
-            ),
-            child: Column(
-              children: [
-                RadioListTile<String>(
-                  key: const Key('language-system'),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            child: DropdownMenu<String>(
+              key: const Key('language-menu'),
+              initialSelection: settings.languageCode ?? '',
+              expandedInsets: EdgeInsets.zero,
+              requestFocusOnTap: false,
+              onSelected: (code) => notifier.setLanguage(
+                code == null || code.isEmpty ? null : code,
+              ),
+              dropdownMenuEntries: [
+                DropdownMenuEntry(
                   value: '',
-                  title: Text(l10n.settingsFollowSystem),
+                  label: l10n.settingsFollowSystem,
+                  labelWidget: Text(
+                    l10n.settingsFollowSystem,
+                    key: const Key('language-system'),
+                  ),
                 ),
                 for (final MapEntry(key: code, value: name)
                     in _languages.entries)
-                  RadioListTile<String>(
-                    key: Key('language-$code'),
+                  DropdownMenuEntry(
                     value: code,
-                    title: Text(name),
+                    label: name,
+                    labelWidget: Text(name, key: Key('language-$code')),
                   ),
               ],
             ),
           ),
           _SectionHeader(l10n.settingsHaptics),
-          RadioGroup<HapticsLevel>(
-            groupValue: settings.haptics,
-            onChanged: (level) {
-              if (level != null) notifier.setHaptics(level);
-            },
-            child: Column(
-              children: [
-                for (final (level, label, help) in [
-                  (HapticsLevel.off, l10n.hapticsOff, null),
-                  (
-                    HapticsLevel.light,
-                    l10n.hapticsLight,
-                    l10n.hapticsLightHelp,
-                  ),
-                  (
-                    HapticsLevel.strong,
-                    l10n.hapticsStrong,
-                    l10n.hapticsStrongHelp,
-                  ),
-                ])
-                  RadioListTile<HapticsLevel>(
-                    key: Key('haptics-${level.name}'),
-                    value: level,
-                    title: Text(label),
-                    subtitle: help == null ? null : Text(help),
-                  ),
-              ],
-            ),
+          _Choices<HapticsLevel>(
+            keyPrefix: 'haptics',
+            selected: settings.haptics,
+            onChanged: notifier.setHaptics,
+            options: [
+              for (final level in HapticsLevel.values)
+                (
+                  level,
+                  level.name,
+                  switch (level) {
+                    HapticsLevel.off => l10n.hapticsOff,
+                    HapticsLevel.light => l10n.hapticsLight,
+                    HapticsLevel.strong => l10n.hapticsStrong,
+                  },
+                ),
+            ],
           ),
+          if (switch (settings.haptics) {
+                HapticsLevel.off => null,
+                HapticsLevel.light => l10n.hapticsLightHelp,
+                HapticsLevel.strong => l10n.hapticsStrongHelp,
+              }
+              case final help?)
+            Padding(
+              key: const Key('haptics-help'),
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+              child: Text(
+                help,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
           AdsSettingsSection(header: _SectionHeader.new),
           SupportSection(header: _SectionHeader.new),
           _SectionHeader(l10n.settingsAbout),
@@ -124,6 +125,44 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// A one-line row of mutually exclusive options. Each segment gets the key
+/// `$keyPrefix-$name` so tests can tap it.
+class _Choices<T> extends StatelessWidget {
+  const _Choices({
+    required this.keyPrefix,
+    required this.selected,
+    required this.onChanged,
+    required this.options,
+  });
+
+  final String keyPrefix;
+  final T selected;
+  final ValueChanged<T> onChanged;
+  final List<(T, String, String)> options;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: SizedBox(
+        width: double.infinity,
+        child: SegmentedButton<T>(
+          showSelectedIcon: false,
+          segments: [
+            for (final (value, name, label) in options)
+              ButtonSegment(
+                value: value,
+                label: Text(label, key: Key('$keyPrefix-$name')),
+              ),
+          ],
+          selected: {selected},
+          onSelectionChanged: (s) => onChanged(s.single),
+        ),
       ),
     );
   }

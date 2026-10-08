@@ -927,6 +927,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsFollowSystem => 'Use system setting';
 
   @override
+  String get themeSystem => 'System';
+
+  @override
   String get themeLight => 'Light';
 
   @override
