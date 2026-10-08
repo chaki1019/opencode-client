@@ -149,8 +149,8 @@ void main() {
     );
   });
 
-  testWidgets('the drawer and list show what needs the user, and the badge '
-      'matches', (tester) async {
+  /// Connects the app to [server] and saves it; returns the messaging fake.
+  Future<_FakeMessaging> pumpConnected(WidgetTester tester) async {
     final messaging = _FakeMessaging();
     addTearDown(tester.platformDispatcher.clearLocalesTestValue);
     tester.platformDispatcher.localesTestValue = const [Locale('ja')];
@@ -191,10 +191,16 @@ void main() {
     await tester.tap(find.byKey(const Key('save')));
     await tester.pumpAndSettle();
 
+    return messaging;
+  }
+
+  testWidgets('the drawer and list show what needs the user, and the badge '
+      'matches', (tester) async {
+    final messaging = await pumpConnected(tester);
     expect(messaging.badge, 3);
     expect(
       find.descendant(
-        of: find.byKey(const Key('attention-button')),
+        of: find.byKey(const Key('menu-badge')),
         matching: find.text('3'),
       ),
       findsOneWidget,
@@ -254,6 +260,30 @@ void main() {
       hasLength(1),
     );
     expect(messaging.badge, 1);
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 1));
+  });
+
+  testWidgets('the project row counts its items and the session rows are '
+      'marked', (tester) async {
+    await pumpConnected(tester);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('project-attention-abc')),
+        matching: find.text('3'),
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.text('my-app'));
+    // The running session's spinner never settles.
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pump(const Duration(milliseconds: 500));
+    for (final id in ['ses_run', 'ses_done', 'ses_fail']) {
+      expect(find.byKey(Key('session-attention-$id')), findsOneWidget);
+    }
 
     await tester.pumpWidget(const SizedBox());
     await tester.pump(const Duration(seconds: 1));

@@ -143,12 +143,12 @@ class ProjectsPane extends ConsumerWidget {
           builder: (context) => IconButton(
             key: const Key('open-drawer'),
             tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
-            icon: const Icon(Icons.menu),
+            icon: const _MenuIcon(),
             onPressed: onMenu ?? () => Scaffold.of(context).openDrawer(),
           ),
         ),
         title: Text(connection?.server.displayName ?? context.l10n.projects),
-        actions: [const _AttentionButton(), const _ServerMenuButton()],
+        actions: const [_ServerMenuButton()],
         bottom: health == null
             ? null
             : PreferredSize(
@@ -565,28 +565,35 @@ class _ProjectTileState extends ConsumerState<_ProjectTile>
     final scheme = theme.colorScheme;
     final name = project.displayName;
     final hidden = widget.hidden;
+    // Sessions in this project that need the user.
+    final attention = ref.watch(projectAttentionProvider(project.id));
     final tile = ListTile(
       // While showing all, the eye button's own padding stands in for the
       // row's end padding, so it sits as far in as the badge on the left.
       contentPadding: widget.showAll
           ? const EdgeInsetsDirectional.only(start: 16, end: 4)
           : null,
-      leading: Container(
-        width: 40,
-        height: 40,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: scheme.surfaceContainerHigh,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: scheme.outlineVariant),
-        ),
-        child: Text(
-          name.isEmpty ? '/' : name.characters.first.toUpperCase(),
-          style: TextStyle(
-            fontFamily: AppFonts.mono,
-            fontWeight: FontWeight.w600,
-            fontSize: 16,
-            color: scheme.primary,
+      leading: Badge(
+        key: Key('project-attention-${project.id}'),
+        isLabelVisible: attention > 0,
+        label: Text('$attention'),
+        child: Container(
+          width: 40,
+          height: 40,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: scheme.surfaceContainerHigh,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: scheme.outlineVariant),
+          ),
+          child: Text(
+            name.isEmpty ? '/' : name.characters.first.toUpperCase(),
+            style: TextStyle(
+              fontFamily: AppFonts.mono,
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+              color: scheme.primary,
+            ),
           ),
         ),
       ),
@@ -729,22 +736,21 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-/// Opens the "needs you" list; the count matches the app badge.
-class _AttentionButton extends ConsumerWidget {
-  const _AttentionButton();
+/// The drawer button, badged with everything that needs the user on every
+/// connected server: the same count as the app badge and the drawer's
+/// "needs you" list, which holds what the project rows can't show (other
+/// servers, hidden projects).
+class _MenuIcon extends ConsumerWidget {
+  const _MenuIcon();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final count = ref.watch(attentionProvider.select((items) => items.length));
-    return IconButton(
-      key: const Key('attention-button'),
-      tooltip: context.l10n.attentionTitle,
-      icon: Badge(
-        isLabelVisible: count > 0,
-        label: Text('$count'),
-        child: const Icon(Icons.inbox_outlined),
-      ),
-      onPressed: () => context.push('/attention'),
+    return Badge(
+      key: const Key('menu-badge'),
+      isLabelVisible: count > 0,
+      label: Text('$count'),
+      child: const Icon(Icons.menu),
     );
   }
 }
@@ -755,7 +761,7 @@ enum _ServerAction { diagnostics, disconnect }
 const _menuClose = Duration(milliseconds: 300);
 
 /// The less used actions on the server this list belongs to, tucked behind
-/// "⋮" so the header has room for the needs-you button.
+/// "⋮" to keep the header uncluttered.
 class _ServerMenuButton extends ConsumerWidget {
   const _ServerMenuButton();
 
