@@ -34,6 +34,7 @@ flutter build ipa \
 | `/ja/privacy/` , `/en/privacy/` | プライバシーポリシー |
 | `/app-ads.txt` | AdMob の app-ads.txt |
 | `/robots.txt` , `/sitemap.xml` | 検索エンジン向け。sitemap は `scripts/site_seo.py` が書き出します |
+| `/analytics.js` | Microsoft Clarity のタグ（プロジェクト ID `yuaqvg30m5`）。`site_seo.py` が全ページで読み込み、`404.html` は手で読み込んでいます |
 | `/404.html` | 存在しない URL で返すページ（これがないと Cloudflare Pages は SPA とみなして `/` を 200 で返します） |
 | `/favicon.svg` , `/favicon.ico` , `/apple-touch-icon.png` | アプリアイコンと同じ図柄の favicon。`branding/app-icon/generate.mjs` で書き出します |
 

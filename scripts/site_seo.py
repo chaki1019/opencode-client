@@ -5,7 +5,8 @@ and site/sitemap.xml.
 Each page's `<title>` and `<meta name="description">` are the source: the
 block between `<!-- seo -->` and `<!-- /seo -->` (canonical URL, hreflang,
 Open Graph, X card and, on the landing pages, structured data) is made
-from them. Run it from the repository root after adding a page or changing
+from them. The block also loads site/analytics.js (Microsoft Clarity).
+Run it from the repository root after adding a page or changing
 a title or description:
 
     python3 scripts/site_seo.py
@@ -74,7 +75,7 @@ def block(text, lang, page, langs):
     url = f'{ORIGIN}/{lang}/{page}' if lang else f'{ORIGIN}/'
     og_lang = lang or 'en'
     esc = lambda s: html.escape(s, quote=True)
-    lines = []
+    lines = ['<script src="/analytics.js" async></script>']
     if lang:
         lines.append(f'<link rel="canonical" href="{url}">')
     for code in langs:
