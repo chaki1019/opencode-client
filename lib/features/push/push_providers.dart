@@ -296,7 +296,20 @@ final pushCoordinatorProvider = Provider<void>((ref) {
     messaging.taps.listen((message) => openPushMessage(ref, message)),
     messaging.foreground.listen((message) => _showInApp(ref, message)),
   ];
+  // Notifications removed while the app was away (tapped, swiped, or
+  // resolved by a silent push iOS never delivered) leave the badge behind.
+  final lifecycle = AppLifecycleListener(
+    onResume: () => unawaited(messaging.syncBadge().catchError((Object _) {})),
+  );
+  unawaited(messaging.syncBadge().catchError((Object _) {}));
+  // A session opened in the app has been seen; its notifications are done.
+  ref.listen(paneSelectionProvider.select((p) => p.session?.id), (_, id) {
+    if (id != null) {
+      unawaited(messaging.clearSession(id).catchError((Object _) {}));
+    }
+  });
   ref.onDispose(() {
+    lifecycle.dispose();
     for (final s in subscriptions) {
       s.cancel();
     }
