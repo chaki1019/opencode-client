@@ -30,7 +30,10 @@ class NotificationService: UNNotificationServiceExtension {
     let headline = PushPayload.headline(for: kind)
     let project = payload?.project ?? ""
     content.title = project.isEmpty ? headline : "\(project): \(headline)"
-    content.body = payload?.title ?? payload?.detail ?? ""
+    // A failure's reason gets its own line under the session title.
+    content.body = kind == "failed"
+      ? [payload?.title, payload?.detail].compactMap { $0 }.joined(separator: "\n")
+      : payload?.title ?? payload?.detail ?? ""
     if !sessionID.isEmpty { content.threadIdentifier = sessionID }
     // The badge counts what is waiting in Notification Center, this one
     // included; the app lowers it again as notifications are resolved.

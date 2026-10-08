@@ -236,4 +236,49 @@ void main() {
       );
     },
   );
+  group('a failed run', () {
+    ServerEvent failed(String message, {double? at}) =>
+        ev('session.execution.failed', {
+          'error': {'type': 'provider.auth', 'message': message},
+        }, at: at);
+
+    test('shows its reason when no step ever started', () {
+      final live = LiveTimeline(session);
+      final entries = run(
+        live,
+        [failed('Invalid API key', at: 5)],
+        const [UserEntry(id: 'u1', text: 'init')],
+      );
+      final entry = assistant(entries);
+      expect(entry.errorMessage, 'Invalid API key');
+      expect(entry.isStreaming, isFalse);
+    });
+
+    test('puts its reason on the step that was still streaming', () {
+      final live = LiveTimeline(session);
+      final entries = run(live, [
+        step('session.step.started', at: 1),
+        failed('Rate limited', at: 2),
+      ]);
+      final entry = assistant(entries);
+      expect(entry.id, 'a1');
+      expect(entry.errorMessage, 'Rate limited');
+      expect(entry.completed, 2);
+    });
+
+    test('adds nothing when the failed step already shows it', () {
+      final live = LiveTimeline(session);
+      final entries = run(live, [
+        step('session.step.started', at: 1),
+        step(
+          'session.step.failed',
+          at: 2,
+          extra: {
+            'error': {'message': 'boom'},
+          },
+        ),
+      ]);
+      expect(live.apply(entries, failed('boom')), isA<Unchanged>());
+    });
+  });
 }
