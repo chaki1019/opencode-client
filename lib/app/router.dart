@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -23,6 +25,49 @@ import '../features/sessions/sessions_screen.dart';
 Page<void> _page(GoRouterState state, Widget child) =>
     MaterialPage<void>(key: state.pageKey, name: state.fullPath, child: child);
 
+/// Keeps the [Project] or [Session] a page was opened with when go_router
+/// re-reads its saved state. Without it go_router turns `extra` into plain
+/// JSON, so a refresh after a pushed page (for example when the connection
+/// changes) rebuilt it with a `Map` instead of the model.
+class RouteExtraCodec extends Codec<Object?, Object?> {
+  const RouteExtraCodec();
+
+  @override
+  Converter<Object?, Object?> get encoder => const _RouteExtraEncoder();
+
+  @override
+  Converter<Object?, Object?> get decoder => const _RouteExtraDecoder();
+}
+
+class _RouteExtraEncoder extends Converter<Object?, Object?> {
+  const _RouteExtraEncoder();
+
+  @override
+  Object? convert(Object? input) => switch (input) {
+    Project() => jsonEncode({'type': 'project', 'value': input}),
+    Session() => jsonEncode({'type': 'session', 'value': input}),
+    _ => null,
+  };
+}
+
+class _RouteExtraDecoder extends Converter<Object?, Object?> {
+  const _RouteExtraDecoder();
+
+  @override
+  Object? convert(Object? input) {
+    if (input is! String) return null;
+    final decoded = jsonDecode(input);
+    if (decoded is! Map<String, dynamic>) return null;
+    final value = decoded['value'];
+    if (value is! Map<String, dynamic>) return null;
+    return switch (decoded['type']) {
+      'project' => Project.fromJson(value),
+      'session' => Session.fromJson(value),
+      _ => null,
+    };
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
   // Re-run redirects whenever the connection changes.
   final refresh = ValueNotifier<int>(0);
@@ -35,6 +80,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     initialLocation: '/',
     observers: [?analyticsObserver, ?replayObserver],
     refreshListenable: refresh,
+    extraCodec: const RouteExtraCodec(),
     redirect: (context, state) {
       final connected = ref.read(connectionProvider) != null;
       final atConnect = state.matchedLocation == '/';
