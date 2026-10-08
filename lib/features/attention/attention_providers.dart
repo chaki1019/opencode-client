@@ -229,6 +229,27 @@ final attentionProvider = Provider<List<AttentionItem>>((ref) {
   return items;
 });
 
+/// How many items on the server on screen belong to the project with
+/// [projectId], for the badge on its row.
+final projectAttentionProvider = Provider.family<int, String>((ref, projectId) {
+  final serverId = ref.watch(connectionProvider.select((c) => c?.server.id));
+  if (serverId == null) return 0;
+  final items = ref.watch(serverAttentionProvider(serverId)) ?? const [];
+  return items.where((i) => i.session.projectID == projectId).length;
+});
+
+/// Whether the session with [sessionId] on the server on screen needs the
+/// user, for the dot on its row.
+final sessionAttentionProvider = Provider.family<bool, String>((
+  ref,
+  sessionId,
+) {
+  final serverId = ref.watch(connectionProvider.select((c) => c?.server.id));
+  if (serverId == null) return false;
+  final items = ref.watch(serverAttentionProvider(serverId)) ?? const [];
+  return items.any((i) => i.session.id == sessionId);
+});
+
 /// Whether any connected server has reported yet; until then a count of
 /// zero means "not known", not "nothing to do".
 final attentionKnownProvider = Provider<bool>((ref) {

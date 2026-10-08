@@ -10,6 +10,7 @@ import '../../core/paging.dart';
 import '../../core/api/api_errors.dart';
 import '../../l10n/l10n.dart';
 import '../ads/ad_widgets.dart';
+import '../attention/attention_providers.dart';
 import '../chat/session_actions.dart';
 import '../connection/connection_providers.dart';
 import '../home/pane_selection.dart';
@@ -187,6 +188,7 @@ class _SessionTile extends ConsumerWidget {
         directory: session.location.directory,
       )),
     );
+    final attention = ref.watch(sessionAttentionProvider(session.id));
     final details = [
       relativeTime(context.l10n, session.updatedAt),
       if (session.model != null) session.model!.label,
@@ -257,6 +259,11 @@ class _SessionTile extends ConsumerWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
+        // A plain dot: the label underneath already says whether it waits
+        // on a permission or failed, and an unseen finished run is one item.
+        trailing: attention
+            ? Badge(key: Key('session-attention-${session.id}'), smallSize: 10)
+            : null,
         onTap: () => openSession(
           GoRouter.of(context),
           ref.read(paneSelectionProvider.notifier),
