@@ -20,6 +20,12 @@ abstract class SessionTime with _$SessionTime {
     required double created,
     required double updated,
     double? archived,
+
+    /// When the last run ended.
+    double? idle,
+
+    /// The [idle] a viewer last marked as seen (the TUI, or this app).
+    double? viewed,
   }) = _SessionTime;
 
   factory SessionTime.fromJson(Map<String, dynamic> json) =>
@@ -104,6 +110,9 @@ abstract class Session with _$Session {
 
     /// A staged rewind, if any.
     SessionRevert? revert,
+
+    /// How the last run ended: `succeeded`, `failed` or `interrupted`.
+    String? outcome,
   }) = _Session;
 
   factory Session.fromJson(Map<String, dynamic> json) =>
@@ -114,6 +123,14 @@ abstract class Session with _$Session {
       (title?.trim().isNotEmpty ?? false) ? title!.trim() : null;
 
   bool get isArchived => time.archived != null;
+
+  /// Whether the last run ended after anyone last looked at the session.
+  bool get hasUnseenRun {
+    final idle = time.idle;
+    if (idle == null) return false;
+    final viewed = time.viewed;
+    return viewed == null || viewed < idle;
+  }
 
   DateTime get updatedAt =>
       DateTime.fromMillisecondsSinceEpoch(time.updated.round());

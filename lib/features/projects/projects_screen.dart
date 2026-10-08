@@ -8,6 +8,7 @@ import '../../core/models/project.dart';
 import '../../core/models/session.dart';
 import '../../l10n/l10n.dart';
 import '../ads/ad_widgets.dart';
+import '../attention/attention_providers.dart';
 import '../connection/connection_providers.dart';
 import '../home/pane_selection.dart';
 import '../home/two_pane_home.dart';
@@ -146,6 +147,7 @@ class ProjectsPane extends ConsumerWidget {
         ),
         title: Text(connection?.server.displayName ?? context.l10n.projects),
         actions: [
+          const _AttentionButton(),
           // Diagnoses the server this list belongs to.
           IconButton(
             key: const Key('diagnostics'),
@@ -721,6 +723,26 @@ class _SectionHeader extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Opens the "needs you" list; the count matches the app badge.
+class _AttentionButton extends ConsumerWidget {
+  const _AttentionButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final count = ref.watch(attentionProvider.select((items) => items.length));
+    return IconButton(
+      key: const Key('attention-button'),
+      tooltip: context.l10n.attentionTitle,
+      icon: Badge(
+        isLabelVisible: count > 0,
+        label: Text('$count'),
+        child: const Icon(Icons.inbox_outlined),
+      ),
+      onPressed: () => context.push('/attention'),
     );
   }
 }

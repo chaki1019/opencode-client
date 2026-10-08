@@ -39,22 +39,32 @@ import UserNotifications
 }
 
 /// Removes delivered notifications that no longer need the user, and keeps
-/// the app badge equal to the notifications still in Notification Center.
-/// The Notification Service Extension counts the same way when one arrives.
+/// the app badge. The badge is the app's "needs you" count: the app sets it
+/// while it runs; while it is away, the Notification Service Extension adds
+/// one per notification and a resolution takes off the ones it removed.
+/// The count lives in the app group so both processes see it.
 enum PushNotifications {
+  static let badgeKey = "badge"
+  static var shared: UserDefaults? { UserDefaults(suiteName: PushKeyStore.accessGroup) }
+
   static func register(messenger: FlutterBinaryMessenger) {
     let channel = FlutterMethodChannel(name: "opencode/push_notifications", binaryMessenger: messenger)
     channel.setMethodCallHandler { call, result in
+      let args = call.arguments as? [String: Any]
       switch call.method {
       case "clearSession":
-        guard let args = call.arguments as? [String: Any], let sessionID = args["sessionId"] as? String
-        else {
+        guard let sessionID = args?["sessionId"] as? String else {
           result(FlutterError(code: "bad_args", message: nil, details: nil))
           return
         }
-        remove(where: { $0["sessionID"] as? String == sessionID }) { result(nil) }
-      case "syncBadge":
-        remove(where: { _ in false }) { result(nil) }
+        // The app sets the badge itself from what it knows.
+        remove(where: { $0["sessionID"] as? String == sessionID }) { _ in result(nil) }
+      case "setBadge":
+        guard let count = args?["count"] as? Int else {
+          result(FlutterError(code: "bad_args", message: nil, details: nil))
+          return
+        }
+        setBadge(count) { result(nil) }
       default:
         result(FlutterMethodNotImplemented)
       }
@@ -78,19 +88,31 @@ enum PushNotifications {
       where: {
         $0["keyId"] as? String == keyId && $0["sessionID"] as? String == session
           && kinds.contains($0["kind"] as? String ?? "completed")
-      }, done: done)
+      }
+    ) { removed in
+      guard removed > 0 else {
+        done()
+        return
+      }
+      setBadge(max(0, (shared?.integer(forKey: badgeKey) ?? 0) - removed), done: done)
+    }
   }
 
-  /// Removes the delivered notifications whose payload matches, then sets
-  /// the badge to how many are left.
-  static func remove(where matches: @escaping ([AnyHashable: Any]) -> Bool, done: @escaping () -> Void) {
+  static func setBadge(_ count: Int, done: @escaping () -> Void) {
+    shared?.set(count, forKey: badgeKey)
+    UNUserNotificationCenter.current().setBadgeCount(count) { _ in
+      DispatchQueue.main.async(execute: done)
+    }
+  }
+
+  /// Removes the delivered notifications whose payload matches and passes
+  /// on how many there were.
+  static func remove(where matches: @escaping ([AnyHashable: Any]) -> Bool, done: @escaping (Int) -> Void) {
     let center = UNUserNotificationCenter.current()
     center.getDeliveredNotifications { delivered in
       let gone = delivered.filter { matches($0.request.content.userInfo) }
       center.removeDeliveredNotifications(withIdentifiers: gone.map(\.request.identifier))
-      center.setBadgeCount(delivered.count - gone.count) { _ in
-        DispatchQueue.main.async(execute: done)
-      }
+      DispatchQueue.main.async { done(gone.count) }
     }
   }
 }

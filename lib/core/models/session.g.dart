@@ -22,6 +22,8 @@ _SessionTime _$SessionTimeFromJson(Map<String, dynamic> json) => _SessionTime(
   created: (json['created'] as num).toDouble(),
   updated: (json['updated'] as num).toDouble(),
   archived: (json['archived'] as num?)?.toDouble(),
+  idle: (json['idle'] as num?)?.toDouble(),
+  viewed: (json['viewed'] as num?)?.toDouble(),
 );
 
 Map<String, dynamic> _$SessionTimeToJson(_SessionTime instance) =>
@@ -29,6 +31,8 @@ Map<String, dynamic> _$SessionTimeToJson(_SessionTime instance) =>
       'created': instance.created,
       'updated': instance.updated,
       'archived': instance.archived,
+      'idle': instance.idle,
+      'viewed': instance.viewed,
     };
 
 _ModelRef _$ModelRefFromJson(Map<String, dynamic> json) => _ModelRef(
@@ -92,6 +96,7 @@ _Session _$SessionFromJson(Map<String, dynamic> json) => _Session(
   revert: json['revert'] == null
       ? null
       : SessionRevert.fromJson(json['revert'] as Map<String, dynamic>),
+  outcome: json['outcome'] as String?,
 );
 
 Map<String, dynamic> _$SessionToJson(_Session instance) => <String, dynamic>{
@@ -106,4 +111,5 @@ Map<String, dynamic> _$SessionToJson(_Session instance) => <String, dynamic>{
   'cost': instance.cost,
   'tokens': instance.tokens,
   'revert': instance.revert,
+  'outcome': instance.outcome,
 };

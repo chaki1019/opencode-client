@@ -209,6 +209,27 @@ class OpenCodeClient {
     ], page.nextCursor);
   }
 
+  /// The newest root sessions across every project on the server.
+  Future<List<Session>> listRecentSessions({int limit = 50}) async {
+    final body = _map(
+      await _getJson(
+        '/api/session',
+        query: {'parentID': 'null', 'order': 'desc', 'limit': limit},
+      ),
+    );
+    return [
+      for (final item in body['data'] as List? ?? const [])
+        Session.fromJson(_map(item)),
+    ];
+  }
+
+  /// Marks the run that ended at [idle] as seen, as the TUI does when the
+  /// session is on screen.
+  Future<void> markSessionViewed(String sessionId, double idle) => _sendJson(
+    '/api/session/${Uri.encodeComponent(sessionId)}/view',
+    body: {'idle': idle},
+  );
+
   /// A page of a session's timeline. The first page holds the newest
   /// [limit] records; [Page.nextCursor] continues to older ones. Entries are
   /// returned oldest first.
