@@ -72,7 +72,11 @@ async function run(events, { options, sessions = {}, expect = 1 } = {}) {
     },
     event: {
       async *subscribe() {
-        for (const event of events) yield event;
+        for (const event of events) {
+          // A marker event that waits for the sends so far to finish.
+          if (event.delay) await new Promise((resolve) => setTimeout(resolve, 300));
+          else yield event;
+        }
         await new Promise(() => {});
       },
     },
@@ -225,4 +229,71 @@ test("matches the shared test vector", async () => {
   const vector = JSON.parse(await readFile(new URL("../test-vector.json", import.meta.url)));
   assert.equal(b64(await derive(vector.key, "opencode-push/auth")), vector.auth);
   assert.deepEqual(await open(vector.key, vector), vector.content);
+});
+
+test("an answered permission resolves its notification", async () => {
+  const sessions = { ses_r1: { id: "ses_r1" } };
+  const out = await run(
+    [
+      ev("permission.asked", { sessionID: "ses_r1", id: "per_r1", action: "bash", resources: [] }),
+      // Lets the notification go out before the answer arrives.
+      { ...ev("session.text.delta", {}), delay: true },
+      ev("permission.replied", { sessionID: "ses_r1", requestID: "per_r1", reply: "once" }),
+    ],
+    { sessions, expect: 2 },
+  );
+  assert.equal(out.length, 2);
+  assert.equal(out[1].url, "https://relay.example/v1/resolve");
+  // Nothing but the session and kinds: no content, so nothing to encrypt.
+  assert.deepEqual(out[1].body, { sessionID: "ses_r1", kinds: ["permission"] });
+  assert.equal(out[1].headers.authorization, out[0].headers.authorization);
+});
+
+test("a new turn resolves everything sent for the session", async () => {
+  const sessions = { ses_r2: { id: "ses_r2" } };
+  const out = await run(
+    [
+      ev("session.execution.succeeded", { sessionID: "ses_r2" }),
+      { ...ev("session.text.delta", {}), delay: true },
+      ev("session.execution.started", { sessionID: "ses_r2" }),
+    ],
+    { sessions, expect: 2 },
+  );
+  assert.deepEqual(out[1].body, { sessionID: "ses_r2", kinds: ["completed"] });
+});
+
+test("resolutions for sessions never notified send nothing", async () => {
+  const out = await run(
+    [
+      ev("session.execution.started", { sessionID: "ses_r3" }),
+      ev("permission.replied", { sessionID: "ses_r3", requestID: "per_x", reply: "once" }),
+      ev("session.viewed", { sessionID: "ses_r3", idle: 1 }),
+    ],
+    { expect: 0 },
+  );
+  assert.equal(out.length, 0);
+});
+
+test("an old relay without /v1/resolve is not an error", async () => {
+  const sessions = { ses_r4: { id: "ses_r4" } };
+  const errors = [];
+  const realError = console.error;
+  console.error = (...args) => errors.push(args.join(" "));
+  globalThis.fetch = async (url, init) => {
+    sent.push({ url, headers: init.headers, body: JSON.parse(init.body) });
+    return new Response(null, { status: String(url).endsWith("/v1/resolve") ? 404 : 202 });
+  };
+  try {
+    await run(
+      [
+        ev("form.created", { form: { id: "frm_r4", sessionID: "ses_r4", title: "?" } }),
+        { ...ev("session.text.delta", {}), delay: true },
+        ev("form.replied", { id: "frm_r4", sessionID: "ses_r4", answer: {} }),
+      ],
+      { sessions, expect: 2 },
+    );
+  } finally {
+    console.error = realError;
+  }
+  assert.deepEqual(errors, []);
 });

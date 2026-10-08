@@ -32,7 +32,12 @@ class NotificationService: UNNotificationServiceExtension {
     content.title = project.isEmpty ? headline : "\(project): \(headline)"
     content.body = payload?.title ?? payload?.detail ?? ""
     if !sessionID.isEmpty { content.threadIdentifier = sessionID }
-    contentHandler(content)
+    // The badge counts what is waiting in Notification Center, this one
+    // included; the app lowers it again as notifications are resolved.
+    UNUserNotificationCenter.current().getDeliveredNotifications { delivered in
+      content.badge = NSNumber(value: delivered.count + 1)
+      contentHandler(content)
+    }
   }
 
   override func serviceExtensionTimeWillExpire() {

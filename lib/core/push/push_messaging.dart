@@ -42,6 +42,14 @@ abstract class PushMessaging {
   Future<void> shareKeys(PushKeys keys);
 
   Future<void> unshareKeys(String keyId);
+
+  /// Removes the notifications about [sessionId] the user has now seen in
+  /// the app, and updates the badge.
+  Future<void> clearSession(String sessionId);
+
+  /// Sets the app badge to the notifications still waiting (iOS; Android
+  /// launchers count notifications themselves).
+  Future<void> syncBadge();
 }
 
 const _channelId = 'agent_events';
@@ -50,9 +58,44 @@ const _channelId = 'agent_events';
 /// relay never has readable text to put in a notification.
 @pragma('vm:entry-point')
 Future<void> pushBackgroundHandler(RemoteMessage remote) async {
+  final resolved = PushResolved.fromData(remote.data);
+  if (resolved != null) {
+    // iOS handles resolutions natively (AppDelegate.swift).
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      await removeResolvedNotifications(resolved);
+    }
+    return;
+  }
   final message = PushMessage.fromData(remote.data);
   if (message == null) return;
   await showPushNotification(message);
+}
+
+/// Removes the posted notifications [resolved] covers (Android). [plugin]
+/// is the app's own when it is running; initializing another would replace
+/// its tap handler.
+Future<void> removeResolvedNotifications(
+  PushResolved resolved, {
+  FlutterLocalNotificationsPlugin? plugin,
+}) async {
+  if (plugin == null) {
+    plugin = FlutterLocalNotificationsPlugin();
+    await plugin.initialize(settings: _initSettings);
+  }
+  await _removeNotifications(plugin, resolved.covers);
+}
+
+Future<void> _removeNotifications(
+  FlutterLocalNotificationsPlugin plugin,
+  bool Function(PushMessage) matches,
+) async {
+  for (final active in await plugin.getActiveNotifications()) {
+    final message = _fromPayload(active.payload);
+    final id = active.id;
+    if (message != null && id != null && matches(message)) {
+      await plugin.cancel(id: id, tag: active.tag);
+    }
+  }
 }
 
 /// Decrypts [message] and posts it as a local notification (Android).
@@ -116,6 +159,7 @@ class FirebasePushMessaging implements PushMessaging {
   FlutterLocalNotificationsPlugin? _local;
 
   static const _keys = MethodChannel('opencode/push_keys');
+  static const _notifications = MethodChannel('opencode/push_notifications');
 
   bool get _android => defaultTargetPlatform == TargetPlatform.android;
 
@@ -134,6 +178,13 @@ class FirebasePushMessaging implements PushMessaging {
         },
       );
       _local = local;
+      // In front, data messages skip the background handler.
+      FirebaseMessaging.onMessage.listen((remote) {
+        final resolved = PushResolved.fromData(remote.data);
+        if (resolved != null) {
+          unawaited(removeResolvedNotifications(resolved, plugin: local));
+        }
+      });
     }
     return FirebaseMessaging.instance;
   }();
@@ -208,6 +259,27 @@ class FirebasePushMessaging implements PushMessaging {
   Future<void> unshareKeys(String keyId) async {
     if (defaultTargetPlatform != TargetPlatform.iOS) return;
     await _keys.invokeMethod<void>('remove', {'keyId': keyId});
+  }
+
+  @override
+  Future<void> clearSession(String sessionId) async {
+    await _messaging();
+    final local = _local;
+    if (_android) {
+      if (local != null) {
+        await _removeNotifications(local, (m) => m.sessionId == sessionId);
+      }
+    } else {
+      await _notifications.invokeMethod<void>('clearSession', {
+        'sessionId': sessionId,
+      });
+    }
+  }
+
+  @override
+  Future<void> syncBadge() async {
+    if (_android) return;
+    await _notifications.invokeMethod<void>('syncBadge');
   }
 }
 

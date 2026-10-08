@@ -21,7 +21,12 @@
 // The file has no package imports on purpose: plugins load from a folder
 // without node_modules, and a failed import makes OpenCode skip the plugin
 // silently. Node built-ins are loaded lazily and only when needed.
-// Checked against @opencode/plugin 2.0.22 (event names and payloads).
+// Checked against @opencode/plugin 2.0.25 (event names and payloads).
+//
+// When something a notification asked for is dealt with elsewhere (a
+// permission answered at the computer, the session opened in the TUI, a new
+// message sent), the plugin tells the relay the notification is resolved,
+// and the phone removes it without showing anything.
 //
 // The relay never sees what a notification says. Two keys are derived from
 // the pairing key with HKDF-SHA256: an auth token the relay knows, and an
@@ -32,12 +37,16 @@ const PLUGIN_ID = "opencode-mobile-push";
 const SETTINGS_FILE = "opencode-mobile-push.json";
 const DEFAULT_RELAY = "https://relay.opencodemobile.app";
 const DEDUPE_MS = 15_000;
+const MAX_PENDING = 500;
 const BACKOFFS_MS = [2_000, 5_000, 10_000, 30_000];
 
 // Module-level so that several locations loading the same file in one
 // process still send each event once.
 const seenEvents = new Map();
 const sentKeys = new Map();
+// Kinds notified per session and not resolved yet, so a resolution is only
+// sent for notifications the phone actually got.
+const pending = new Map();
 
 function remember(map, key, now) {
   for (const [k, at] of map) {
@@ -172,6 +181,28 @@ function classify(event) {
   }
 }
 
+const ALL_KINDS = ["completed", "failed", "permission", "question"];
+
+/** Maps a v2 event to the notification kinds it settles, or null. */
+function resolution(event) {
+  const data = event?.data ?? {};
+  switch (event?.type) {
+    case "permission.replied":
+      return { sessionID: data.sessionID, kinds: ["permission"] };
+    case "form.replied":
+    case "form.cancelled":
+      return { sessionID: data.sessionID, kinds: ["question"] };
+    // The user looked at the finished session (TUI or web).
+    case "session.viewed":
+      return { sessionID: data.sessionID, kinds: ["completed", "failed"] };
+    // A new turn makes everything said about the last one old news.
+    case "session.execution.started":
+      return { sessionID: data.sessionID, kinds: ALL_KINDS };
+    default:
+      return null;
+  }
+}
+
 const encoder = new TextEncoder();
 
 function base64url(bytes) {
@@ -238,8 +269,8 @@ async function sessionInfo(ctx, sessionID) {
   }
 }
 
-async function post(options, auth, payload) {
-  const response = await fetch(`${options.relay}/v1/notify`, {
+async function post(options, auth, payload, path = "/v1/notify") {
+  const response = await fetch(`${options.relay}${path}`, {
     method: "POST",
     headers: {
       "content-type": "application/json",
@@ -252,7 +283,33 @@ async function post(options, auth, payload) {
   }
 }
 
+/** Tells the phone to drop notifications that [event] settled, if any were sent. */
+async function resolve(options, event) {
+  const match = resolution(event);
+  if (!match) return;
+  const { sessionID } = match;
+  const sentKinds = pending.get(sessionID);
+  if (!sentKinds) return;
+  const kinds = match.kinds.filter((kind) => sentKinds.has(kind));
+  if (kinds.length === 0) return;
+  for (const kind of kinds) {
+    sentKinds.delete(kind);
+    // A new notice of the same kind may follow right away.
+    sentKeys.delete(`${kind}:${sessionID}`);
+  }
+  if (sentKinds.size === 0) pending.delete(sessionID);
+  const keys = await keysFor(options.key);
+  try {
+    await post(options, keys.auth, { sessionID, kinds }, "/v1/resolve");
+  } catch (error) {
+    // A relay from before resolutions answers 404; the phone then keeps the
+    // notification, as it always did.
+    if (!String(error?.message).endsWith("404")) throw error;
+  }
+}
+
 async function handle(ctx, options, event) {
+  await resolve(options, event);
   const match = classify(event);
   if (!match || !options.kinds[match.kind]) return;
   const { kind, sessionID } = match;
@@ -281,6 +338,12 @@ async function handle(ctx, options, event) {
     sessionID,
     enc: await seal(keys.enc, kind, sessionID, content),
   });
+  const kinds = pending.get(sessionID) ?? new Set();
+  kinds.add(kind);
+  // Re-inserted so the map stays oldest first; long-forgotten sessions go.
+  pending.delete(sessionID);
+  pending.set(sessionID, kinds);
+  if (pending.size > MAX_PENDING) pending.delete(pending.keys().next().value);
 }
 
 function sleep(ms, signal) {

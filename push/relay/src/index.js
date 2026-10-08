@@ -14,6 +14,8 @@
 //   DELETE /v1/devices  {key, token}            unregister
 //   POST   /v1/notify   Authorization: Bearer <key>
 //                       {kind, sessionID, enc}
+//   POST   /v1/resolve  Authorization: Bearer <key>
+//                       {sessionID, kinds}     drop those notifications silently
 //   GET    /v1/app-version                     minimum app version per platform
 //
 // Bindings: D1 database DB (schema in migrations/), rate limiters
@@ -52,6 +54,9 @@ export async function handle(request, env, deps = {}) {
     }
     if (url.pathname === "/v1/notify" && request.method === "POST") {
       return await notify(request, env, deps);
+    }
+    if (url.pathname === "/v1/resolve" && request.method === "POST") {
+      return await resolve(request, env, deps);
     }
     return json({ error: "not_found" }, 404);
   } catch (error) {
@@ -194,13 +199,18 @@ function text(value, max) {
   return typeof value === "string" ? value.slice(0, max) : "";
 }
 
-async function notify(request, env, deps) {
+/** The devices of the bearer key, after auth and rate limiting. */
+async function sender(request, env) {
   const auth = request.headers.get("authorization") ?? "";
   const key = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
   if (key.length < MIN_KEY_LENGTH) throw new HttpError(401, "unauthorized");
   const id = await keyId(key);
   await limit(env.KEY_LIMIT, id);
-  const devices = await loadDevices(env, id);
+  return { id, devices: await loadDevices(env, id) };
+}
+
+async function notify(request, env, deps) {
+  const { id, devices } = await sender(request, env);
   // Unknown keys answer like known ones so the endpoint does not reveal
   // which keys exist.
   if (devices.length === 0) return json({ ok: true, delivered: 0 }, 202);
@@ -216,14 +226,35 @@ async function notify(request, env, deps) {
     enc: typeof body.enc === "string" ? body.enc : "",
   };
 
+  return json({ ok: true, delivered: await deliver(env, id, devices, data, deps) }, 202);
+}
+
+/**
+ * Tells the devices that a session's notifications of [kinds] were dealt
+ * with elsewhere. The message has no `kind` or `sessionID`, so app versions
+ * from before resolutions ignore it instead of showing it.
+ */
+async function resolve(request, env, deps) {
+  const { id, devices } = await sender(request, env);
+  if (devices.length === 0) return json({ ok: true, delivered: 0 }, 202);
+
+  const body = await readJson(request);
+  const kinds = Array.isArray(body.kinds) ? [...new Set(body.kinds.filter((k) => KINDS.has(k)))] : [];
+  const session = text(body.sessionID, 200);
+  if (kinds.length === 0 || !session) throw new HttpError(400, "invalid_resolve");
+  const data = { type: "resolved", keyId: id, session, kinds: kinds.join(",") };
+  return json({ ok: true, delivered: await deliver(env, id, devices, data, deps) }, 202);
+}
+
+/** Sends [data] to every device and forgets the ones FCM no longer knows. */
+async function deliver(env, id, devices, data, deps) {
   const send = deps.sendFcm ?? sendFcm;
   const results = await Promise.all(devices.map((d) => send(env, d, data, deps)));
   const stale = devices.filter((_, i) => results[i] === "unregistered");
   if (stale.length > 0) {
     await env.DB.batch(stale.map((d) => removeDevice(env, id, d.token)));
   }
-  const delivered = results.filter((r) => r === "ok").length;
-  return json({ ok: true, delivered }, 202);
+  return results.filter((r) => r === "ok").length;
 }
 
 // --- FCM HTTP v1 -----------------------------------------------------------
@@ -234,8 +265,25 @@ let cachedToken;
  * The FCM message for one device. Android gets data only and builds the
  * notification itself after decrypting. iOS gets a placeholder alert marked
  * mutable, which the app's Notification Service Extension rewrites.
+ *
+ * A resolution shows nothing: a background push on iOS, which wakes the app
+ * to remove the notification, and a normal-priority data message on
+ * Android, since nothing about it is urgent while the phone sleeps.
  */
 export function fcmMessage(device, data) {
+  if (data.type === "resolved") {
+    if (device.platform === "ios") {
+      return {
+        token: device.token,
+        data,
+        apns: {
+          headers: { "apns-push-type": "background", "apns-priority": "5" },
+          payload: { aps: { "content-available": 1 } },
+        },
+      };
+    }
+    return { token: device.token, data, android: { priority: "normal" } };
+  }
   if (device.platform === "ios") {
     return {
       token: device.token,

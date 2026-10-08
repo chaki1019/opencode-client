@@ -63,6 +63,11 @@ All default to `true`.
 | `notifyOnPermission` | The agent is waiting for a permission |
 | `notifyOnQuestion` | The agent is waiting for an answer |
 
+When a notification is dealt with somewhere else (the permission or question
+answered at the computer, the session opened in the TUI, or a new message
+sent), the plugin tells the phone, which removes the notification and lowers
+the app badge without showing anything.
+
 ## Privacy
 
 The relay never sees what a notification says. Two keys are derived from the

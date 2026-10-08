@@ -40,3 +40,43 @@ class PushMessage {
     'enc': enc,
   };
 }
+
+/// The relay saying that a session's notifications of [kinds] were dealt
+/// with elsewhere (answered at the computer, opened in the TUI, or a new
+/// turn started), so the phone removes them without showing anything.
+class PushResolved {
+  const PushResolved({
+    required this.keyId,
+    required this.sessionId,
+    required this.kinds,
+  });
+
+  /// Reads the relay's data payload; null when it is not a resolution.
+  static PushResolved? fromData(Map<String, dynamic> data) {
+    final keyId = data['keyId'];
+    final session = data['session'];
+    final kinds = data['kinds'];
+    if (data['type'] != 'resolved' ||
+        keyId is! String ||
+        session is! String ||
+        kinds is! String) {
+      return null;
+    }
+    final names = PushKind.values.asNameMap();
+    return PushResolved(
+      keyId: keyId,
+      sessionId: session,
+      kinds: {for (final k in kinds.split(',')) ?names[k]},
+    );
+  }
+
+  final String keyId;
+  final String sessionId;
+  final Set<PushKind> kinds;
+
+  /// Whether this resolves the notification for [message].
+  bool covers(PushMessage message) =>
+      message.keyId == keyId &&
+      message.sessionId == sessionId &&
+      kinds.contains(message.kind);
+}

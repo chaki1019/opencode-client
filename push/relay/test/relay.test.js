@@ -238,3 +238,36 @@ test("app-version serves the configured minimums", async () => {
   res = await handle(req("GET", "/v1/app-version"), { IP_LIMIT: blocked });
   assert.equal(res.status, 200);
 });
+
+test("resolve sends a silent message without kind or sessionID", async () => {
+  const env = { DB: memoryD1() };
+  const sent = [];
+  const deps = {
+    sendFcm: async (_env, device, data) => {
+      sent.push({ device, data });
+      return "ok";
+    },
+  };
+  await handle(req("POST", "/v1/devices", { key: KEY, token: "tok1", platform: "ios" }), env);
+  const resolveReq = (body) => req("POST", "/v1/resolve", body, { authorization: `Bearer ${KEY}` });
+
+  let res = await handle(resolveReq({ sessionID: "ses_1", kinds: ["permission", "bogus", "permission"] }), env, deps);
+  assert.equal(res.status, 202);
+  assert.deepEqual(await res.json(), { ok: true, delivered: 1 });
+  const data = { type: "resolved", keyId: await keyId(KEY), session: "ses_1", kinds: "permission" };
+  assert.deepEqual(sent[0].data, data);
+
+  res = await handle(resolveReq({ sessionID: "ses_1", kinds: ["bogus"] }), env, deps);
+  assert.equal(res.status, 400);
+
+  const ios = fcmMessage({ token: "i", platform: "ios" }, data);
+  assert.deepEqual(ios.apns, {
+    headers: { "apns-push-type": "background", "apns-priority": "5" },
+    payload: { aps: { "content-available": 1 } },
+  });
+  assert.deepEqual(fcmMessage({ token: "a", platform: "android" }, data), {
+    token: "a",
+    data,
+    android: { priority: "normal" },
+  });
+});

@@ -69,6 +69,15 @@ class _FakeMessaging implements PushMessaging {
 
   @override
   Future<void> unshareKeys(String keyId) async => shared.remove(keyId);
+
+  final cleared = <String>[];
+  var badgeSyncs = 0;
+
+  @override
+  Future<void> clearSession(String sessionId) async => cleared.add(sessionId);
+
+  @override
+  Future<void> syncBadge() async => badgeSyncs++;
 }
 
 Future<String> _seal(
@@ -482,6 +491,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(ChatScreen), findsOneWidget);
     expect(server.requests.map((r) => r.path), contains('/api/session/ses_1'));
+    // The opened session's notifications are done with.
+    expect(messaging.cleared, ['ses_1']);
+    expect(messaging.badgeSyncs, greaterThan(0));
   });
 
   testWidgets('a notification in the foreground shows a snack bar', (
@@ -573,6 +585,31 @@ void main() {
       'enc': 'e',
     });
     expect(PushMessage.fromData({'kind': 'completed'}), isNull);
+
+    // A resolution has no kind or sessionID, so older app versions, which
+    // read only PushMessage, drop it instead of showing it.
+    final data = {
+      'type': 'resolved',
+      'keyId': 'k',
+      'session': 'ses_9',
+      'kinds': 'permission,question,bogus',
+    };
+    expect(PushMessage.fromData(data), isNull);
+    final resolved = PushResolved.fromData(data)!;
+    expect(resolved.kinds, {PushKind.permission, PushKind.question});
+    expect(resolved.covers(message!), isTrue);
+    expect(
+      resolved.covers(
+        PushMessage(
+          kind: PushKind.completed,
+          keyId: 'k',
+          sessionId: 'ses_9',
+          enc: '',
+        ),
+      ),
+      isFalse,
+    );
+    expect(PushResolved.fromData(message.toData()), isNull);
     expect(PushPairing.newKey(), matches(RegExp(r'^[A-Za-z0-9_-]{43}$')));
   });
 
