@@ -149,13 +149,20 @@ void main() {
     });
     await pumpScreen(tester, projects: two);
     expect(projectRow('old'), findsNothing);
-    // The badge counts the hidden project.
+    // A plain number beside the eye counts the hidden project, not a badge.
     expect(
       find.descendant(
         of: find.byKey(const Key('show-all-projects')),
         matching: find.text('1'),
       ),
       findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('show-all-projects')),
+        matching: find.byType(Badge),
+      ),
+      findsNothing,
     );
 
     await tester.tap(find.byKey(const Key('show-all-projects')));

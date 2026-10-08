@@ -283,7 +283,9 @@ class ProjectsPane extends ConsumerWidget {
 }
 
 /// Switches the list between the projects on it and every project, hidden
-/// ones included. The badge counts the hidden ones.
+/// ones included. A plain gray number beside the eye counts the hidden
+/// ones: nothing needs doing about them, so it must not look like the red
+/// badge of the needs-you button.
 class _ShowAllButton extends ConsumerWidget {
   const _ShowAllButton({required this.showAll, required this.hiddenCount});
 
@@ -292,18 +294,30 @@ class _ShowAllButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    Widget withCount(IconData icon) => Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon),
+        if (hiddenCount > 0) ...[
+          const SizedBox(width: 4),
+          Text(
+            '$hiddenCount',
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ],
+    );
     return IconButton(
       key: const Key('show-all-projects'),
       isSelected: showAll,
       tooltip: showAll
           ? context.l10n.showListedProjects
           : context.l10n.showAllProjects,
-      icon: Badge(
-        isLabelVisible: hiddenCount > 0,
-        label: Text('$hiddenCount'),
-        child: const Icon(Icons.visibility_outlined),
-      ),
-      selectedIcon: const Icon(Icons.visibility),
+      icon: withCount(Icons.visibility_outlined),
+      selectedIcon: withCount(Icons.visibility),
       onPressed: () => ref.read(showAllProjectsProvider.notifier).toggle(),
     );
   }
