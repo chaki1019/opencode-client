@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:opencode_mobile/app/router.dart';
+import 'package:opencode_mobile/core/analytics/session_replay.dart';
 import 'package:opencode_mobile/core/analytics/usage_analytics.dart';
 import 'package:opencode_mobile/core/crash/crash_reporter.dart';
 import 'package:opencode_mobile/core/storage/settings_store.dart';
@@ -38,6 +39,19 @@ class _FakeUsageAnalytics implements UsageAnalytics {
 
   @override
   Future<void> setEnabled(bool on) async => calls.add(on);
+}
+
+class _FakeSessionReplay implements SessionReplay {
+  final calls = <bool>[];
+
+  @override
+  bool get available => true;
+
+  @override
+  NavigatorObserver? get observer => null;
+
+  @override
+  void setEnabled(BuildContext context, bool on) => calls.add(on);
 }
 
 void main() {
@@ -189,6 +203,41 @@ void main() {
     expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
     expect(analytics.calls, [false]);
     expect((await SettingsStore().load()).usageAnalytics, isFalse);
+  });
+
+  testWidgets('session replay follows the usage statistics switch', (
+    tester,
+  ) async {
+    final replay = _FakeSessionReplay();
+    await pumpSettings(
+      tester,
+      overrides: [
+        sessionReplayProvider.overrideWithValue(replay),
+        supportConfigProvider.overrideWithValue(const SupportConfig()),
+      ],
+    );
+    expect(replay.calls, [true]);
+    // The switch shows for session replay alone.
+    final toggle = find.byKey(const Key('usage-analytics'));
+    await tester.scrollUntilVisible(toggle, 100);
+    await tester.ensureVisible(toggle);
+    await tester.pumpAndSettle();
+
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(replay.calls, [true, false]);
+  });
+
+  testWidgets('session replay never starts when turned off before', (
+    tester,
+  ) async {
+    await SettingsStore().save(const AppSettings(usageAnalytics: false));
+    final replay = _FakeSessionReplay();
+    await pumpSettings(
+      tester,
+      overrides: [sessionReplayProvider.overrideWithValue(replay)],
+    );
+    expect(replay.calls, [false]);
   });
 
   testWidgets('stored settings are applied on start', (tester) async {

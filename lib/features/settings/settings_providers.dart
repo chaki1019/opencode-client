@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/analytics/session_replay.dart';
 import '../../core/analytics/usage_analytics.dart';
 import '../../core/crash/crash_reporter.dart';
 import '../../core/storage/settings_store.dart';
@@ -15,6 +16,12 @@ final crashReporterProvider = Provider<CrashReporter>(
 /// Replaced in `main` with the analytics started before the app.
 final usageAnalyticsProvider = Provider<UsageAnalytics>(
   (ref) => const UsageAnalytics.none(),
+);
+
+/// Replaced in `main` with the build's Clarity project. Follows the usage
+/// statistics switch through `SessionReplayScope`.
+final sessionReplayProvider = Provider<SessionReplay>(
+  (ref) => const SessionReplay.none(),
 );
 
 /// Starts from the defaults (system theme and language) and switches to the

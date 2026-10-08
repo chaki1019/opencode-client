@@ -1102,7 +1102,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get usageAnalyticsHelp =>
-      'Send statistics such as which screens you open and on which days, to help improve the app (no chat content or server details)';
+      'Send which screens you open, on which days and where you tap, to help improve the app (chat content, server details and what you type are hidden and never sent)';
 
   @override
   String get linkOpenFailed => 'Couldn\'t open this:';

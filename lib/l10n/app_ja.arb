@@ -304,7 +304,7 @@
   "crashReports": "クラッシュレポートを送信",
   "crashReportsHelp": "アプリが異常終了したとき、修正のためにエラーの情報を送ります（チャットの内容は送りません）",
   "usageAnalytics": "利用状況を送信",
-  "usageAnalyticsHelp": "改善のために、開いた画面や利用した日などの統計を送ります（チャットの内容やサーバーの情報は送りません）",
+  "usageAnalyticsHelp": "改善のために、開いた画面や利用した日、画面のどこを操作したかを送ります（チャットの内容、サーバーの情報、入力した文字は隠して送りません）",
   "linkOpenFailed": "開けませんでした:",
   "pushComputerTitle": "プッシュ通知プラグイン",
   "pushComputerActive": "稼働中",

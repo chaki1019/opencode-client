@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/analytics/session_replay.dart';
 import '../core/models/project.dart';
 import '../core/models/session.dart';
 import '../features/diagnostics/diagnostics_screen.dart';
@@ -17,8 +18,8 @@ import '../features/sessions/sessions_screen.dart';
 /// go_router 18 only recognizes `material_ui`'s MaterialApp and otherwise
 /// falls back to pages without any transition, so every route builds its
 /// [MaterialPage] itself to get the theme's slide. The page is named after
-/// its route pattern (`/sessions/:sessionId`), which usage analytics reports
-/// as the screen, so no IDs leave the device.
+/// its route pattern (`/sessions/:sessionId`), which usage analytics and
+/// session replay report as the screen, so no IDs leave the device.
 Page<void> _page(GoRouterState state, Widget child) =>
     MaterialPage<void>(key: state.pageKey, name: state.fullPath, child: child);
 
@@ -29,9 +30,10 @@ final routerProvider = Provider<GoRouter>((ref) {
   ref.onDispose(refresh.dispose);
 
   final analyticsObserver = ref.read(usageAnalyticsProvider).observer;
+  final replayObserver = ref.read(sessionReplayProvider).observer;
   return GoRouter(
     initialLocation: '/',
-    observers: [?analyticsObserver],
+    observers: [?analyticsObserver, ?replayObserver],
     refreshListenable: refresh,
     redirect: (context, state) {
       final connected = ref.read(connectionProvider) != null;
@@ -77,7 +79,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/settings',
-        pageBuilder: (context, state) => _page(state, const SettingsScreen()),
+        // Only the app's own text is shown here, so session recordings may
+        // show it in full.
+        pageBuilder: (context, state) =>
+            _page(state, const SessionReplayUnmask(child: SettingsScreen())),
       ),
       GoRoute(
         path: '/diagnostics',

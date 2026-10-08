@@ -1077,7 +1077,7 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get usageAnalyticsHelp =>
-      '改善のために、開いた画面や利用した日などの統計を送ります（チャットの内容やサーバーの情報は送りません）';
+      '改善のために、開いた画面や利用した日、画面のどこを操作したかを送ります（チャットの内容、サーバーの情報、入力した文字は隠して送りません）';
 
   @override
   String get linkOpenFailed => '開けませんでした:';

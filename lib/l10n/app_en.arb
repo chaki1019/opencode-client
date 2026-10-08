@@ -568,7 +568,7 @@
   "crashReports": "Send crash reports",
   "crashReportsHelp": "When the app crashes, send the error details (no chat content) to help fix it",
   "usageAnalytics": "Send usage statistics",
-  "usageAnalyticsHelp": "Send statistics such as which screens you open and on which days, to help improve the app (no chat content or server details)",
+  "usageAnalyticsHelp": "Send which screens you open, on which days and where you tap, to help improve the app (chat content, server details and what you type are hidden and never sent)",
   "linkOpenFailed": "Couldn't open this:",
   "pushComputerTitle": "Push notification plugin",
   "pushComputerActive": "Running",

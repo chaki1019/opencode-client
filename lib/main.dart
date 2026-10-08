@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/router.dart';
 import 'app/theme.dart';
+import 'core/analytics/session_replay.dart';
 import 'core/analytics/usage_analytics.dart';
 import 'core/config/remote_settings.dart';
 import 'core/crash/crash_reporter.dart';
@@ -14,6 +15,7 @@ import 'features/ads/remove_ads.dart';
 import 'features/config/remote_values.dart';
 import 'features/live/server_activity.dart';
 import 'features/push/push_providers.dart';
+import 'features/settings/session_replay_scope.dart';
 import 'features/settings/settings_providers.dart';
 import 'features/update/update_gate.dart';
 import 'l10n/l10n.dart';
@@ -30,6 +32,9 @@ Future<void> main() async {
       overrides: [
         crashReporterProvider.overrideWithValue(crashReporter),
         usageAnalyticsProvider.overrideWithValue(usageAnalytics),
+        sessionReplayProvider.overrideWithValue(
+          SessionReplay.fromEnvironment(),
+        ),
         remoteSettingsProvider.overrideWithValue(remoteSettings),
       ],
       child: const OpenCodeMobileApp(),
@@ -74,7 +79,7 @@ class OpenCodeMobileApp extends ConsumerWidget {
       // navigation bar take their icon colors from here.
       builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
         value: _systemBars(Theme.of(context).brightness),
-        child: UpdateGate(child: child!),
+        child: SessionReplayScope(child: UpdateGate(child: child!)),
       ),
     );
   }
