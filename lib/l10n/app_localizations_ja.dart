@@ -910,6 +910,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get settingsFollowSystem => 'システム設定に従う';
 
   @override
+  String get themeSystem => 'システム';
+
+  @override
   String get themeLight => 'ライト';
 
   @override

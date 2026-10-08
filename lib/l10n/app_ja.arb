@@ -255,6 +255,7 @@
   "settingsAppearance": "外観",
   "settingsLanguage": "言語",
   "settingsFollowSystem": "システム設定に従う",
+  "themeSystem": "システム",
   "themeLight": "ライト",
   "themeDark": "ダーク",
   "chatPaneEmpty": "セッションを選ぶと\nここにチャットが表示されます",
