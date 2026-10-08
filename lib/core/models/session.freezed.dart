@@ -289,7 +289,9 @@ as String?,
 /// @nodoc
 mixin _$SessionTime {
 
- double get created; double get updated; double? get archived;
+ double get created; double get updated; double? get archived;/// When the last run ended.
+ double? get idle;/// The [idle] a viewer last marked as seen (the TUI, or this app).
+ double? get viewed;
 /// Create a copy of SessionTime
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -303,20 +305,20 @@ $SessionTimeCopyWith<SessionTime> get copyWith => _$SessionTimeCopyWithImpl<Sess
 @override
 bool operator ==(Object other) {
   final _this = this as SessionTime;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionTime&&(identical(other.created, _this.created) || other.created == _this.created)&&(identical(other.updated, _this.updated) || other.updated == _this.updated)&&(identical(other.archived, _this.archived) || other.archived == _this.archived));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SessionTime&&(identical(other.created, _this.created) || other.created == _this.created)&&(identical(other.updated, _this.updated) || other.updated == _this.updated)&&(identical(other.archived, _this.archived) || other.archived == _this.archived)&&(identical(other.idle, _this.idle) || other.idle == _this.idle)&&(identical(other.viewed, _this.viewed) || other.viewed == _this.viewed));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as SessionTime;
-  return Object.hash(runtimeType,_this.created,_this.updated,_this.archived);
+  return Object.hash(runtimeType,_this.created,_this.updated,_this.archived,_this.idle,_this.viewed);
 }
 
 @override
 String toString() {
   final _this = this as SessionTime;
-  return 'SessionTime(created: ${_this.created}, updated: ${_this.updated}, archived: ${_this.archived})';
+  return 'SessionTime(created: ${_this.created}, updated: ${_this.updated}, archived: ${_this.archived}, idle: ${_this.idle}, viewed: ${_this.viewed})';
 }
 
 
@@ -327,7 +329,7 @@ abstract mixin class $SessionTimeCopyWith<$Res>  {
   factory $SessionTimeCopyWith(SessionTime value, $Res Function(SessionTime) _then) = _$SessionTimeCopyWithImpl;
 @useResult
 $Res call({
- double created, double updated, double? archived
+ double created, double updated, double? archived, double? idle, double? viewed
 });
 
 
@@ -344,11 +346,13 @@ class _$SessionTimeCopyWithImpl<$Res>
 
 /// Create a copy of SessionTime
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? created = null,Object? updated = null,Object? archived = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? created = null,Object? updated = null,Object? archived = freezed,Object? idle = freezed,Object? viewed = freezed,}) {
   return _then(SessionTime(
 created: null == created ? _self.created : created // ignore: cast_nullable_to_non_nullable
 as double,updated: null == updated ? _self.updated : updated // ignore: cast_nullable_to_non_nullable
 as double,archived: freezed == archived ? _self.archived : archived // ignore: cast_nullable_to_non_nullable
+as double?,idle: freezed == idle ? _self.idle : idle // ignore: cast_nullable_to_non_nullable
+as double?,viewed: freezed == viewed ? _self.viewed : viewed // ignore: cast_nullable_to_non_nullable
 as double?,
   ));
 }
@@ -434,10 +438,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double created,  double updated,  double? archived)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double created,  double updated,  double? archived,  double? idle,  double? viewed)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SessionTime() when $default != null:
-return $default(_that.created,_that.updated,_that.archived);case _:
+return $default(_that.created,_that.updated,_that.archived,_that.idle,_that.viewed);case _:
   return orElse();
 
 }
@@ -455,10 +459,10 @@ return $default(_that.created,_that.updated,_that.archived);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double created,  double updated,  double? archived)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double created,  double updated,  double? archived,  double? idle,  double? viewed)  $default,) {final _that = this;
 switch (_that) {
 case _SessionTime():
-return $default(_that.created,_that.updated,_that.archived);case _:
+return $default(_that.created,_that.updated,_that.archived,_that.idle,_that.viewed);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -475,10 +479,10 @@ return $default(_that.created,_that.updated,_that.archived);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double created,  double updated,  double? archived)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double created,  double updated,  double? archived,  double? idle,  double? viewed)?  $default,) {final _that = this;
 switch (_that) {
 case _SessionTime() when $default != null:
-return $default(_that.created,_that.updated,_that.archived);case _:
+return $default(_that.created,_that.updated,_that.archived,_that.idle,_that.viewed);case _:
   return null;
 
 }
@@ -490,12 +494,16 @@ return $default(_that.created,_that.updated,_that.archived);case _:
 @JsonSerializable()
 
 class _SessionTime implements SessionTime {
-  const _SessionTime({required this.created, required this.updated, this.archived});
+  const _SessionTime({required this.created, required this.updated, this.archived, this.idle, this.viewed});
   factory _SessionTime.fromJson(Map<String, dynamic> json) => _$SessionTimeFromJson(json);
 
 @override final  double created;
 @override final  double updated;
 @override final  double? archived;
+/// When the last run ended.
+@override final  double? idle;
+/// The [idle] a viewer last marked as seen (the TUI, or this app).
+@override final  double? viewed;
 
 /// Create a copy of SessionTime
 /// with the given fields replaced by the non-null parameter values.
@@ -510,18 +518,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionTime&&(identical(other.created, created) || other.created == created)&&(identical(other.updated, updated) || other.updated == updated)&&(identical(other.archived, archived) || other.archived == archived));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SessionTime&&(identical(other.created, created) || other.created == created)&&(identical(other.updated, updated) || other.updated == updated)&&(identical(other.archived, archived) || other.archived == archived)&&(identical(other.idle, idle) || other.idle == idle)&&(identical(other.viewed, viewed) || other.viewed == viewed));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,created,updated,archived);
+    return Object.hash(runtimeType,created,updated,archived,idle,viewed);
 }
 
 @override
 String toString() {
-    return 'SessionTime(created: $created, updated: $updated, archived: $archived)';
+    return 'SessionTime(created: $created, updated: $updated, archived: $archived, idle: $idle, viewed: $viewed)';
 }
 
 
@@ -532,7 +540,7 @@ abstract mixin class _$SessionTimeCopyWith<$Res> implements $SessionTimeCopyWith
   factory _$SessionTimeCopyWith(_SessionTime value, $Res Function(_SessionTime) _then) = __$SessionTimeCopyWithImpl;
 @override @useResult
 $Res call({
- double created, double updated, double? archived
+ double created, double updated, double? archived, double? idle, double? viewed
 });
 
 
@@ -549,11 +557,13 @@ class __$SessionTimeCopyWithImpl<$Res>
 
 /// Create a copy of SessionTime
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? created = null,Object? updated = null,Object? archived = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? created = null,Object? updated = null,Object? archived = freezed,Object? idle = freezed,Object? viewed = freezed,}) {
   return _then(_SessionTime(
 created: null == created ? _self.created : created // ignore: cast_nullable_to_non_nullable
 as double,updated: null == updated ? _self.updated : updated // ignore: cast_nullable_to_non_nullable
 as double,archived: freezed == archived ? _self.archived : archived // ignore: cast_nullable_to_non_nullable
+as double?,idle: freezed == idle ? _self.idle : idle // ignore: cast_nullable_to_non_nullable
+as double?,viewed: freezed == viewed ? _self.viewed : viewed // ignore: cast_nullable_to_non_nullable
 as double?,
   ));
 }
@@ -1684,7 +1694,8 @@ mixin _$Session {
  String get id; String get projectID; String? get parentID; String? get title; SessionLocation get location; SessionTime get time; String? get agent; ModelRef? get model;/// Total spend in USD across the session.
  double? get cost;/// Tokens used across the session.
  TokenUsage? get tokens;/// A staged rewind, if any.
- SessionRevert? get revert;
+ SessionRevert? get revert;/// How the last run ended: `succeeded`, `failed` or `interrupted`.
+ String? get outcome;
 /// Create a copy of Session
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1698,20 +1709,20 @@ $SessionCopyWith<Session> get copyWith => _$SessionCopyWithImpl<Session>(this as
 @override
 bool operator ==(Object other) {
   final _this = this as Session;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Session&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.projectID, _this.projectID) || other.projectID == _this.projectID)&&(identical(other.parentID, _this.parentID) || other.parentID == _this.parentID)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.location, _this.location) || other.location == _this.location)&&(identical(other.time, _this.time) || other.time == _this.time)&&(identical(other.agent, _this.agent) || other.agent == _this.agent)&&(identical(other.model, _this.model) || other.model == _this.model)&&(identical(other.cost, _this.cost) || other.cost == _this.cost)&&(identical(other.tokens, _this.tokens) || other.tokens == _this.tokens)&&(identical(other.revert, _this.revert) || other.revert == _this.revert));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Session&&(identical(other.id, _this.id) || other.id == _this.id)&&(identical(other.projectID, _this.projectID) || other.projectID == _this.projectID)&&(identical(other.parentID, _this.parentID) || other.parentID == _this.parentID)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.location, _this.location) || other.location == _this.location)&&(identical(other.time, _this.time) || other.time == _this.time)&&(identical(other.agent, _this.agent) || other.agent == _this.agent)&&(identical(other.model, _this.model) || other.model == _this.model)&&(identical(other.cost, _this.cost) || other.cost == _this.cost)&&(identical(other.tokens, _this.tokens) || other.tokens == _this.tokens)&&(identical(other.revert, _this.revert) || other.revert == _this.revert)&&(identical(other.outcome, _this.outcome) || other.outcome == _this.outcome));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as Session;
-  return Object.hash(runtimeType,_this.id,_this.projectID,_this.parentID,_this.title,_this.location,_this.time,_this.agent,_this.model,_this.cost,_this.tokens,_this.revert);
+  return Object.hash(runtimeType,_this.id,_this.projectID,_this.parentID,_this.title,_this.location,_this.time,_this.agent,_this.model,_this.cost,_this.tokens,_this.revert,_this.outcome);
 }
 
 @override
 String toString() {
   final _this = this as Session;
-  return 'Session(id: ${_this.id}, projectID: ${_this.projectID}, parentID: ${_this.parentID}, title: ${_this.title}, location: ${_this.location}, time: ${_this.time}, agent: ${_this.agent}, model: ${_this.model}, cost: ${_this.cost}, tokens: ${_this.tokens}, revert: ${_this.revert})';
+  return 'Session(id: ${_this.id}, projectID: ${_this.projectID}, parentID: ${_this.parentID}, title: ${_this.title}, location: ${_this.location}, time: ${_this.time}, agent: ${_this.agent}, model: ${_this.model}, cost: ${_this.cost}, tokens: ${_this.tokens}, revert: ${_this.revert}, outcome: ${_this.outcome})';
 }
 
 
@@ -1722,7 +1733,7 @@ abstract mixin class $SessionCopyWith<$Res>  {
   factory $SessionCopyWith(Session value, $Res Function(Session) _then) = _$SessionCopyWithImpl;
 @useResult
 $Res call({
- String id, String projectID, String? parentID, String? title, SessionLocation location, SessionTime time, String? agent, ModelRef? model, double? cost, TokenUsage? tokens, SessionRevert? revert
+ String id, String projectID, String? parentID, String? title, SessionLocation location, SessionTime time, String? agent, ModelRef? model, double? cost, TokenUsage? tokens, SessionRevert? revert, String? outcome
 });
 
 
@@ -1739,7 +1750,7 @@ class _$SessionCopyWithImpl<$Res>
 
 /// Create a copy of Session
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? projectID = null,Object? parentID = freezed,Object? title = freezed,Object? location = null,Object? time = null,Object? agent = freezed,Object? model = freezed,Object? cost = freezed,Object? tokens = freezed,Object? revert = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? id = null,Object? projectID = null,Object? parentID = freezed,Object? title = freezed,Object? location = null,Object? time = null,Object? agent = freezed,Object? model = freezed,Object? cost = freezed,Object? tokens = freezed,Object? revert = freezed,Object? outcome = freezed,}) {
   return _then(Session(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,projectID: null == projectID ? _self.projectID : projectID // ignore: cast_nullable_to_non_nullable
@@ -1752,7 +1763,8 @@ as String?,model: freezed == model ? _self.model : model // ignore: cast_nullabl
 as ModelRef?,cost: freezed == cost ? _self.cost : cost // ignore: cast_nullable_to_non_nullable
 as double?,tokens: freezed == tokens ? _self.tokens : tokens // ignore: cast_nullable_to_non_nullable
 as TokenUsage?,revert: freezed == revert ? _self.revert : revert // ignore: cast_nullable_to_non_nullable
-as SessionRevert?,
+as SessionRevert?,outcome: freezed == outcome ? _self.outcome : outcome // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 /// Create a copy of Session
@@ -1891,10 +1903,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String projectID,  String? parentID,  String? title,  SessionLocation location,  SessionTime time,  String? agent,  ModelRef? model,  double? cost,  TokenUsage? tokens,  SessionRevert? revert)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String id,  String projectID,  String? parentID,  String? title,  SessionLocation location,  SessionTime time,  String? agent,  ModelRef? model,  double? cost,  TokenUsage? tokens,  SessionRevert? revert,  String? outcome)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Session() when $default != null:
-return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.location,_that.time,_that.agent,_that.model,_that.cost,_that.tokens,_that.revert);case _:
+return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.location,_that.time,_that.agent,_that.model,_that.cost,_that.tokens,_that.revert,_that.outcome);case _:
   return orElse();
 
 }
@@ -1912,10 +1924,10 @@ return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.locati
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String projectID,  String? parentID,  String? title,  SessionLocation location,  SessionTime time,  String? agent,  ModelRef? model,  double? cost,  TokenUsage? tokens,  SessionRevert? revert)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String id,  String projectID,  String? parentID,  String? title,  SessionLocation location,  SessionTime time,  String? agent,  ModelRef? model,  double? cost,  TokenUsage? tokens,  SessionRevert? revert,  String? outcome)  $default,) {final _that = this;
 switch (_that) {
 case _Session():
-return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.location,_that.time,_that.agent,_that.model,_that.cost,_that.tokens,_that.revert);case _:
+return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.location,_that.time,_that.agent,_that.model,_that.cost,_that.tokens,_that.revert,_that.outcome);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -1932,10 +1944,10 @@ return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.locati
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String projectID,  String? parentID,  String? title,  SessionLocation location,  SessionTime time,  String? agent,  ModelRef? model,  double? cost,  TokenUsage? tokens,  SessionRevert? revert)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String id,  String projectID,  String? parentID,  String? title,  SessionLocation location,  SessionTime time,  String? agent,  ModelRef? model,  double? cost,  TokenUsage? tokens,  SessionRevert? revert,  String? outcome)?  $default,) {final _that = this;
 switch (_that) {
 case _Session() when $default != null:
-return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.location,_that.time,_that.agent,_that.model,_that.cost,_that.tokens,_that.revert);case _:
+return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.location,_that.time,_that.agent,_that.model,_that.cost,_that.tokens,_that.revert,_that.outcome);case _:
   return null;
 
 }
@@ -1947,7 +1959,7 @@ return $default(_that.id,_that.projectID,_that.parentID,_that.title,_that.locati
 @JsonSerializable()
 
 class _Session extends Session {
-  const _Session({required this.id, required this.projectID, this.parentID, this.title, required this.location, required this.time, this.agent, this.model, this.cost, this.tokens, this.revert}): super._();
+  const _Session({required this.id, required this.projectID, this.parentID, this.title, required this.location, required this.time, this.agent, this.model, this.cost, this.tokens, this.revert, this.outcome}): super._();
   factory _Session.fromJson(Map<String, dynamic> json) => _$SessionFromJson(json);
 
 @override final  String id;
@@ -1964,6 +1976,8 @@ class _Session extends Session {
 @override final  TokenUsage? tokens;
 /// A staged rewind, if any.
 @override final  SessionRevert? revert;
+/// How the last run ended: `succeeded`, `failed` or `interrupted`.
+@override final  String? outcome;
 
 /// Create a copy of Session
 /// with the given fields replaced by the non-null parameter values.
@@ -1978,18 +1992,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Session&&(identical(other.id, id) || other.id == id)&&(identical(other.projectID, projectID) || other.projectID == projectID)&&(identical(other.parentID, parentID) || other.parentID == parentID)&&(identical(other.title, title) || other.title == title)&&(identical(other.location, location) || other.location == location)&&(identical(other.time, time) || other.time == time)&&(identical(other.agent, agent) || other.agent == agent)&&(identical(other.model, model) || other.model == model)&&(identical(other.cost, cost) || other.cost == cost)&&(identical(other.tokens, tokens) || other.tokens == tokens)&&(identical(other.revert, revert) || other.revert == revert));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _Session&&(identical(other.id, id) || other.id == id)&&(identical(other.projectID, projectID) || other.projectID == projectID)&&(identical(other.parentID, parentID) || other.parentID == parentID)&&(identical(other.title, title) || other.title == title)&&(identical(other.location, location) || other.location == location)&&(identical(other.time, time) || other.time == time)&&(identical(other.agent, agent) || other.agent == agent)&&(identical(other.model, model) || other.model == model)&&(identical(other.cost, cost) || other.cost == cost)&&(identical(other.tokens, tokens) || other.tokens == tokens)&&(identical(other.revert, revert) || other.revert == revert)&&(identical(other.outcome, outcome) || other.outcome == outcome));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,id,projectID,parentID,title,location,time,agent,model,cost,tokens,revert);
+    return Object.hash(runtimeType,id,projectID,parentID,title,location,time,agent,model,cost,tokens,revert,outcome);
 }
 
 @override
 String toString() {
-    return 'Session(id: $id, projectID: $projectID, parentID: $parentID, title: $title, location: $location, time: $time, agent: $agent, model: $model, cost: $cost, tokens: $tokens, revert: $revert)';
+    return 'Session(id: $id, projectID: $projectID, parentID: $parentID, title: $title, location: $location, time: $time, agent: $agent, model: $model, cost: $cost, tokens: $tokens, revert: $revert, outcome: $outcome)';
 }
 
 
@@ -2000,7 +2014,7 @@ abstract mixin class _$SessionCopyWith<$Res> implements $SessionCopyWith<$Res> {
   factory _$SessionCopyWith(_Session value, $Res Function(_Session) _then) = __$SessionCopyWithImpl;
 @override @useResult
 $Res call({
- String id, String projectID, String? parentID, String? title, SessionLocation location, SessionTime time, String? agent, ModelRef? model, double? cost, TokenUsage? tokens, SessionRevert? revert
+ String id, String projectID, String? parentID, String? title, SessionLocation location, SessionTime time, String? agent, ModelRef? model, double? cost, TokenUsage? tokens, SessionRevert? revert, String? outcome
 });
 
 
@@ -2017,7 +2031,7 @@ class __$SessionCopyWithImpl<$Res>
 
 /// Create a copy of Session
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? projectID = null,Object? parentID = freezed,Object? title = freezed,Object? location = null,Object? time = null,Object? agent = freezed,Object? model = freezed,Object? cost = freezed,Object? tokens = freezed,Object? revert = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? id = null,Object? projectID = null,Object? parentID = freezed,Object? title = freezed,Object? location = null,Object? time = null,Object? agent = freezed,Object? model = freezed,Object? cost = freezed,Object? tokens = freezed,Object? revert = freezed,Object? outcome = freezed,}) {
   return _then(_Session(
 id: null == id ? _self.id : id // ignore: cast_nullable_to_non_nullable
 as String,projectID: null == projectID ? _self.projectID : projectID // ignore: cast_nullable_to_non_nullable
@@ -2030,7 +2044,8 @@ as String?,model: freezed == model ? _self.model : model // ignore: cast_nullabl
 as ModelRef?,cost: freezed == cost ? _self.cost : cost // ignore: cast_nullable_to_non_nullable
 as double?,tokens: freezed == tokens ? _self.tokens : tokens // ignore: cast_nullable_to_non_nullable
 as TokenUsage?,revert: freezed == revert ? _self.revert : revert // ignore: cast_nullable_to_non_nullable
-as SessionRevert?,
+as SessionRevert?,outcome: freezed == outcome ? _self.outcome : outcome // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

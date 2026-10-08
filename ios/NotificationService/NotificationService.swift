@@ -32,12 +32,14 @@ class NotificationService: UNNotificationServiceExtension {
     content.title = project.isEmpty ? headline : "\(project): \(headline)"
     content.body = payload?.title ?? payload?.detail ?? ""
     if !sessionID.isEmpty { content.threadIdentifier = sessionID }
-    // The badge counts what is waiting in Notification Center, this one
-    // included; the app lowers it again as notifications are resolved.
-    UNUserNotificationCenter.current().getDeliveredNotifications { delivered in
-      content.badge = NSNumber(value: delivered.count + 1)
-      contentHandler(content)
-    }
+    // One more thing needs the user. The app keeps the count in the app
+    // group (AppDelegate.swift, PushNotifications) and resets it to the
+    // real "needs you" count when it opens.
+    let shared = UserDefaults(suiteName: PushPayload.accessGroup)
+    let badge = (shared?.integer(forKey: "badge") ?? 0) + 1
+    shared?.set(badge, forKey: "badge")
+    content.badge = NSNumber(value: badge)
+    contentHandler(content)
   }
 
   override func serviceExtensionTimeWillExpire() {

@@ -1253,4 +1253,17 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get speechTruncated => '以下は省略します。';
+
+  @override
+  String get attentionTitle => '要対応';
+
+  @override
+  String get attentionEmpty => '対応が必要なものはありません。';
+
+  @override
+  String get attentionScope =>
+      'このアプリで接続しているサーバーについて、回答を待っている許可や質問と、3日以内に終わってまだ誰も見ていない応答を表示します。';
+
+  @override
+  String get attentionMarkSeen => '確認済みにする';
 }

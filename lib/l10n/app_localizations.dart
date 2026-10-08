@@ -2245,6 +2245,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The rest is omitted.'**
   String get speechTruncated;
+
+  /// No description provided for @attentionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Needs you'**
+  String get attentionTitle;
+
+  /// No description provided for @attentionEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing needs you right now.'**
+  String get attentionEmpty;
+
+  /// No description provided for @attentionScope.
+  ///
+  /// In en, this message translates to:
+  /// **'Shows the servers connected in this app: permissions and questions waiting for an answer, and replies finished in the last 3 days that nobody has looked at yet.'**
+  String get attentionScope;
+
+  /// No description provided for @attentionMarkSeen.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark as seen'**
+  String get attentionMarkSeen;
 }
 
 class _AppLocalizationsDelegate

@@ -71,13 +71,13 @@ class _FakeMessaging implements PushMessaging {
   Future<void> unshareKeys(String keyId) async => shared.remove(keyId);
 
   final cleared = <String>[];
-  var badgeSyncs = 0;
+  int? badge;
 
   @override
   Future<void> clearSession(String sessionId) async => cleared.add(sessionId);
 
   @override
-  Future<void> syncBadge() async => badgeSyncs++;
+  Future<void> setBadge(int count) async => badge = count;
 }
 
 Future<String> _seal(
@@ -492,8 +492,21 @@ void main() {
     expect(find.byType(ChatScreen), findsOneWidget);
     expect(server.requests.map((r) => r.path), contains('/api/session/ses_1'));
     // The opened session's notifications are done with.
-    expect(messaging.cleared, ['ses_1']);
-    expect(messaging.badgeSyncs, greaterThan(0));
+    expect(messaging.cleared, contains('ses_1'));
+
+    // With its chat open, that session's own notification is not repeated
+    // as a snack bar.
+    messaging.foregroundController.add(
+      PushMessage(
+        kind: PushKind.completed,
+        keyId: ids.mine,
+        sessionId: 'ses_1',
+        enc: '',
+      ),
+    );
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsNothing);
   });
 
   testWidgets('a notification in the foreground shows a snack bar', (

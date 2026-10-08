@@ -48,6 +48,8 @@ void main() {
   });
 
   setUp(() {
+    // Feeds opened by earlier tests' servers are not this test's.
+    serverEvents.clear();
     FlutterSecureStorage.setMockInitialValues({});
     discovery = FakeDiscovery();
   });

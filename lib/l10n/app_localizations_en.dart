@@ -1279,4 +1279,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get speechTruncated => 'The rest is omitted.';
+
+  @override
+  String get attentionTitle => 'Needs you';
+
+  @override
+  String get attentionEmpty => 'Nothing needs you right now.';
+
+  @override
+  String get attentionScope =>
+      'Shows the servers connected in this app: permissions and questions waiting for an answer, and replies finished in the last 3 days that nobody has looked at yet.';
+
+  @override
+  String get attentionMarkSeen => 'Mark as seen';
 }

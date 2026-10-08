@@ -631,5 +631,9 @@
   "readingAloud": "Reading aloud…",
   "stopReading": "Stop",
   "speechCodeSkipped": "(code omitted)",
-  "speechTruncated": "The rest is omitted."
+  "speechTruncated": "The rest is omitted.",
+  "attentionTitle": "Needs you",
+  "attentionEmpty": "Nothing needs you right now.",
+  "attentionScope": "Shows the servers connected in this app: permissions and questions waiting for an answer, and replies finished in the last 3 days that nobody has looked at yet.",
+  "attentionMarkSeen": "Mark as seen"
 }

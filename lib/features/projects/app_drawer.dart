@@ -6,6 +6,7 @@ import '../../app/theme.dart';
 import '../../core/events/event_stream.dart';
 import '../../core/models/server_config.dart';
 import '../../l10n/l10n.dart';
+import '../attention/attention_providers.dart';
 import '../connection/connection_providers.dart';
 import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
@@ -62,6 +63,7 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
     final current = ref.watch(connectionProvider)?.server;
     final servers = ref.watch(connectedServersProvider);
     final pool = ref.watch(connectionPoolProvider);
+    final attention = ref.watch(attentionProvider);
     return Drawer(
       child: SafeArea(
         child: Column(
@@ -103,6 +105,15 @@ class _AppDrawerState extends ConsumerState<AppDrawer> {
               ),
             ),
             const Divider(),
+            ListTile(
+              key: const Key('attention'),
+              leading: const Icon(Icons.inbox_outlined),
+              title: Text(l10n.attentionTitle),
+              trailing: attention.isEmpty
+                  ? null
+                  : Badge(label: Text('${attention.length}')),
+              onTap: () => _open('/attention'),
+            ),
             ListTile(
               key: const Key('push-settings'),
               leading: const Icon(Icons.notifications_outlined),

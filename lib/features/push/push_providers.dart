@@ -15,6 +15,7 @@ import '../../core/push/push_messaging.dart';
 import '../../core/push/push_store.dart';
 import '../../core/push/relay_client.dart';
 import '../../l10n/l10n.dart';
+import '../attention/attention_providers.dart';
 import '../connection/connection_providers.dart';
 import '../home/pane_selection.dart';
 
@@ -296,20 +297,15 @@ final pushCoordinatorProvider = Provider<void>((ref) {
     messaging.taps.listen((message) => openPushMessage(ref, message)),
     messaging.foreground.listen((message) => _showInApp(ref, message)),
   ];
-  // Notifications removed while the app was away (tapped, swiped, or
-  // resolved by a silent push iOS never delivered) leave the badge behind.
-  final lifecycle = AppLifecycleListener(
-    onResume: () => unawaited(messaging.syncBadge().catchError((Object _) {})),
+  // The badge is the "needs you" count. Until a connected server has
+  // reported, the badge from while the app was away stays as it is.
+  ref.listen(attentionKnownProvider, (_, known) => _setBadge(ref, messaging));
+  ref.listen(
+    attentionProvider.select((items) => items.length),
+    (_, _) => _setBadge(ref, messaging),
+    fireImmediately: true,
   );
-  unawaited(messaging.syncBadge().catchError((Object _) {}));
-  // A session opened in the app has been seen; its notifications are done.
-  ref.listen(paneSelectionProvider.select((p) => p.session?.id), (_, id) {
-    if (id != null) {
-      unawaited(messaging.clearSession(id).catchError((Object _) {}));
-    }
-  });
   ref.onDispose(() {
-    lifecycle.dispose();
     for (final s in subscriptions) {
       s.cancel();
     }
@@ -320,6 +316,12 @@ final pushCoordinatorProvider = Provider<void>((ref) {
     }, onError: (Object _) {}),
   );
 });
+
+void _setBadge(Ref ref, PushMessaging messaging) {
+  if (!ref.read(attentionKnownProvider)) return;
+  final count = ref.read(attentionProvider).length;
+  unawaited(messaging.setBadge(count).catchError((Object _) {}));
+}
 
 Future<void> _reregister(Ref ref, String token) async {
   final store = ref.read(pushStoreProvider);
@@ -378,6 +380,11 @@ Future<void> openPushMessage(Ref ref, PushMessage message) async {
 Future<void> _showInApp(Ref ref, PushMessage message) async {
   final resolved = await _resolve(ref, message);
   if (resolved == null) return;
+  // The user is looking at that session already.
+  if (ref.read(connectionProvider)?.server.id == resolved.server.id &&
+      ref.read(openChatsProvider).contains(message.sessionId)) {
+    return;
+  }
   final messenger = ref.read(scaffoldMessengerKeyProvider).currentState;
   final context = messenger?.context;
   if (messenger == null || context == null || !context.mounted) return;

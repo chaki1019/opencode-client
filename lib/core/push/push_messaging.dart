@@ -47,9 +47,10 @@ abstract class PushMessaging {
   /// the app, and updates the badge.
   Future<void> clearSession(String sessionId);
 
-  /// Sets the app badge to the notifications still waiting (iOS; Android
-  /// launchers count notifications themselves).
-  Future<void> syncBadge();
+  /// Sets the app badge to [count] things that need the user (iOS; Android
+  /// launchers count notifications themselves). While the app is away,
+  /// arriving and resolved notifications move it up and down from there.
+  Future<void> setBadge(int count);
 }
 
 const _channelId = 'agent_events';
@@ -277,9 +278,9 @@ class FirebasePushMessaging implements PushMessaging {
   }
 
   @override
-  Future<void> syncBadge() async {
+  Future<void> setBadge(int count) async {
     if (_android) return;
-    await _notifications.invokeMethod<void>('syncBadge');
+    await _notifications.invokeMethod<void>('setBadge', {'count': count});
   }
 }
 

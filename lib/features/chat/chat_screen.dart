@@ -6,6 +6,7 @@ import '../../app/layout.dart';
 import '../../core/models/session.dart';
 import '../../core/models/timeline.dart';
 import '../../l10n/l10n.dart';
+import '../attention/attention_providers.dart';
 import '../live/live_providers.dart';
 import '../live/live_widgets.dart';
 import '../settings/haptics.dart';
@@ -44,6 +45,7 @@ class ChatScreen extends ConsumerWidget {
       activeSessionsProvider.select((ids) => ids.contains(session.id)),
     );
     ref.watch(sessionHapticsProvider(session.id));
+    ref.watch(sessionSeenProvider(session.id));
     final rewoundTo = ref.watch(revertProvider(session));
     final conversing = ref.watch(conversationActiveProvider(session.id));
 
