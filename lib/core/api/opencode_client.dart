@@ -126,7 +126,12 @@ class OpenCodeClient {
     final location = _map(await _getJson('/api/location'));
     final locationProject = _map(location['project']);
     final listed = await _getJson('/api/project') as List;
-    final projects = [for (final p in listed) Project.fromJson(_map(p))];
+    final projects = <Project>[];
+    for (final p in listed) {
+      final project = Project.fromJson(_map(p));
+      // A repeated ID would give two rows the same key.
+      if (!projects.any((q) => q.id == project.id)) projects.add(project);
+    }
     final currentId = locationProject['id'] as String?;
     if (currentId != null && !projects.any((p) => p.id == currentId)) {
       projects.add(

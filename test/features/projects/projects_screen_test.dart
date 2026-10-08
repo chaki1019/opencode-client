@@ -60,6 +60,26 @@ void main() {
     );
   });
 
+  testWidgets('two projects in the same folder are both listed', (
+    tester,
+  ) async {
+    await pumpScreen(
+      tester,
+      projects: const [
+        Project(id: 'global', directory: '/'),
+        Project(id: 'p1', directory: '/'),
+      ],
+    );
+    expect(tester.takeException(), isNull);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('project-list')),
+        matching: find.byType(Dismissible),
+      ),
+      findsNWidgets(2),
+    );
+  });
+
   // Hidden rows stay in the list folded to nothing, so only rows that can
   // be tapped count as listed.
   Finder projectRow(String name) => find

@@ -217,7 +217,9 @@ class ProjectsPane extends ConsumerWidget {
                         children: [
                           for (final (i, project) in sorted.indexed)
                             _ProjectTile(
-                              key: ValueKey(project.directory),
+                              // Two projects can share a folder (the server
+                              // can list it under more than one ID).
+                              key: ValueKey(project.id),
                               project: project,
                               pinned: pinned.contains(project.directory),
                               hidden: hidden.contains(project.directory),
@@ -530,7 +532,7 @@ class _ProjectTileState extends ConsumerState<_ProjectTile>
       label: context.l10n.hideProject,
     );
     return Dismissible(
-      key: ValueKey(project.directory),
+      key: ValueKey(project.id),
       direction: widget.showAll
           ? DismissDirection.startToEnd
           : DismissDirection.horizontal,
