@@ -107,7 +107,7 @@ Codemagic のアプリ設定 →「Environment variables」で、次の 2 つの
 | --- | --- |
 | `PUSH_ENV_JSON` | `push.env.json` の中身（JSON をそのまま貼る） |
 | `ADS_ENV_JSON` | `ads.env.json` の中身 |
-| `APP_ENV_JSON` | `app.env.json` の中身 |
+| `APP_ENV_JSON` | `app.env.json` の中身（お問い合わせ先、サイト URL、Clarity のプロジェクト ID） |
 | `ADMOB_IOS_APP_ID` | iOS の AdMob アプリ ID（`ios/Flutter/Ads.xcconfig` に書く値） |
 | `FIREBASE_APP_ID_FILE_JSON` | 任意。`ios/firebase_app_id_file.json` の中身（[support.md](support.md#ios-dsym-のアップロード)） |
 

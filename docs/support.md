@@ -1,6 +1,6 @@
 # お問い合わせ・プライバシーポリシー・クラッシュレポート・アナリティクス
 
-ストアに出すために必要な「お問い合わせ先」「プライバシーポリシー」「サポートページ」と、クラッシュレポート（Firebase Crashlytics）、利用状況の分析（Firebase Analytics）の設定です。
+ストアに出すために必要な「お問い合わせ先」「プライバシーポリシー」「サポートページ」と、クラッシュレポート（Firebase Crashlytics）、利用状況の分析（Firebase Analytics と Microsoft Clarity）の設定です。
 
 ## アプリ側
 
@@ -9,7 +9,7 @@
 - **お問い合わせ**: メールアプリを開き、件名と、本文の末尾にアプリのバージョンと OS を入れた下書きを作ります。
 - **プライバシーポリシー**: アプリの言語に合わせて `SITE_URL/ja/privacy/`（日本語）か `SITE_URL/en/privacy/`（英語）をブラウザで開きます。
 - **クラッシュレポートを送信**: 既定はオンです。オフにすると Crashlytics の送信を止め、未送信のレポートも消します。
-- **利用状況を送信**: 既定はオンです。オフにすると Firebase Analytics の送信を止めます。
+- **利用状況を送信**: 既定はオンです。オフにすると Firebase Analytics と Microsoft Clarity の送信を止めます。
 
 宛先とサイトの URL は `app.env.example.json` を `app.env.json` にコピーして埋めます（`app.env.json` は git に入りません）。指定しないでビルドしたときは `support@opencodemobile.app` と `https://opencodemobile.app` を使います。空の文字列を指定した項目の行は表示しません。
 
@@ -73,6 +73,7 @@ App Store の「App のプライバシー」と Play の「データ セーフ�
 | 広告 ID・端末情報・おおよその位置（IP から） | 広告の表示と測定 | AdMob（広告を外したユーザーを除く） |
 | クラッシュログ・診断情報 | アプリの不具合修正 | Firebase Crashlytics |
 | アプリの操作（開いた画面、起動・利用時間）・インストールID・おおよその位置（IP から） | 利用状況の分析 | Firebase Analytics（広告 ID は使わない） |
+| アプリの操作（画面の配置、タップやスクロール、開いた画面）・インストールID・おおよその位置（IP から） | 利用状況の分析 | Microsoft Clarity（文字と画像は隠す、広告 ID は使わない） |
 | 通知トークン | プッシュ通知 | 通知中継（Cloudflare）、FCM |
 | 購入履歴 | 「広告を外す」 | App Store / Google Play |
 
@@ -95,6 +96,23 @@ Firebase コンソールでの作業:
 1. 「プロジェクトの設定」→「統合」→ Google アナリティクスを有効にする（プロジェクト作成時に有効にしていれば不要）。
 2. 「Google シグナル」と Google 広告などとのリンクはオンにしない。
 3. 結果は「Analytics」→「ダッシュボード」と「維持率」（継続率）で見ます。画面ごとの離脱は「イベント」→ `screen_view` か、GA4 の「探索」→「経路データ探索」で見られます。
+
+### Microsoft Clarity（画面操作の記録）
+
+どこをタップしたか、どこで迷っているかを見るために Microsoft Clarity（`clarity_flutter`）で画面の操作を記録します。ヒートマップ、セッションの再生、連打（rage tap）やタップしても何も起きない場所（dead tap）が見られます。スイッチは「利用状況を送信」と共通で、保存された設定を読んでから開始するので、オフにした人は起動直後も記録しません。
+
+プロジェクト ID は `app.env.json` の `CLARITY_PROJECT_ID` で渡します。空か未設定のビルドと debug ビルドでは何も送りません。
+
+画面にはチャット、コード、ターミナルの出力、サーバーの URL やパスワードが出るので、アプリ全体を `ClarityMask` で囲み、文字は「•」、画像は塗りつぶしで送ります（Clarity 側のマスク設定に関係なく）。アプリ自身の文言だけを出す設定画面だけ `ClarityUnmask` で外しています。画面名は Firebase Analytics と同じく go_router のルートのパターンです。Clarity には広告用の同意を拒否して渡します。
+
+コードは `lib/core/analytics/session_replay.dart` と `lib/features/settings/session_replay_scope.dart` にあります。マスクを外す画面を増やすときは、その画面にサーバーから来た文字（プロジェクト名、セッション名、ファイル名など）が出ないことを確かめてから `SessionReplayUnmask` で囲みます。
+
+Clarity での作業:
+
+1. https://clarity.microsoft.com で新しいプロジェクトを作り、種類に「モバイルアプリ」を選ぶ。
+2. 「設定」→「概要」のプロジェクト ID を、Codemagic の `APP_ENV_JSON` に `"CLARITY_PROJECT_ID": "<ID>"` として足す（手元のビルドは `app.env.json`）。
+3. 「設定」→「マスク」は「厳格（Strict）」のままにする。
+4. 記録は「録画」、タップの集計は「ヒートマップ」で見ます。現在のセッションはすぐ、全体は 30 分から 2 時間ほどで出ます。
 
 ## Crashlytics
 

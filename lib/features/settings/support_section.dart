@@ -27,13 +27,16 @@ class SupportSection extends ConsumerWidget {
     final l10n = context.l10n;
     final config = ref.watch(supportConfigProvider);
     final reporter = ref.watch(crashReporterProvider);
-    final analytics = ref.watch(usageAnalyticsProvider);
+    // One switch covers both kinds of usage statistics.
+    final analytics =
+        ref.watch(usageAnalyticsProvider).available ||
+        ref.watch(sessionReplayProvider).available;
     final languageCode = Localizations.localeOf(context).languageCode;
     final privacy = config.privacyPolicy(languageCode);
     if (config.email.isEmpty &&
         privacy == null &&
         !reporter.available &&
-        !analytics.available) {
+        !analytics) {
       return const SizedBox.shrink();
     }
 
@@ -65,7 +68,7 @@ class SupportSection extends ConsumerWidget {
             title: Text(l10n.crashReports),
             subtitle: Text(l10n.crashReportsHelp),
           ),
-        if (analytics.available)
+        if (analytics)
           SwitchListTile(
             key: const Key('usage-analytics'),
             value: ref.watch(settingsProvider.select((s) => s.usageAnalytics)),
