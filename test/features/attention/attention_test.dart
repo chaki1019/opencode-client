@@ -126,6 +126,7 @@ void main() {
       }),
       '/api/session/ses_run/form': FakeRoute.json({'data': []}),
       '/api/session/ses_done/view': const FakeRoute(204, ''),
+      '/api/session/ses_fail/view': const FakeRoute(204, ''),
     });
   });
 
@@ -240,5 +241,21 @@ void main() {
     await tester.drag(find.text('Deploy'), const Offset(-600, 0));
     await tester.pumpAndSettle();
     expect(find.text('Deploy'), findsOneWidget);
+
+    // Opening a finished run from the list marks it as seen too.
+    await tester.tap(find.text('Migrate DB'));
+    // The chat keeps loading against the fake server, so it never settles.
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.runAsync(() => Future<void>.delayed(Duration.zero));
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(tester.takeException(), isNull);
+    expect(
+      server.requests.where((r) => r.path == '/api/session/ses_fail/view'),
+      hasLength(1),
+    );
+    expect(messaging.badge, 1);
+
+    await tester.pumpWidget(const SizedBox());
+    await tester.pump(const Duration(seconds: 1));
   });
 }
