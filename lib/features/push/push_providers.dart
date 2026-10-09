@@ -152,8 +152,11 @@ final pushPairingProvider = AsyncNotifierProvider.autoDispose
 /// its notifications.
 /// The newest push plugin version on npm, or null when the registry can't
 /// be reached. Read straight from the public registry; the version number
-/// is all the app asks for.
-final latestPushPluginVersionProvider = FutureProvider<String?>((ref) async {
+/// is all the app asks for. Disposed with the pages that show it, so a
+/// release published while the app runs is picked up on the next visit.
+final latestPushPluginVersionProvider = FutureProvider.autoDispose<String?>((
+  ref,
+) async {
   try {
     final response =
         await Dio(

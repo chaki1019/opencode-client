@@ -254,6 +254,25 @@ void main() {
       ).updateTarget,
       isNull,
     );
+    // A plugin ahead of npm's latest, e.g. before a release is approved
+    // there, is not offered a downgrade, whatever OpenCode's check says.
+    expect(
+      check(
+        'opencode-mobile-push',
+        version: '0.4.0',
+        outdated: true,
+        latest: '0.3.0',
+      ).updateTarget,
+      isNull,
+    );
+    expect(
+      check(
+        'opencode-mobile-push',
+        version: '0.9.0',
+        latest: '0.10.0',
+      ).updateTarget,
+      'opencode-mobile-push',
+    );
     expect(
       check(
         'opencode-mobile-push@0.2.0',
@@ -262,5 +281,14 @@ void main() {
       ).updateTarget,
       isNull,
     );
+  });
+
+  test('isNewerVersion compares numerically', () {
+    expect(isNewerVersion('0.4.0', '0.3.0'), isTrue);
+    expect(isNewerVersion('0.3.0', '0.4.0'), isFalse);
+    expect(isNewerVersion('0.10.0', '0.9.9'), isTrue);
+    expect(isNewerVersion('1.0.0', '1.0.0'), isFalse);
+    expect(isNewerVersion('1.0.0', '1.0.0-beta.1'), isTrue);
+    expect(isNewerVersion('1.0.0-beta.1', '1.0.0'), isFalse);
   });
 }
