@@ -247,6 +247,30 @@ class ComputerPluginCheck {
   final String? sharedKey;
 }
 
+/// Whether [candidate] is a later version than [current], comparing the
+/// numeric parts of "major.minor.patch" in order. A pre-release
+/// ("0.4.0-beta.1") counts as before its release.
+bool isNewerVersion(String candidate, String current) {
+  (List<int>, bool) parse(String v) {
+    final core = v.trim().replaceFirst(RegExp(r'^v'), '').split('+').first;
+    final dash = core.indexOf('-');
+    final numbers = (dash < 0 ? core : core.substring(0, dash))
+        .split('.')
+        .map((p) => int.tryParse(p) ?? 0)
+        .toList();
+    return (numbers, dash >= 0);
+  }
+
+  final (a, aPre) = parse(candidate);
+  final (b, bPre) = parse(current);
+  for (var i = 0; i < a.length || i < b.length; i++) {
+    final x = i < a.length ? a[i] : 0;
+    final y = i < b.length ? b[i] : 0;
+    if (x != y) return x > y;
+  }
+  return bPre && !aPre;
+}
+
 ComputerPluginCheck checkComputerPlugin({
   required List<ServerPlugin> plugins,
   required ComputerConfig config,
@@ -262,12 +286,14 @@ ComputerPluginCheck checkComputerPlugin({
       package != null &&
       (!package.package!.contains('@', 1) ||
           package.package!.endsWith('@latest'));
+  // With both versions known, only a newer npm release counts: npm or
+  // OpenCode's daily check can lag behind a freshly installed plugin.
+  final installed = package?.version;
   final behind =
       package != null &&
-      (package.outdated ||
-          (latestVersion != null &&
-              package.version != null &&
-              latestVersion != package.version));
+      (latestVersion != null && installed != null
+          ? isNewerVersion(latestVersion, installed)
+          : package.outdated);
   ComputerPluginCheck result(
     ComputerPluginStatus status, {
     String? error,
