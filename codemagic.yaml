@@ -124,8 +124,8 @@ workflows:
 
   # Same build as release, for testers only (see docs/release.md). Pushing a
   # tag like beta-1.0.1 uploads to TestFlight and the Play internal testing
-  # track; nothing is sent to App Store or production review. Start a
-  # release tag (v1.0.1) afterwards to ship it.
+  # track; nothing is sent to App Store or production review. The same build
+  # can then be sent for review from App Store Connect and Play Console.
   beta:
     name: Beta (TestFlight + Play internal testing)
     instance_type: mac_mini_m2
