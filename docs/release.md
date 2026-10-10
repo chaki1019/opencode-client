@@ -4,6 +4,7 @@
 | --- | --- | --- |
 | PR を出したとき・追加で push したとき | GitHub Actions（`.github/workflows/ci.yml`） | format チェック、`flutter analyze`、`flutter test`、Android の debug ビルド、`push/` の Node テスト |
 | `v1.0.1` のようなタグを push したとき | Codemagic（`codemagic.yaml`） | iOS / Android のリリースビルドを作り、App Store と Google Play の審査に出す（承認されると公開） |
+| `beta-1.0.1` のようなタグを push したとき | Codemagic（`codemagic.yaml`） | 同じリリースビルドを TestFlight と Google Play の内部テストにだけ上げる（審査には出さない） |
 
 GitHub Actions は Linux で動くので、private リポジトリの無料枠（月 2,000 分）をそのまま消費します。`site/` `docs/`、Markdown、`release_notes.json` だけを変えた PR ではチェックを動かしません。main へのマージ時も再実行しません。
 
@@ -24,6 +25,22 @@ git push origin v1.0.1
 - ビルド番号は TestFlight と Google Play に上がっている最大の番号に 1 を足したものを自動で使います。
 - iOS は TestFlight に上げたうえで App Store の審査に出し、承認されると公開されます。「このバージョンの最新情報」には `release_notes.json` の内容が入ります。
 - Play は製品版トラックにリリースを作り、そのまま審査に出します。承認されると公開されます。事前に動作確認したいときは、タグを打つ前に `Android AAB (manual upload)` で作った AAB を内部テストに手で上げて確かめてください。
+
+## テスト配信（審査に出さない）
+
+審査に出す前にテスターに配りたいときは、`v` の代わりに `beta-` で始まるタグを push します。
+
+```bash
+git checkout main && git pull
+git tag beta-1.0.1
+git push origin beta-1.0.1
+```
+
+- ワークフロー `Beta (TestFlight + Play internal testing)` が動き、ビルド内容はリリースと同じです。
+- iOS は TestFlight に上げるだけで、App Store の審査には出しません。内部テスター（App Store Connect のユーザー）は処理が終わればすぐ使えます。外部テスターに配るときは、App Store Connect でグループに追加すると TestFlight のベータ版審査が入ります。
+- Play は内部テストトラックにリリースを作ります。製品版の審査には出しません。
+- 同じバージョンをもう一度配りたいときは `beta-1.0.1-2` のように後ろに付けます（バージョン名は `1.0.1` のまま、ビルド番号は自動で増えます）。
+- 確認が済んだら、いつも通り `v1.0.1` のタグを push すると審査に出ます（ビルドし直すので、ビルド番号は 1 つ進みます）。
 
 ## リリースノート
 

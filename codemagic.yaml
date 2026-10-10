@@ -2,7 +2,9 @@
 #
 # Pushing a tag like v1.0.1 builds the iOS and Android release binaries and
 # submits them for review on the App Store and the Play production track.
-# Each goes live once Apple or Google approves it. Pull
+# Each goes live once Apple or Google approves it. A tag like beta-1.0.1
+# builds the same binaries for testers only: TestFlight and the Play internal
+# testing track, without App Store or production review. Pull
 # request checks run on GitHub Actions (.github/workflows/ci.yml), so this
 # workflow spends Codemagic's free macOS minutes on releases only.
 workflows:
@@ -13,7 +15,7 @@ workflows:
     integrations:
       # Name of the App Store Connect API key in Codemagic's team settings.
       app_store_connect: opencode-mobile
-    environment:
+    environment: &release_environment
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -61,13 +63,16 @@ workflows:
             printf '%s' "$FIREBASE_APP_ID_FILE_JSON" > ios/firebase_app_id_file.json
           fi
           echo "DART_DEFINES=$DEFINES" >> "$CM_ENV"
-      - name: Set version from tag
+      - &set_version
+        name: Set version from tag
         script: |
           set -e
-          # v1.2.3 -> 1.2.3 (pubspec.yaml's version when started without a
-          # tag). The build number is one past the highest one already on
+          # v1.2.3 / beta-1.2.3 / beta-1.2.3-2 -> 1.2.3 (pubspec.yaml's
+          # version when started without a tag). The build number is one past the highest one already on
           # TestFlight or Google Play, so both stores accept it.
           BUILD_NAME="${CM_TAG#v}"
+          BUILD_NAME="${BUILD_NAME#beta-}"
+          BUILD_NAME="${BUILD_NAME%%-*}"
           if [ -z "$CM_TAG" ]; then BUILD_NAME=$(sed -n 's/^version: *\([^+]*\).*/\1/p' pubspec.yaml); fi
           IOS_LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" || echo 0)
           ANDROID_LATEST=$(google-play get-latest-build-number --package-name "$PACKAGE_NAME" || echo 0)
@@ -77,22 +82,25 @@ workflows:
       - &pub_get
         name: Install dependencies
         script: flutter pub get
-      - name: Apply iOS signing profiles
+      - &use_profiles
+        name: Apply iOS signing profiles
         script: xcode-project use-profiles
-      - name: Build iOS
+      - &build_ios
+        name: Build iOS
         script: |
           flutter build ipa --release \
             --build-name="$BUILD_NAME" \
             --build-number="$BUILD_NUMBER" \
             $DART_DEFINES \
             --export-options-plist=/Users/builder/export_options.plist
-      - name: Build Android
+      - &build_android
+        name: Build Android
         script: |
           flutter build appbundle --release \
             --build-name="$BUILD_NAME" \
             --build-number="$BUILD_NUMBER" \
             $DART_DEFINES
-    artifacts:
+    artifacts: &release_artifacts
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
       - build/app/outputs/bundle/release/*.aab
@@ -112,6 +120,42 @@ workflows:
         # Straight to production: the release is sent for review and goes
         # live once Google approves it (see docs/release.md).
         track: production
+        submit_as_draft: false
+
+  # Same build as release, for testers only (see docs/release.md). Pushing a
+  # tag like beta-1.0.1 uploads to TestFlight and the Play internal testing
+  # track; nothing is sent to App Store or production review. Start a
+  # release tag (v1.0.1) afterwards to ship it.
+  beta:
+    name: Beta (TestFlight + Play internal testing)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: opencode-mobile
+    environment: *release_environment
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: "beta-*"
+      cancel_previous_builds: true
+    scripts:
+      - *write_settings
+      - *set_version
+      - *pub_get
+      - *use_profiles
+      - *build_ios
+      - *build_android
+    artifacts: *release_artifacts
+    publishing:
+      app_store_connect:
+        auth: integration
+        # Internal testers get the build once Apple finishes processing it.
+        submit_to_testflight: true
+        submit_to_app_store: false
+      google_play:
+        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+        track: internal
         submit_as_draft: false
 
   # Builds only a signed Android App Bundle, without uploading it. Start it
