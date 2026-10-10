@@ -1,8 +1,12 @@
 # Store release on Codemagic (see docs/release.md).
 #
-# Pushing a tag like v1.0.1 builds the iOS and Android release binaries and
-# submits them for review on the App Store and the Play production track.
-# Each goes live once Apple or Google approves it. Pull
+# Pushing a tag like release-1.0.1 builds the iOS and Android release
+# binaries and submits them for review on the App Store and the Play
+# production track. Each goes live once Apple or Google approves it. A tag
+# like beta-1.0.1 builds the same binaries for testers only: TestFlight and
+# the Play internal testing track, without App Store or production review.
+# A release tag on the commit of the newest beta tag of that version skips
+# the build and sends that beta build for review instead. Pull
 # request checks run on GitHub Actions (.github/workflows/ci.yml), so this
 # workflow spends Codemagic's free macOS minutes on releases only.
 workflows:
@@ -13,7 +17,7 @@ workflows:
     integrations:
       # Name of the App Store Connect API key in Codemagic's team settings.
       app_store_connect: opencode-mobile
-    environment:
+    environment: &release_environment
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -40,7 +44,7 @@ workflows:
       events:
         - tag
       tag_patterns:
-        - pattern: "v*"
+        - pattern: "release-*"
       cancel_previous_builds: true
     scripts:
       - &write_settings
@@ -61,57 +65,175 @@ workflows:
             printf '%s' "$FIREBASE_APP_ID_FILE_JSON" > ios/firebase_app_id_file.json
           fi
           echo "DART_DEFINES=$DEFINES" >> "$CM_ENV"
-      - name: Set version from tag
+      - name: Find the beta build of this commit
         script: |
           set -e
-          # v1.2.3 -> 1.2.3 (pubspec.yaml's version when started without a
-          # tag). The build number is one past the highest one already on
-          # TestFlight or Google Play, so both stores accept it.
-          BUILD_NAME="${CM_TAG#v}"
+          # release-1.2.3 reuses the build of beta-1.2.3 (or beta-1.2.3-N)
+          # when the newest beta tag of 1.2.3 is on this commit. A beta build
+          # has the same build number on TestFlight and Google Play.
+          [ -z "$CM_TAG" ] && exit 0
+          VERSION="${CM_TAG#release-}"
+          VERSION="${VERSION%%-*}"
+          git fetch --tags --force --quiet || true
+          BETA=$(git for-each-ref --sort=-creatordate --format='%(refname:short)' \
+            "refs/tags/beta-$VERSION" "refs/tags/beta-$VERSION-*" | head -n 1)
+          if [ -z "$BETA" ] || [ "$(git rev-list -n 1 "$BETA")" != "$(git rev-parse HEAD)" ]; then
+            echo "No beta build of this commit; building from scratch."
+            exit 0
+          fi
+          app-store-connect builds list --app-id "$APP_STORE_APPLE_ID" \
+            --pre-release-version "$VERSION" --processing-state VALID --not-expired \
+            --json > testflight_builds.json
+          read -r BUILD_ID BUILD_NUMBER <<< "$(python3 - <<'PY'
+          import json
+          builds = json.load(open("testflight_builds.json"))
+          if builds:
+              b = max(builds, key=lambda b: int(b["attributes"]["version"]))
+              print(b["id"], b["attributes"]["version"])
+          PY
+          )"
+          if [ -z "$BUILD_ID" ]; then
+            echo "$BETA is on this commit, but TestFlight has no build of $VERSION." >&2
+            exit 1
+          fi
+          echo "Reusing build $BUILD_NUMBER of $BETA."
+          echo "PROMOTE_BUILD_ID=$BUILD_ID" >> "$CM_ENV"
+          echo "PROMOTE_BUILD_NUMBER=$BUILD_NUMBER" >> "$CM_ENV"
+      - &set_version
+        name: Set version from tag
+        script: |
+          set -e
+          # release-1.2.3 / beta-1.2.3 / beta-1.2.3-2 -> 1.2.3 (pubspec.yaml's
+          # version when started without a tag). The build number is one past
+          # the highest one already on TestFlight or Google Play, so both
+          # stores accept it.
+          BUILD_NAME="${CM_TAG#release-}"
+          BUILD_NAME="${BUILD_NAME#beta-}"
+          BUILD_NAME="${BUILD_NAME%%-*}"
           if [ -z "$CM_TAG" ]; then BUILD_NAME=$(sed -n 's/^version: *\([^+]*\).*/\1/p' pubspec.yaml); fi
           IOS_LATEST=$(app-store-connect get-latest-testflight-build-number "$APP_STORE_APPLE_ID" || echo 0)
           ANDROID_LATEST=$(google-play get-latest-build-number --package-name "$PACKAGE_NAME" || echo 0)
           LATEST=$(( IOS_LATEST > ANDROID_LATEST ? IOS_LATEST : ANDROID_LATEST ))
           echo "BUILD_NAME=$BUILD_NAME" >> "$CM_ENV"
           echo "BUILD_NUMBER=$(( LATEST + 1 ))" >> "$CM_ENV"
+      # The build steps do nothing when the beta build is reused.
       - &pub_get
         name: Install dependencies
-        script: flutter pub get
-      - name: Apply iOS signing profiles
-        script: xcode-project use-profiles
-      - name: Build iOS
         script: |
+          [ -n "$PROMOTE_BUILD_ID" ] && exit 0
+          flutter pub get
+      - &use_profiles
+        name: Apply iOS signing profiles
+        script: |
+          [ -n "$PROMOTE_BUILD_ID" ] && exit 0
+          xcode-project use-profiles
+      - &build_ios
+        name: Build iOS
+        script: |
+          [ -n "$PROMOTE_BUILD_ID" ] && exit 0
           flutter build ipa --release \
             --build-name="$BUILD_NAME" \
             --build-number="$BUILD_NUMBER" \
             $DART_DEFINES \
             --export-options-plist=/Users/builder/export_options.plist
-      - name: Build Android
+      - &build_android
+        name: Build Android
         script: |
+          [ -n "$PROMOTE_BUILD_ID" ] && exit 0
           flutter build appbundle --release \
             --build-name="$BUILD_NAME" \
             --build-number="$BUILD_NUMBER" \
             $DART_DEFINES
-    artifacts:
+      # Submitted from scripts rather than `publishing`, which cannot skip
+      # the upload when the beta build is reused. release_notes.json at the
+      # repository root fills App Store "What's New" and the Google Play
+      # release notes (each store gets only its own language codes).
+      - name: Write release notes
+        script: |
+          python3 - <<'PY'
+          import json
+          notes = json.load(open("release_notes.json"))
+          json.dump([{"locale": n["language"], "whats_new": n["text"]}
+                     for n in notes if n["language"] != "ja-JP"],
+                    open("app_store_notes.json", "w"), ensure_ascii=False)
+          json.dump([n for n in notes if n["language"] != "ja"],
+                    open("google_play_notes.json", "w"), ensure_ascii=False)
+          PY
+      - name: Submit to App Store review
+        script: |
+          set -e
+          # Goes live as soon as Apple approves it.
+          if [ -n "$PROMOTE_BUILD_ID" ]; then
+            app-store-connect builds submit-to-app-store "$PROMOTE_BUILD_ID" \
+              --version-string "$BUILD_NAME" \
+              --release-type AFTER_APPROVAL \
+              --app-store-version-localizations @file:app_store_notes.json
+          else
+            app-store-connect publish --path build/ios/ipa/*.ipa \
+              --app-store \
+              --release-type AFTER_APPROVAL \
+              --app-store-version-localizations @file:app_store_notes.json
+          fi
+      - name: Submit to Google Play production
+        script: |
+          set -e
+          # Straight to production: the release is sent for review and goes
+          # live once Google approves it (see docs/release.md).
+          if [ -n "$PROMOTE_BUILD_ID" ]; then
+            # The promoted release keeps the internal testing release notes.
+            google-play tracks promote-release \
+              --credentials @env:GCLOUD_SERVICE_ACCOUNT_CREDENTIALS \
+              --package-name "$PACKAGE_NAME" \
+              --source-track internal \
+              --target-track production \
+              --version-code-filter "$PROMOTE_BUILD_NUMBER"
+          else
+            google-play bundles publish \
+              --credentials @env:GCLOUD_SERVICE_ACCOUNT_CREDENTIALS \
+              --bundle build/app/outputs/bundle/release/app-release.aab \
+              --track production \
+              --release-notes @file:google_play_notes.json
+          fi
+    artifacts: &release_artifacts
       - build/ios/ipa/*.ipa
       - /tmp/xcodebuild_logs/*.log
       - build/app/outputs/bundle/release/*.aab
       - build/app/outputs/mapping/release/mapping.txt
-    # release_notes.json at the repository root fills App Store "What's New",
-    # TestFlight "What to Test" and the Google Play release notes.
+
+  # Same build as release, for testers only (see docs/release.md). Pushing a
+  # tag like beta-1.0.1 uploads to TestFlight and the Play internal testing
+  # track; nothing is sent to App Store or production review. The same build
+  # can then be sent for review from App Store Connect and Play Console.
+  beta:
+    name: Beta (TestFlight + Play internal testing)
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: opencode-mobile
+    environment: *release_environment
+    triggering:
+      events:
+        - tag
+      tag_patterns:
+        - pattern: "beta-*"
+      cancel_previous_builds: true
+    scripts:
+      - *write_settings
+      - *set_version
+      - *pub_get
+      - *use_profiles
+      - *build_ios
+      - *build_android
+    artifacts: *release_artifacts
     publishing:
       app_store_connect:
         auth: integration
+        # Internal testers get the build once Apple finishes processing it.
         submit_to_testflight: true
-        # Also sends the build to App Store review; it goes live as soon as
-        # Apple approves it.
-        submit_to_app_store: true
-        release_type: AFTER_APPROVAL
+        submit_to_app_store: false
       google_play:
         credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        # Straight to production: the release is sent for review and goes
-        # live once Google approves it (see docs/release.md).
-        track: production
+        track: internal
         submit_as_draft: false
 
   # Builds only a signed Android App Bundle, without uploading it. Start it

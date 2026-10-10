@@ -3,7 +3,8 @@
 | いつ | どこで | 何をするか |
 | --- | --- | --- |
 | PR を出したとき・追加で push したとき | GitHub Actions（`.github/workflows/ci.yml`） | format チェック、`flutter analyze`、`flutter test`、Android の debug ビルド、`push/` の Node テスト |
-| `v1.0.1` のようなタグを push したとき | Codemagic（`codemagic.yaml`） | iOS / Android のリリースビルドを作り、App Store と Google Play の審査に出す（承認されると公開） |
+| `release-1.0.1` のようなタグを push したとき | Codemagic（`codemagic.yaml`） | iOS / Android のリリースビルドを作り、App Store と Google Play の審査に出す（承認されると公開）。同じコミットに `beta-1.0.1` があれば、ビルドせずにそのビルドを審査に出す |
+| `beta-1.0.1` のようなタグを push したとき | Codemagic（`codemagic.yaml`） | 同じリリースビルドを TestFlight と Google Play の内部テストにだけ上げる（審査には出さない） |
 
 GitHub Actions は Linux で動くので、private リポジトリの無料枠（月 2,000 分）をそのまま消費します。`site/` `docs/`、Markdown、`release_notes.json` だけを変えた PR ではチェックを動かしません。main へのマージ時も再実行しません。
 
@@ -16,14 +17,45 @@ Codemagic の無料枠（macOS で月 500 分）はリリースビルドにだ�
 
 ```bash
 git checkout main && git pull
-git tag v1.0.1
-git push origin v1.0.1
+git tag release-1.0.1
+git push origin release-1.0.1
 ```
 
+- ワークフロー `Release (App Store + Play production)` が動きます。
 - バージョン名（`1.0.1`）はタグから取ります。`pubspec.yaml` の `version` を書き換える必要はありません。
 - ビルド番号は TestFlight と Google Play に上がっている最大の番号に 1 を足したものを自動で使います。
-- iOS は TestFlight に上げたうえで App Store の審査に出し、承認されると公開されます。「このバージョンの最新情報」には `release_notes.json` の内容が入ります。
-- Play は製品版トラックにリリースを作り、そのまま審査に出します。承認されると公開されます。事前に動作確認したいときは、タグを打つ前に `Android AAB (manual upload)` で作った AAB を内部テストに手で上げて確かめてください。
+- iOS は App Store Connect に上げて App Store の審査に出し、承認されると公開されます。「このバージョンの最新情報」には `release_notes.json` の内容が入ります。
+- Play は製品版トラックにリリースを作り、そのまま審査に出します。承認されると公開されます。
+- 先にテスターで確かめたいときは、下の「テスト配信」で `beta-1.0.1` を出してから、同じコミットに `release-1.0.1` を打ちます。
+
+## テスト配信（審査に出さない）
+
+審査に出す前にテスターに配りたいときは、`release-` の代わりに `beta-` で始まるタグを push します。
+
+```bash
+git checkout main && git pull
+git tag beta-1.0.1
+git push origin beta-1.0.1
+```
+
+- ワークフロー `Beta (TestFlight + Play internal testing)` が動き、ビルド内容はリリースと同じです。
+- iOS は TestFlight に上げるだけで、App Store の審査には出しません。内部テスター（App Store Connect のユーザー）は処理が終わればすぐ使えます。外部テスターに配るときは、App Store Connect でグループに追加すると TestFlight のベータ版審査が入ります。
+- Play は内部テストトラックにリリースを作ります。製品版の審査には出しません。
+- 同じバージョンをもう一度配りたいときは `beta-1.0.1-2` のように後ろに付けます（バージョン名は `1.0.1` のまま、ビルド番号は自動で増えます）。
+
+### テスト配信したビルドを審査に出す
+
+確認が済んだら、**同じコミット**に `release-1.0.1` を打って push します。
+
+```bash
+git tag release-1.0.1 beta-1.0.1
+git push origin release-1.0.1
+```
+
+- そのバージョンの一番新しい `beta-` タグがこのコミットにあれば、ビルドを飛ばして、TestFlight のそのビルドを App Store の審査に出し、Play の内部テストのリリースを製品版に昇格して審査に出します。macOS の起動と確認だけなので数分で終わります。
+- 一番新しい `beta-` タグが別のコミットにある（beta の後にコミットを足した）とき、または `beta-` を出していないときは、ふつうのリリースと同じくビルドから行います。
+- App Store の「このバージョンの最新情報」は `release_notes.json` から入ります。Play のリリースノートは内部テストのリリースのものを引き継ぎます。
+- 審査は自動で出ますが、ストアの画面から手で出すこともできます（App Store Connect でバージョンを作ってそのビルドを選ぶ／Play Console の内部テストで「リリースを昇格」→「製品版」）。
 
 ## リリースノート
 
@@ -35,7 +67,7 @@ git push origin v1.0.1
 | `ja-JP` | Google Play のリリースノート（日本語） |
 | `en-US` | App Store・TestFlight・Google Play の英語 |
 
-App Store と Google Play で日本語のコードが違うため、日本語は同じ文を 2 回書きます。ストアに登録していない言語は無視されます。`<` と `>` は Apple の API が受け付けないので使わないでください。Google Play のリリースノートは 1 言語 500 文字までです。
+App Store と Google Play で日本語のコードが違うため、日本語は同じ文を 2 回書きます。`ja` は App Store だけに、`ja-JP` は Google Play だけに送ります。それ以外の言語を足すときは、両方のストアに登録済みのコードにしてください。`<` と `>` は Apple の API が受け付けないので使わないでください。Google Play のリリースノートは 1 言語 500 文字までです。
 
 ファイルを更新し忘れると前回の文がそのまま使われるので、タグを打つ前に書き換えてください。
 
